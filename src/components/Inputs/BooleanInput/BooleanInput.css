@@ -1,0 +1,15 @@
+.boolButton{
+    height:15px;
+    border: 1px solid lightgray;
+    margin-right:5px;
+}
+
+.read-only .boolButton{
+    background-color:#AAA;
+    border-color:#444;
+    pointer-events:none;
+}
+
+.read-only .selected {
+    background-color: #444;
+}
