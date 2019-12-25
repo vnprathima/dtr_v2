@@ -453,8 +453,9 @@ class ProviderRequest extends Component {
   }
   onClickLogout() {
     localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('fhir_url');
-    // this.props.history.push('/home');
+    localStorage.removeItem('config');
+    localStorage.removeItem('npi');
+    window.location = `${window.location.protocol}//${window.location.host}/login`;
   }
 
   redirectByType(redirect_value) {
@@ -647,14 +648,6 @@ class ProviderRequest extends Component {
 
               <nav id="nav-menu-container">
                 <ul className="nav-menu">
-                  <li><a href={window.location.protocol + "//" + window.location.host + "/home"}>Home</a></li>
-                  <li className="menu-active menu-has-children"><a href="">Services</a>
-                    <ul>
-                      <li className="menu-active"><a href={window.location.protocol + "//" + window.location.host + "/provider_request"}>Prior Auth Submit</a></li>
-                      <li><a href={window.location.protocol + "//" + window.location.host + "/mips"}>MIPS Score</a></li>
-                    </ul>
-                  </li>
-                  <li><a href={window.location.protocol + "//" + window.location.host + "/configuration"}>Configuration</a></li>
                   <li className="menu-has-children"><a href="">{localStorage.getItem('username')}</a>
                     <ul>
                       <li><a href="" onClick={this.onClickLogout}>Logout</a></li>

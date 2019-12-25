@@ -155,7 +155,7 @@ class Login extends Component {
     if (tokenResponse !== null && tokenResponse !== undefined) {
       localStorage.setItem('username', this.state.name);
       localStorage.setItem('password', this.state.password);
-      var url = "http://localhost:4200/getConfig";
+      var url = "http://cdex.mettles.com/cds/getConfig";
       let body = { "user_name": this.state.name }
       console.log(body);
       let self = this;
@@ -321,7 +321,7 @@ class Login extends Component {
                 }
                 {this.state.mode == "login" &&
                   <div style={{ paddingTop: "10%" }}>
-                    <p >Don't have a Login? <a href="#" onClick={e => this.switchMode("register")}>Register here</a></p>
+                    {/* <p >Don't have a Login? <a href="#" onClick={e => this.switchMode("register")}>Register here</a></p> */}
                   </div>
                 }
                 {this.state.mode == "register" &&
