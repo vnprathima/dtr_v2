@@ -257,15 +257,15 @@ input:not(:focus):not([value=""]):valid ~ .floating-label{
 .content{
   margin-top: 42px;
 }
-.dropdown{
+/* .dropdown{
   padding: 5px 15px;
-}
+} 
 .dropdownCode{
   border-width: 1px 1px 0px 9px !important;
 }
 .dropdownCode:focus{
   border-color: #555555 !important;
-}
+} */
 .header{
   text-align: left;
     font-size: 15px;

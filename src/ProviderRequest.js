@@ -31,7 +31,7 @@ class ProviderRequest extends Component {
       accessToken: '',
       scope: '',
       payer: '',
-      patientId: '',
+      patientId: sessionStorage.getItem('auth_patient_id') !== undefined ? sessionStorage.getItem('auth_patient_id') : '',
       practitionerId: (localStorage.getItem('npi') !== null) ? localStorage.getItem('npi') : "",
       resourceType: null,
       resourceTypeLT: null,

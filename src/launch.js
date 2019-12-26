@@ -1,24 +1,28 @@
 import urlUtils from "./util/url";
 
-// Change this to the ID of the client that you registered with the SMART on FHIR authorization server.
-var clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7";
+var serviceUri = urlUtils.getUrlParameter("iss");
+var clientId = urlUtils.getUrlParameter("client_id");
+if(serviceUri.includes("epic") && clientId === undefined){
+  clientId = "7c47a01b-b7d8-41cf-a290-8ed607108e70"; // epic
+} else if (serviceUri.includes("cerner") && clientId === undefined){
+  // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
+  clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
+} else if (serviceUri.includes("mettles") && clientId === undefined){
+  clientId = "app-login";
+} 
 
-// var clientId = "app-login";
-// var clientId = "1602539f-194e-4d22-b82f-a0835725f384"; 
-// For demonstration purposes, if you registered a confidential client
-// you can enter its secret here. The demo app will pretend it's a confidential
-// app (in reality it cannot be confidential, since it cannot keep secrets in the
-// browser)
-clientId = urlUtils.getUrlParameter("client_id");
 console.log("Client Id-----",clientId);
 var secret = null; // set me, if confidential
-// clientId = "7c47a01b-b7d8-41cf-a290-8ed607108e70"; // epic
-// These parameters will be received at launch time in the URL
-var serviceUri = urlUtils.getUrlParameter("iss");
-// var launchContextId = urlUtils.getUrlParameter("launch");
+
+var launchContextId = urlUtils.getUrlParameter("launch");
+if(serviceUri.includes("epic") && launchContextId === undefined){
+  launchContextId = "" // epic
+} else if (serviceUri.includes("cerner") && launchContextId === undefined){
+  launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
+} 
 //var launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
 //var launchContextId = "3OVyU5YcVCHZUDAeMQaia3Cw4kzALBblPY7BPV9Jjk5S083PusHli0A_UCiVNJywGiE57fx_KpynO3esOeQL9dOcQXMIGPd6HYMlSyqiZ30fxcd754kfN2jPoP-Tis9a";
-var launchContextId = "10e2e686-a719-42ed-a52a-8332b77a48d6"; //local
+// var launchContextId = "10e2e686-a719-42ed-a52a-8332b77a48d6"; //local
 // The scopes that the app will request from the authorization server
 // encoded in a space-separated string:
 //      1. permission to read all of the patient's record
@@ -33,7 +37,7 @@ var state = urlUtils.getUrlParameter("launchContextId");
 if(state === undefined){
   sessionStorage.setItem("showCDSHook",true);
   // Generate a unique session key string (here we just generate a random number
-  // for simplicity, but this is not 100% collision-proof)
+  // for simplicity, but this is not 100% collision-proof)  
   state = Math.round(Math.random() * 100000000).toString();
 }
 sessionStorage.setItem("state",state);

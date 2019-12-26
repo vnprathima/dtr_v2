@@ -91,7 +91,7 @@ export default class QuestionnaireForm extends Component {
         window.location.href = launchUri + "?launch=" + launchContextId + "&iss=" + serviceUri;
         // this.props.history.push();
     }
-    componentWillMount() {
+    async componentWillMount() {
         // setup
         // get all contained resources
         if (this.props.qform.contained) {
@@ -99,9 +99,21 @@ export default class QuestionnaireForm extends Component {
         }
         const items = this.props.qform.item;
         this.setState({ items });
-        const links = this.prepopulate(items, []);
+        const links = await this.prepopulate(items, []);
         this.setState({ orderedLinks: links });
-        console.log(this.state.orderedLinks);
+        console.log(this.state.orderedLinks, "links--", links);
+        if (this.state.turnOffValues.length === 0) {
+            const returnArray = [];
+            links.forEach((e) => {
+                if (this.isNotEmpty(this.state.values[e]) && this.state.itemTypes[e] && this.state.itemTypes[e].enabled) {
+                    returnArray.push(e);
+                }
+            });
+            this.setState({ turnOffValues: returnArray });
+        } else {
+            this.setState({ turnOffValues: [] });
+        }
+        console.log(this.state.turnOffValues);
         this.getProviderQueries(items);
     }
 
@@ -1549,7 +1561,6 @@ export default class QuestionnaireForm extends Component {
     }
 
     makeReference(bundle, resourceType) {
-
         var entry = bundle.entry.find(function (entry) {
             if (entry.resource !== undefined) {
                 return (entry.resource.resourceType == resourceType);
@@ -1562,7 +1573,6 @@ export default class QuestionnaireForm extends Component {
     }
 
     removeFilledFields() {
-        console.log("Turn off--", this.state.turnOffValues);
         if (this.state.turnOffValues.length > 0) {
             this.setState({ turnOffValues: [] });
         } else {

@@ -397,6 +397,9 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
         sessionStorage["token"] = auth_response.access_token;
         sessionStorage.setItem("auth_response", JSON.stringify(auth_response));
         console.log("auth res---", auth_response);
+        if (auth_response.hasOwnProperty("patient")) {
+          sessionStorage.setItem("auth_patient_id",auth_response.patient);
+        }
         // createPatient(auth_response);
         // searchPatient(auth_response);
         // createOrganization(auth_response);
