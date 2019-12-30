@@ -59,7 +59,7 @@ class App extends Component {
         }
 
         this.consoleLog("executing elm", "infoClass");
-        return executeElm(this.smart, "stu3", executionInputs, this.consoleLog);
+        return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
         //return true;
       })
       .then(cqlResults => {

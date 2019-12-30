@@ -332,6 +332,7 @@ function loadDTRApp(auth_response) {
   }).then((response) => {
     return response.json()
   }).then((response) => {
+    
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent("urn:hl7:davinci:crd:launchContext");
     console.log("launchdataurl----", launchDataURL);
     fetch(launchDataURL).then(handleFetchErrors).then(r => r.json())

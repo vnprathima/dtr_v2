@@ -34,22 +34,22 @@ function doSearch(smart, type, q, callback) {
       //nothing
     }
   }
-  if (type === "SupplyRequest"){
+  if (type === "SupplyRequest") {
     smart.api
-    .search({type: type, query: q})
-    .then(processSuccess(smart, [], callback), processError(smart, callback));
+      .search({ type: type, query: q })
+      .then(processSuccess(smart, [], callback), processError(smart, callback));
   } else {
     smart.patient.api
-      .search({type: type, query: q})
+      .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
-    }
+  }
 }
 
 function processSuccess(smart, resources, callback) {
   return response => {
     if (response.data && response.data.resourceType === "Bundle") {
       if (response.data.entry) {
-        response.data.entry.forEach(function(e) {
+        response.data.entry.forEach(function (e) {
           resources.push(e.resource);
         });
       }
@@ -79,24 +79,50 @@ function processError(smart, callback) {
 
 
 function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
-  return new Promise(function(resolve, reject){
+  return new Promise(function (resolve, reject) {
     console.log("waiting for patient");
-    consoleLog("waiting for patient","infoClass");
+    consoleLog("waiting for patient", "infoClass");
     consoleLog(smart.patient.id, "infoClass");
     smart.patient.read().then(
       pt => {
         console.log("got pt", pt);
         consoleLog("got pt:" + pt, "infoClass");
+        try {
+          if (pt.hasOwnProperty("managingOrganization")) {
+            console.log("organization----------", pt.managingOrganization, neededResources);
+            sessionStorage.setItem("managingOrganization", pt.managingOrganization.reference);
+            var org_id = pt.managingOrganization.reference.split("/");
+            neededResources.push({
+              "query": {
+                "_id": org_id[1]
+              },
+              "type": "Organization"
+            })
+          }
+          if (pt.hasOwnProperty("generalPractitioner")) {
+            console.log("organization----------", pt.generalPractitioner, neededResources);
+            sessionStorage.setItem("generalPractitioner", pt.generalPractitioner[0].reference);
+            var prac_id = pt.generalPractitioner[0].reference.split("/");
+            neededResources.push({
+              "query": {
+                "_id": prac_id[1]
+              },
+              "type": "Practitioner"
+            })
+          }
+        } catch (err) {
+          console.log("Unable to fetch Organization / Practitioner from patient");
+        }
         sessionStorage['patientObject'] = JSON.stringify(pt)
         const entryResources = [pt];
         const readResources = (neededResources, callback) => {
           const rq = neededResources.pop();
           let r = "";
           let q = {};
-          if (rq !== undefined ) {
+          if (rq !== undefined) {
             r = rq.type;
             q = rq.query;
-          } 
+          }
           if (r === "") {
             callback();
           } else if (r === "Patient") {
@@ -109,7 +135,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
               }
               if (error) {
                 console.error(error);
-                consoleLog(error.data.statusText,"errorClass");
+                consoleLog(error.data.statusText, "errorClass");
               }
               readResources(neededResources, callback);
             });
@@ -126,7 +152,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
         });
       },
       error => {
-          consoleLog("error: " + error, "errorClass");
+        consoleLog("error: " + error, "errorClass");
         console.log(error);
         reject(error);
       }
