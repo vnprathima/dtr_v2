@@ -25,7 +25,7 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
   return new Promise(function (resolve, reject) {
     const patientSource = getPatientSource(fhirVersion)
     console.log("SssnStorage", sessionStorage)
-    
+
     const neededResources = extractFhirResourcesThatNeedFetching(executionInputs.dataRequirement);
     consoleLog("need to fetch resources", "infoClass");
     console.log("We need to fetch these resources:", neededResources);
@@ -64,10 +64,12 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
         } else {
           patientSource.loadBundles([resourceBundle]);
           const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
+          console.log("elm results---",elmResults);
           const results = {
             bundle: resourceBundle,
             elmResults: elmResults
           }
+          console.log("elm results---",results);
           resolve(results);
         }
       })
@@ -138,8 +140,14 @@ function executeElmAgainstPatientSource(executionInputs, patientSource) {
   const lib = new cql.Library(executionInputs.elm, repository);
   const codeService = new cql.CodeService(executionInputs.valueSetDB);
   const executor = new cql.Executor(lib, codeService, executionInputs.parameters);
-  const results = executor.exec(patientSource);
-  return results.patientResults[Object.keys(results.patientResults)[0]];
+  try {
+    const results = executor.exec(patientSource);
+    console.log("execute result---", results)
+    return results.patientResults[Object.keys(results.patientResults)[0]];
+  } catch (err) {
+    console.log("exec error---", err);
+    return {}
+  } 
 }
 
 function getPatientSource(fhirVersion) {

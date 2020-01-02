@@ -28,7 +28,7 @@ class App extends Component {
     fetchArtifacts(this.props.FHIR_URI_PREFIX, this.props.questionnaireUri, this.smart, this.props.filepath, this.consoleLog)
       .then(artifacts => {
         console.log("fetched needed artifacts:", artifacts)
-        this.setState({"claimEndpoint":artifacts.claimEndpoint})
+        this.setState({ "claimEndpoint": artifacts.claimEndpoint })
         sessionStorage['claim_endpoint'] = artifacts.claimEndpoint;
         this.setState({ questionnaire: artifacts.questionnaire })
         this.setState({ serviceRequest: this.props.serviceRequest })
@@ -48,19 +48,17 @@ class App extends Component {
               filtered.push(obj);
             }
           });
-          console.log("requirements---",filtered);
+          console.log("requirements---", filtered);
         }
         const executionInputs = {
-          dataRequirement: filtered || artifacts.dataRequirement,
+          dataRequirement: artifacts.dataRequirement,
           elm: artifacts.mainLibraryElm,
           elmDependencies: artifacts.dependentElms,
           valueSetDB: {},
           parameters: { device_request: fhirWrapper.wrap(this.props.serviceRequest) }
         }
-
         this.consoleLog("executing elm", "infoClass");
         return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
-        //return true;
       })
       .then(cqlResults => {
         this.consoleLog("executed cql, result:" + JSON.stringify(cqlResults), "infoClass");
@@ -80,13 +78,13 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.questionnaire && this.state.cqlPrepoulationResults && this.state.bundle) {
+    if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
       return (
         <div className="App">
-          <QuestionnaireForm smart={this.smart} qform={this.state.questionnaire} 
-          cqlPrepoulationResults={this.state.cqlPrepoulationResults} 
-          serviceRequest={this.state.serviceRequest} bundle={this.state.bundle}
-          claimEndpoint={this.state.claimEndpoint} />
+          <QuestionnaireForm smart={this.smart} qform={this.state.questionnaire}
+            cqlPrepoulationResults={this.state.cqlPrepoulationResults}
+            serviceRequest={this.state.serviceRequest} bundle={this.state.bundle}
+            claimEndpoint={this.state.claimEndpoint} />
         </div>
       );
     } else {

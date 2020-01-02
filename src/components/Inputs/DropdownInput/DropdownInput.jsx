@@ -4,6 +4,8 @@ import { Dropdown } from 'semantic-ui-react';
 import './DropdownInput.css';
 import '../../ComponentStyles.css';
 
+let blackBorder = "blackBorder";
+
 export default class DropdownInput extends Component {
     constructor(props) {
         super(props);
@@ -47,9 +49,9 @@ export default class DropdownInput extends Component {
         return (
             <Dropdown
                 className={blackBorder}
-                options={this.state.value}
+                options={this.props.options}
                 placeholder='Payer'
-                // value={'medicare-fee-for-service'}
+                value={this.state.value}
                 search
                 selection
                 fluid

@@ -100,7 +100,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
             })
           }
           if (pt.hasOwnProperty("generalPractitioner")) {
-            console.log("organization----------", pt.generalPractitioner, neededResources);
+            console.log("Practitioner---------", pt.generalPractitioner, neededResources);
             sessionStorage.setItem("generalPractitioner", pt.generalPractitioner[0].reference);
             var prac_id = pt.generalPractitioner[0].reference.split("/");
             neededResources.push({
