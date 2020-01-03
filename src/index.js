@@ -289,7 +289,7 @@ function updatePatient(auth_response, patientRes) {
 
 function handleFetchErrors(response) {
   if (!response.ok) {
-    consoleLog("failed to get resource", "errorClass");
+    console.log("failed to get resource", "errorClass");
     reject("Failure when fetching resource.");
   }
   return response;
@@ -332,27 +332,25 @@ function loadDTRApp(auth_response) {
   }).then((response) => {
     return response.json()
   }).then((response) => {
-    
-    let launchDataURL = "../fetchFhirUri/" + encodeURIComponent("urn:hl7:davinci:crd:launchContext");
+    let urn = "urn:hl7:davinci:crd:"+appContextId;
+    let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
     console.log("launchdataurl----", launchDataURL);
     fetch(launchDataURL).then(handleFetchErrors).then(r => r.json())
       .then(launchContext => {
         if (!auth_response.hasOwnProperty("patient")) {
-          patient = launchContext[appContextId].patientId;
-          // patient = "20198"
+          patient = launchContext.patientId;
         }
-        
-        console.log("launch context---", launchContext[appContextId]);
+        console.log("launch context---", launchContext);
         const appContext = {
-          template: launchContext[appContextId].template,
-          request: launchContext[appContextId].request,
-          payerName: launchContext[appContextId].payerName,
+          template: launchContext.template,
+          request: launchContext.request,
+          payerName: launchContext.payerName,
           filepath: null,
           patientId: patient
         }
         console.log("launch context json", appContext);
         sessionStorage["patientId"] = patient;
-        sessionStorage["payerName"] = launchContext[appContextId].payerName;
+        sessionStorage["payerName"] = launchContext.payerName;
         var smart = FHIR.client({
           serviceUrl: serviceUri,
           patientId: appContext.patientId,
@@ -385,7 +383,7 @@ function loadDTRApp(auth_response) {
 }
 const tokenPost = new XMLHttpRequest();
 var auth_response;
-console.log("CDS HOOk-----",sessionStorage.getItem("showCDSHook"));
+// console.log("CDS HOOk-----",sessionStorage.getItem("showCDSHook"));
 
 if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("showCDSHook") === "true") {
   // obtain authorization token from the authorization service using the authorization code

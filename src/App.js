@@ -33,23 +33,23 @@ class App extends Component {
         this.setState({ questionnaire: artifacts.questionnaire })
         this.setState({ serviceRequest: this.props.serviceRequest })
         console.log("device request--", this.props.serviceRequest, artifacts.dataRequirement);
-        if (this.props.serviceRequest) {
-          var filtered = artifacts.dataRequirement.filter(function (value, index, arr) {
-            return value.type !== "Procedure";
-          });
-          console.log("filtered requirements", filtered);
-          this.props.serviceRequest.category.forEach(code => {
-            console.log(code);
-            if (code.code.coding[0].code) {
-              let obj = {
-                type: "Procedure",
-                "codeFilter": [{ path: "code", valueSetString: code.code.coding[0].code }]
-              }
-              filtered.push(obj);
-            }
-          });
-          console.log("requirements---", filtered);
-        }
+        // if (this.props.serviceRequest) {
+        //   var filtered = artifacts.dataRequirement.filter(function (value, index, arr) {
+        //     return value.type !== "Procedure";
+        //   });
+        //   console.log("filtered requirements", filtered);
+        //   this.props.serviceRequest.category.forEach(code => {
+        //     console.log(code);
+        //     if (code.code.coding[0].code) {
+        //       let obj = {
+        //         type: "Procedure",
+        //         "codeFilter": [{ path: "code", valueSetString: code.code.coding[0].code }]
+        //       }
+        //       filtered.push(obj);
+        //     }
+        //   });
+        //   console.log("requirements---", filtered);
+        // }
         const executionInputs = {
           dataRequirement: artifacts.dataRequirement,
           elm: artifacts.mainLibraryElm,

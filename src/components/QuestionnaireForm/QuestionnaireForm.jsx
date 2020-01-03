@@ -100,7 +100,7 @@ export default class QuestionnaireForm extends Component {
         this.setState({ items });
         const links = await this.prepopulate(items, []);
         this.setState({ orderedLinks: links });
-        console.log(this.state.orderedLinks, "links--", links);
+        // console.log(this.state.orderedLinks, "links--", links);
         if (this.state.turnOffValues.length === 0) {
             const returnArray = [];
             links.forEach((e) => {
@@ -138,7 +138,7 @@ export default class QuestionnaireForm extends Component {
     }
 
     getProviderQueries(questions) {
-        console.log("In get queries------", questions);
+        // console.log("In get queries------", questions);
         let queries = this.state.providerQueries;
         // let questions = this.state.items;
         questions.forEach((group) => {
@@ -176,7 +176,7 @@ export default class QuestionnaireForm extends Component {
             })
         }
         this.setState({ providerQueries: queries });
-        console.log("Final queries---", this.state.providerQueries);
+        // console.log("Final queries---", this.state.providerQueries);
 
     }
     componentDidMount() {
@@ -395,7 +395,7 @@ export default class QuestionnaireForm extends Component {
                         if (e.url === "http://hl7.org/fhir/StructureDefinition/cqif-calculatedValue") {
                             // stu3 
                             const value = findValueByPrefix(e, "value");
-                            console.log("In prepopulate---",this.props.cqlPrepoulationResults);
+                            // console.log("In prepopulate---",this.props.cqlPrepoulationResults);
                             if(this.props.cqlPrepoulationResults){
                                 this.updateQuestionValue(item.linkId, this.props.cqlPrepoulationResults[value], 'values')  
                             }

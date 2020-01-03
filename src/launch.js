@@ -2,24 +2,23 @@ import urlUtils from "./util/url";
 
 var serviceUri = urlUtils.getUrlParameter("iss");
 var clientId = urlUtils.getUrlParameter("client_id");
-if(serviceUri.includes("epic") && clientId === undefined){
+if (serviceUri.includes("epic") && clientId === undefined) {
   clientId = "7c47a01b-b7d8-41cf-a290-8ed607108e70"; // epic
-} else if (serviceUri.includes("cerner") && clientId === undefined){
+} else if (serviceUri.includes("cerner") && clientId === undefined) {
   // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
   clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
-} else if (serviceUri.includes("mettles") && clientId === undefined){
+} else if (serviceUri.includes("mettles") && clientId === undefined) {
   clientId = "app-login";
-} 
+}
 
-console.log("Client Id-----",clientId);
 var secret = null; // set me, if confidential
 
 var launchContextId = urlUtils.getUrlParameter("launch");
-if(serviceUri.includes("epic") && launchContextId === undefined){
+if (serviceUri.includes("epic") && launchContextId === undefined) {
   launchContextId = "" // epic
-} else if (serviceUri.includes("cerner") && launchContextId === undefined){
+} else if (serviceUri.includes("cerner") && launchContextId === undefined) {
   launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
-} 
+}
 //var launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
 //var launchContextId = "3OVyU5YcVCHZUDAeMQaia3Cw4kzALBblPY7BPV9Jjk5S083PusHli0A_UCiVNJywGiE57fx_KpynO3esOeQL9dOcQXMIGPd6HYMlSyqiZ30fxcd754kfN2jPoP-Tis9a";
 // var launchContextId = "10e2e686-a719-42ed-a52a-8332b77a48d6"; //local
@@ -27,20 +26,26 @@ if(serviceUri.includes("epic") && launchContextId === undefined){
 // encoded in a space-separated string:
 //      1. permission to read all of the patient's record
 //      2. permission to launch the app in the specific context
-var scope = ["launch","user/Patient.read","user/Patient.write","user/Procedure.read",
-            "user/Practitioner.read","patient/Condition.read","patient/Coverage.read",
-            "patient/Organization.read","patient/Organization.write",
-            "user/Organization.read","user/Organization.write"].join(" ");
+var scope = ["launch", "user/Patient.read", "user/Patient.write", "user/Procedure.read",
+  "user/Practitioner.read", "patient/Condition.read", "patient/Coverage.read",
+  "patient/Organization.read", "patient/Organization.write",
+  "user/Organization.read", "user/Organization.write"].join(" ");
 
+var app_context = urlUtils.getUrlParameter("app_context");
+if (serviceUri.includes("epic") && app_context === undefined) {
+  app_context = urlUtils.getUrlParameter("epic_appcontext"); // epic
+} else if (serviceUri.includes("cerner") && launchContextId === undefined) {
+  app_context = urlUtils.getUrlParameter("cerner_appcontext"); //cerner
+}
 
-var state = urlUtils.getUrlParameter("launchContextId");
-if(state === undefined){
-  sessionStorage.setItem("showCDSHook",true);
+var state = app_context;
+if (state === undefined) {
+  sessionStorage.setItem("showCDSHook", true);
   // Generate a unique session key string (here we just generate a random number
   // for simplicity, but this is not 100% collision-proof)  
   state = Math.round(Math.random() * 100000000).toString();
 }
-sessionStorage.setItem("state",state);
+sessionStorage.setItem("state", state);
 
 // var state = "IIZ3UT1T2CVN";//epic
 // To keep things flexible, let's construct the launch URL by taking the base of the
@@ -48,7 +53,7 @@ sessionStorage.setItem("state",state);
 var launchUri = window.location.protocol + "//" + window.location.host + window.location.pathname;
 var redirectUri = launchUri.replace("launch", "index");
 
-console.log("redirectURI",redirectUri);
+console.log("redirectURI", redirectUri);
 // FHIR Service Conformance Statement URL
 var conformanceUri = serviceUri + "/metadata";
 
@@ -63,7 +68,7 @@ conformanceGet.open("GET", conformanceUri);
 conformanceGet.setRequestHeader("Content-Type", "application/json");
 conformanceGet.setRequestHeader("Accept", "application/json");
 
-conformanceGet.onload = function() {
+conformanceGet.onload = function () {
   if (conformanceGet.status === 200) {
     try {
       conformanceStatement = JSON.parse(conformanceGet.responseText);
@@ -87,21 +92,21 @@ function redirect(conformanceStatement) {
 
   var authUri, tokenUri;
   if (serviceUri.search('cdex.mettles.com') > 0) {
-      authUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/auth";
-      tokenUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token"
-    } else {
-      var smartExtension = conformanceStatement.rest[0].security.extension.filter(function(e) {
-        return e.url === "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris";
-      });
+    authUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/auth";
+    tokenUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token"
+  } else {
+    var smartExtension = conformanceStatement.rest[0].security.extension.filter(function (e) {
+      return e.url === "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris";
+    });
 
-      smartExtension[0].extension.forEach(function(arg) { 
-        if (arg.url === "authorize") {
-          authUri = arg.valueUri;
-        } else if (arg.url === "token") {
-          tokenUri = arg.valueUri;
-        }
-      });
-    }
+    smartExtension[0].extension.forEach(function (arg) {
+      if (arg.url === "authorize") {
+        authUri = arg.valueUri;
+      } else if (arg.url === "token") {
+        tokenUri = arg.valueUri;
+      }
+    });
+  }
 
   // retain a couple parameters in the session for later use
   sessionStorage[state] = JSON.stringify({
