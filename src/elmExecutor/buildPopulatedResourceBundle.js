@@ -76,7 +76,16 @@ function processError(smart, callback) {
   };
 }
 
-
+function randomString() {
+  var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ";
+  var string_length = 16;
+  var randomstring = '';
+  for (var i = 0; i < string_length; i++) {
+      var rnum = Math.floor(Math.random() * chars.length);
+      randomstring += chars.substring(rnum, rnum + 1);
+  }
+  return randomstring
+}
 
 function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
   return new Promise(function (resolve, reject) {
@@ -146,6 +155,11 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
           const bundle = {
             resourceType: "Bundle",
             type: "collection",
+            identifier:
+            {
+              "system": "http://identifiers.mettles.com/prior_authorization",
+              "value": randomString()
+            },
             entry: entryResources.map(r => ({ resource: r }))
           };
           resolve(bundle);

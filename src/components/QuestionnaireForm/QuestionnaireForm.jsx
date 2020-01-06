@@ -396,8 +396,8 @@ export default class QuestionnaireForm extends Component {
                             // stu3 
                             const value = findValueByPrefix(e, "value");
                             // console.log("In prepopulate---",this.props.cqlPrepoulationResults);
-                            if(this.props.cqlPrepoulationResults){
-                                this.updateQuestionValue(item.linkId, this.props.cqlPrepoulationResults[value], 'values')  
+                            if (this.props.cqlPrepoulationResults) {
+                                this.updateQuestionValue(item.linkId, this.props.cqlPrepoulationResults[value], 'values')
                             }
                         }
                     })
@@ -726,7 +726,6 @@ export default class QuestionnaireForm extends Component {
 
 
             const orgRes = {
-
                 "resourceType": "Organization",
                 "id": "516",
                 "identifier": [
@@ -769,61 +768,57 @@ export default class QuestionnaireForm extends Component {
                 ]
 
             };
-            // const organizationResource = {
-            //     "resourceType": "Organization",
-            //     "id": "20114",
-            //     "meta": {
-            //         "versionId": "1",
-            //         "lastUpdated": "2019-09-13T18:52:12.558+00:00"
-            //     },
-            //     "identifier": [
-            //         {
-            //             "system": "urn:ietf:rfc:3986",
-            //             "value": "2.16.840.1.113883.13.34.110.1.110.11"
-            //         },
-            //         {
-            //             "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-            //             "code": "NII",
-            //             "value": "06111"
-            //         }
-            //     ],
-            //     "name": sessionStorage["payerName"],
-            //     "contact":[
-            //         {
-            //            "name":[
-            //               {
-            //                  "use":"official",
-            //                  "family":"Randall",
-            //                  "given":[
-            //                     "Janice"
-            //                  ]
-            //               }
-            //            ],
-            //            "telecom":[
-            //               {
-            //                  "system":"phone",
-            //                  "value":"803-763-5900",
-            //                  "use":"home"
-            //               }
-            //            ]
-            //         }
-            //      ],
-            //     "address": [
-            //         {
-            //             "line": [
-            //                 "123 Healthcare Ave."
-            //             ],
-            //             "city": "Chicago",
-            //             "state": "IL",
-            //             "postalCode": "60643",
-            //             "country": "US"
-            //         }
-            //     ]
-            // }
             priorAuthBundle.entry.unshift({ resource: orgRes })
 
             console.log(priorAuthBundle);
 
+            const coverageRes =
+            {
+                "resourceType": "Coverage",
+                "id": "SP1234",
+                "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">A human-readable rendering of a Self Pay Agreement.</div>"
+                },
+                "identifier": [
+                    {
+                        "system": "http://hospitalx.com/selfpayagreement",
+                        "value": "SP12345678"
+                    }
+                ],
+                "status": "active",
+                "type": {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/coverage-selfpay",
+                            "code": "pay",
+                            "display": "PAY"
+                        }
+                    ]
+                },
+                "subscriber": {
+                    "reference": { reference: self.makeReference(priorAuthBundle, "Patient") }
+                },
+                "beneficiary": {
+                    "reference": { reference: self.makeReference(priorAuthBundle, "Patient") }
+                },
+                "relationship": {
+                    "coding": [
+                        {
+                            "code": "self"
+                        }
+                    ]
+                },
+                "period": {
+                    "end": "2012-03-17"
+                },
+                "payor": [
+                    {
+                        "reference": "Organization/516"
+                    }
+                ]
+            }
+            priorAuthBundle.entry.unshift({ resource: coverageRes })
             const locationResource = {
                 "resourceType": "Location",
                 "id": "29955",
@@ -888,7 +883,6 @@ export default class QuestionnaireForm extends Component {
                 insurer: { reference: self.makeReference(priorAuthBundle, "Organization") },
                 facility: { reference: self.makeReference(priorAuthBundle, "Location") },
                 priority: { coding: [{ "code": "normal" }] },
-                presciption: { reference: self.makeReference(priorAuthBundle, "ServiceRequest") },
                 supportingInfo: [{
                     sequence: 1,
                     category: {
@@ -935,68 +929,84 @@ export default class QuestionnaireForm extends Component {
                 insurance: [{
                     sequence: 1,
                     focal: true,
-                    // coverage: { reference: self.makeReference(priorAuthBundle, "Coverage") }
+                    coverage: { reference: self.makeReference(priorAuthBundle, "Coverage") }
                 }]
             }
-		console.log("servicerequest-----------",self.props.serviceRequest);
-            if (self.props.serviceRequest.hasOwnProperty("code")) {
-		let service = {
-                    sequence: 1,
-                    productOrService: self.props.serviceRequest.code,
-                    procedureSequence: [],
-                    diagnosisSequence: [],
-		    careTeamSequence:[1],
-			locationCodeableConcept:{
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-                                "code": "PTRES",
-                                "display": "Patient's Residence"
-                            }
-                        ]
-                    }
-                };
-                if(self.props.serviceRequest.hasOwnProperty("quantityQuantity")){
-			service.quantity = {
-                        value: self.props.serviceRequest.quantityQuantity.value
+            let service = {
+                sequence: 1,
+                procedureSequence: [],
+                diagnosisSequence: [],
+                careTeamSequence: [1],
+                locationCodeableConcept: {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                            "code": "PTRES",
+                            "display": "Patient's Residence"
+                        }
+                    ]
+                }
+            };
+            console.log("servicerequest-----------", self.props.serviceRequest);
+            if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+                self.props.serviceRequest.resourceType === "ServiceRequest" &&
+                self.props.serviceRequest.hasOwnProperty("code")) {
+                service["productOrService"] = self.props.serviceRequest.code;
+                if (self.props.serviceRequest.hasOwnProperty("quantityQuantity")) {
+                    service["quantity"] = {
+                        "value": self.props.serviceRequest.quantityQuantity.value
                     };
-		}
-		if(self.props.serviceRequest.hasOwnProperty("category")){
-			service.category = self.props.serviceRequest.category[0];
-		}
-		console.log("service----------",service);
-                priorAuthClaim.item.push(service);
-
-                var sequence = 1;
-                priorAuthBundle.entry.forEach(function (entry, index) {
-                    if (entry.resource !== undefined) {
-                        if (entry.resource.resourceType == "Condition") {
-                            priorAuthClaim.diagnosis.push({
-                                sequence: sequence,
-                                diagnosisReference: { reference: "Condition/" + entry.resource.id }
-                            });
-                            priorAuthClaim.item[0].diagnosisSequence.push(sequence);
-                            sequence++;
-                        }
-
-                    }
-                })
-
-                var psequence = 1;
-                priorAuthBundle.entry.forEach(function (entry, index) {
-                    if (entry.resource !== undefined) {
-                        if (entry.resource.resourceType == "Procedure") {
-                            priorAuthClaim.procedure.push({
-                                sequence: psequence,
-                                procedureReference: { reference: "Procedure/" + entry.resource.id }
-                            });
-                            priorAuthClaim.item[0].procedureSequence.push(psequence);
-                            psequence++;
-                        }
-
-                    }
-                })
+                }
+                if (self.props.serviceRequest.hasOwnProperty("category")) {
+                    service["category"] = self.props.serviceRequest.category[0];
+                }
+                priorAuthClaim["presciption"] = { reference: self.makeReference(priorAuthBundle, "ServiceRequest") }
             }
+            if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+                self.props.serviceRequest.resourceType === "DeviceRequest" &&
+                self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+                service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
+                if (self.props.serviceRequest.hasOwnProperty("parameter") &&
+                    self.props.serviceRequest.parameter.length > 0) {
+                    service["quantity"] = {
+                        "value": self.props.serviceRequest.parameter[0].valueQuantity.value
+                    };
+                    service["category"] = self.props.serviceRequest.parameter[0].code;
+                }
+                priorAuthClaim["presciption"] = { reference: self.makeReference(priorAuthBundle, "DeviceRequest") }
+            }
+            console.log("service----------", service);
+            priorAuthClaim.item.push(service);
+
+            var sequence = 1;
+            priorAuthBundle.entry.forEach(function (entry, index) {
+                if (entry.resource !== undefined) {
+                    if (entry.resource.resourceType == "Condition") {
+                        priorAuthClaim.diagnosis.push({
+                            sequence: sequence,
+                            diagnosisReference: { reference: "Condition/" + entry.resource.id }
+                        });
+                        priorAuthClaim.item[0].diagnosisSequence.push(sequence);
+                        sequence++;
+                    }
+
+                }
+            })
+
+            var psequence = 1;
+            priorAuthBundle.entry.forEach(function (entry, index) {
+                if (entry.resource !== undefined) {
+                    if (entry.resource.resourceType == "Procedure") {
+                        priorAuthClaim.procedure.push({
+                            sequence: psequence,
+                            procedureReference: { reference: "Procedure/" + entry.resource.id }
+                        });
+                        priorAuthClaim.item[0].procedureSequence.push(psequence);
+                        psequence++;
+                    }
+
+                }
+            })
             // console.log(priorAuthClaim, 'HEREEE', tokenUri);
             console.log(JSON.stringify(priorAuthClaim));
             if (sessionStorage.hasOwnProperty("docResources")) {
@@ -1016,10 +1026,9 @@ export default class QuestionnaireForm extends Component {
         this.setState({ previewloading: true });
         this.generateBundle().then((priorAuthBundle) => {
             this.setState({ priorAuthBundle });
-            console.log("Prior auth bundle---", this.state.priorAuthBundle)
+            console.log("Prior auth bundle---", JSON.stringify(this.state.priorAuthBundle));
             let showPreview = this.state.showPreview;
             this.setState({ showPreview: !showPreview });
-            console.log("Prior auth bundle-preview--", this.state.showPreview)
             this.setState({ previewloading: false });
         });
     }
@@ -1143,8 +1152,8 @@ export default class QuestionnaireForm extends Component {
         }
     }
     randomString() {
-        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-        var string_length = 8;
+        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ-";
+        var string_length = 16;
         var randomstring = '';
         for (var i = 0; i < string_length; i++) {
             var rnum = Math.floor(Math.random() * chars.length);
