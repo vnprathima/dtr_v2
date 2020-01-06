@@ -938,16 +938,33 @@ export default class QuestionnaireForm extends Component {
                     // coverage: { reference: self.makeReference(priorAuthBundle, "Coverage") }
                 }]
             }
-            if (self.props.serviceRequest.hasOwnProperty("quantity") && self.props.serviceRequest.hasOwnProperty("code")) {
-                let service = {
+		console.log("servicerequest-----------",self.props.serviceRequest);
+            if (self.props.serviceRequest.hasOwnProperty("code")) {
+		let service = {
                     sequence: 1,
                     productOrService: self.props.serviceRequest.code,
-                    quantity: {
-                        value: self.props.serviceRequest.quantity.value
-                    },
                     procedureSequence: [],
-                    diagnosisSequence: []
-                }
+                    diagnosisSequence: [],
+		    careTeamSequence:[1],
+			locationCodeableConcept:{
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                                "code": "PTRES",
+                                "display": "Patient's Residence"
+                            }
+                        ]
+                    }
+                };
+                if(self.props.serviceRequest.hasOwnProperty("quantityQuantity")){
+			service.quantity = {
+                        value: self.props.serviceRequest.quantityQuantity.value
+                    };
+		}
+		if(self.props.serviceRequest.hasOwnProperty("category")){
+			service.category = self.props.serviceRequest.category[0];
+		}
+		console.log("service----------",service);
                 priorAuthClaim.item.push(service);
 
                 var sequence = 1;
