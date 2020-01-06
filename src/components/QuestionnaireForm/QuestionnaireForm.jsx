@@ -797,10 +797,10 @@ export default class QuestionnaireForm extends Component {
                     ]
                 },
                 "subscriber": {
-                    "reference": { reference: self.makeReference(priorAuthBundle, "Patient") }
+                    reference: self.makeReference(priorAuthBundle, "Patient") 
                 },
                 "beneficiary": {
-                    "reference": { reference: self.makeReference(priorAuthBundle, "Patient") }
+                    reference: self.makeReference(priorAuthBundle, "Patient") 
                 },
                 "relationship": {
                     "coding": [
@@ -862,8 +862,8 @@ export default class QuestionnaireForm extends Component {
                 type: {
                     coding: [{
                         system: "http://terminology.hl7.org/CodeSystem/claim-type",
-                        code: "institutional",
-                        display: "Institutional"
+                        code: "professional",
+                        display: "Professional"
                     }]
                 },
                 subType: {
