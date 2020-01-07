@@ -40,7 +40,7 @@ if (serviceUri.includes("epic") && app_context === undefined) {
 
 var state = app_context;
 if (state === undefined) {
-  sessionStorage.setItem("showCDSHook", true);
+  // sessionStorage.setItem("showCDSHook", true);
   // Generate a unique session key string (here we just generate a random number
   // for simplicity, but this is not 100% collision-proof)  
   state = Math.round(Math.random() * 100000000).toString();
@@ -71,8 +71,10 @@ conformanceGet.setRequestHeader("Accept", "application/json");
 conformanceGet.onload = function () {
   if (conformanceGet.status === 200) {
     try {
+      alert("Got Metadata from "+conformanceUri);
       conformanceStatement = JSON.parse(conformanceGet.responseText);
     } catch (e) {
+      alert("Error in retrieving metadata from "+conformanceUri);
       const errorMsg = "Unable to parse conformance statement.";
       document.body.innerText = errorMsg;
       console.error(errorMsg);
@@ -80,7 +82,9 @@ conformanceGet.onload = function () {
     }
     redirect(conformanceStatement);
   } else {
+    
     const errorMsg = "Conformance statement request failed. Returned status: " + conformanceGet.status;
+    alert(errorMsg);
     document.body.innerText = errorMsg;
     console.error(errorMsg);
     return;
@@ -107,7 +111,6 @@ function redirect(conformanceStatement) {
       }
     });
   }
-
   // retain a couple parameters in the session for later use
   sessionStorage[state] = JSON.stringify({
     clientId: clientId,
@@ -119,7 +122,7 @@ function redirect(conformanceStatement) {
   });
   // finally, redirect the browser to the authorizatin server and pass the needed
   // parameters for the authorization request in the URL
-
+  alert("redirecting to: "+authUri + "?" + "response_type=code&" + "client_id=" + encodeURIComponent(clientId) + "&" + "scope=" + encodeURIComponent(scope) + "&" + "redirect_uri=" + encodeURIComponent(redirectUri) + "&" + "aud=" + encodeURIComponent(serviceUri) + "&" + "launch=" + encodeURIComponent(launchContextId) + "&" + "state=" + state)
   window.location.href = authUri + "?" + "response_type=code&" + "client_id=" + encodeURIComponent(clientId) + "&" + "scope=" + encodeURIComponent(scope) + "&" + "redirect_uri=" + encodeURIComponent(redirectUri) + "&" + "aud=" + encodeURIComponent(serviceUri) + "&" + "launch=" + encodeURIComponent(launchContextId) + "&" + "state=" + state;
 
 }
