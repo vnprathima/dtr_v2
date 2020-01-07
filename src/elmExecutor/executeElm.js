@@ -30,7 +30,7 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
     consoleLog("need to fetch resources", "infoClass");
     console.log("We need to fetch these resources:", neededResources);
     sessionStorage['fhir_queries'] = JSON.stringify(neededResources);
-
+    console.log("device request--",executionInputs.parameters.device_request);
     buildPopulatedResourceBundle(smart, neededResources, consoleLog)
       .then(function (resourceBundle) {
         console.log("Fetched resources are in this bundle:", resourceBundle);

@@ -395,7 +395,7 @@ input:not(:focus):not([value=""]):valid ~ .floating-label{
 }
 .file-block{
     width: 33%;
-    height: 100px;
+    height: 43px;
     border: 1px solid grey;
     list-style: none;
     border-radius: 3px;
@@ -406,19 +406,18 @@ input:not(:focus):not([value=""]):valid ~ .floating-label{
     overflow: auto;
     float: left;
     position: relative;
-    height: 100px;
     margin: 5px;
     object-fit: contain;
 }
 .drop-box{
   border: 1px solid #b9b1b1;
-  width: 531px;
+  width: 100%;
   color: #928d8d;
   padding: 20px;
   overflow: hidden;
   border-radius: 3px;
   overflow: hidden;
-  margin-left: 20px;
+  /* margin-left: 20px; */
 }
 .file-upload-icon{
   font-size: 30px;
