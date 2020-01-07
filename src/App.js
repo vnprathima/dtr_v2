@@ -55,7 +55,7 @@ class App extends Component {
           elm: artifacts.mainLibraryElm,
           elmDependencies: artifacts.dependentElms,
           valueSetDB: {},
-          parameters: { device_request: fhirWrapper.wrap(this.props.serviceRequest) }
+          parameters: { device_request: this.props.serviceRequest }
         }
         this.consoleLog("executing elm", "infoClass");
         return executeElm(this.smart, "r4", executionInputs, this.consoleLog);

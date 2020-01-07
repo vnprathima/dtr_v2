@@ -62,6 +62,15 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
               }
             }, err => reject(err))
         } else {
+	console.log("executionInputs.parameters.device_request",executionInputs.parameters.device_request);
+	let device_request= executionInputs.parameters.device_request;
+	if (device_request.hasOwnProperty('performer')){
+		if (device_request.performer.hasOwnProperty('reference')){
+			device_request.performer.reference= sessionStorage['generalPractitioner'];
+}	
+}
+	resourceBundle.entry.push({'resource':executionInputs.parameters.device_request});
+	console.log("resource bundle...........",resourceBundle);
           patientSource.loadBundles([resourceBundle]);
           const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
           console.log("elm results---",elmResults);
