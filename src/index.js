@@ -332,6 +332,9 @@ function loadDTRApp(auth_response) {
   }).then((response) => {
     return response.json()
   }).then((response) => {
+    if(auth_response.hasOwnProperty("appContext")){
+      appContextId = auth_response.appContext;
+    }
     let urn = "urn:hl7:davinci:crd:"+appContextId;
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
     console.log("launchdataurl----", launchDataURL);
