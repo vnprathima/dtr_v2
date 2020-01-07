@@ -50,7 +50,7 @@ class ProviderRequest extends Component {
       medication: null,
       medicationStartDate: '',
       medicationEndDate: '',
-      hook: null,
+      hook: "order-select",
       hookName: 'order-review',
       healthcareCode: null,
       resource_records: {},
@@ -220,6 +220,11 @@ class ProviderRequest extends Component {
   }
 
   updateStateElement = (elementName, text) => {
+    if (elementName === "selected_codes" && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text[0])) {
+      this.setState({ hook: "order-review" });
+    } else {
+      this.setState({ hook: "order-select" });
+    }
     this.setState({ [elementName]: text });
   }
   async getHookFromCategory() {
@@ -542,10 +547,10 @@ class ProviderRequest extends Component {
     let json_request = await this.getJson();
 
     let url = '';
-    if (this.state.request === 'coverage-requirement' && this.state.hook !== 'patient-view') {
-      url = this.state.config.crd_url;
+    if (this.state.hook === 'order-review') {
+      url = this.state.config.crd_order_review_url;
     }
-    if (this.state.hook === 'patient-view') {
+    if (this.state.hook === 'order-select') {
       url = this.state.config.crd_url;
     }
     console.log("json_request", json_request, this.state.config.crd_url)
@@ -952,60 +957,74 @@ class ProviderRequest extends Component {
   async getJson() {
     var patientId = null;
     patientId = this.state.patientId;
-    let token = await createToken(this.state.config.provider_grant_type, 'provider', localStorage.getItem('username'), localStorage.getItem('password'), true);
-    let coverage = {
-      resource: {
-        resourceType: "Coverage",
-        id: this.state.coverageId,
-        class: [
-          {
-            type: {
-              system: "http://hl7.org/fhir/coverage-class",
-              code: "plan"
-            },
-            value: "Medicare Part D"
-          }
-        ],
-        payor: [
-          {
-            reference: "Organization/6"
-          }
-        ]
+    if (!this.state.prefetch) {
+      patientId = this.randomString();
+    }
+    let PractitionerRole = {
+      "resourceType": "PractitionerRole",
+      "id": "practitioner1",
+      "practitioner": {
+        "reference": "Practitioner/" + this.state.practitionerId
       }
+    }
+    let organization = {
+      "resourceType": "Organization",
+      "id": this.state.payer,
+      "name": this.state.payer
+    }
+    let coverage = {
+      resourceType: "Coverage",
+      id: "coverage1",
+      class: [
+        {
+          type: {
+            system: "http://hl7.org/fhir/coverage-class",
+            code: "plan"
+          },
+          value: "Medicare Part D"
+        }
+      ],
+      payor: [
+        {
+          reference: "Organization/" + this.state.payer
+        }
+      ]
     };
+    let selected_codes = this.state.selected_codes;
     let serviceRequest = {
       "resourceType": "ServiceRequest",
       "identifier": [
         {
-          "value": await this.getRequestID(token)
+          "value": this.randomString()
         }
       ],
-      "status": "completed",
+      "status": "draft",
       "intent": "order",
       "category": [],
       "subject": {
-        "display": this.state.firstName + " " + this.state.lastName
+        "reference": "Patient/" + patientId
       },
       "quantity": { "value": this.state.quantity },
-      // "occurrenceDateTime": "2013-05-08T09:33:27+07:00",
-      // "authoredOn": "2013-05-08T09:33:27+07:00",
-      "requester": {
-        "display": this.state.practitionerId
+      "authoredOn": "2013-05-08T09:33:27+07:00",
+      "insurance": [
+        {
+          "reference": "Coverage/coverage1"
+        }
+      ],
+      "performer": {
+        "reference": "PractitionerRole/practitioner1"
       }
     }
-    let selected_codes = this.state.selected_codes;
-    console.log("selected codes---", selected_codes)
+
     for (var i = 0; i < selected_codes.length; i++) {
       let obj = {
         "code": {
           "coding": [
             {
               "system": "http://loinc.org",
-              "code": selected_codes[i],
-              "display": ""
+              "code": selected_codes[i]
             }
           ],
-          "text": ""
         }
       }
       if (i == 0) {
@@ -1013,161 +1032,51 @@ class ProviderRequest extends Component {
       }
       serviceRequest.category.push(obj)
     }
-
-    console.log(serviceRequest)
-    // token = "Bearer " + token;
-    // var myHeaders = new Headers({
-    //   "Content-Type": "application/json",
-    //   "authorization": token,
-    // });
-    // var url = this.state.config.provider_fhir_url +'/Encounter&subject='+patientId+'&peroid'
-    // const fhirResponse = await fetch(url, {
-    //   method: "GET",
-    //   headers: myHeaders,
-    //   body: JSON.stringify(json_request)
-    // })
-    // console.log("fhir-----------",fhirResponse);
-    // const res_json = await fhirResponse.json();
-    // this.setState({ response: res_json });
-
-    // let medicationJson = {
-    //   resourceType: "MedicationOrder",
-    //   dosageInstruction: [
-    //     {
-    //       doseQuantity: {
-    //         value: this.state.dosageAmount,
-    //         system: "http://unitsofmeasure.org",
-    //         code: "{pill}"
-    //       },
-    //       timing: {
-    //         repeat: {
-    //           frequency: this.state.frequency,
-    //           boundsPeriod: {
-    //             start: this.state.medicationStartDate,
-    //             end: this.state.medicationEndDate,
-    //           }
-    //         }
-    //       }
-    //     }
-    //   ],
-
-    //   medicationCodeableConcept: {
-    //     text: "Pimozide 2 MG Oral Tablet [Orap]",
-    //     coding: [
-    //       {
-    //         display: "Pimozide 2 MG Oral Tablet [Orap]",
-    //         system: "http://www.nlm.nih.gov/research/umls/rxnorm",
-    //         code: this.state.medication,
-    //       }
-    //     ]
-    //   },
-    //   reasonCodeableConcept: {
-    //     coding: [
-    //       {
-    //         system: "http://snomed.info/sct",
-    //         code: this.state.diagnosis,
-    //       }
-    //     ],
-    //     text: "Alzheimer's disease"
-    //   }
-
-    // };
-    var date1 = new Date(this.state.medicationStartDate);
-    var date2 = new Date(this.state.medicationEndDate);
-    var Difference_In_Time = Math.abs(date2.getTime() - date1.getTime());
-    var days = Math.ceil(Difference_In_Time / (1000 * 60 * 60 * 24))
-    var dosageInstructionText = this.state.dosageAmount + " " + this.state.unit + " bid x " + days + " days"
-    let key;
-    let text;
-    if (this.state.medication !== null) {
-      key = this.state.medication.key
-      text = this.state.medication.text
+    let deviceRequest = {
+      "resourceType": "DeviceRequest",
+      "identifier": [
+        {
+          "value": this.randomString()
+        }
+      ],
+      "status": "draft",
+      "intent": "order",
+      "parameter": [],
+      "subject": {
+        "reference": "Patient/" + patientId
+      },
+      "authoredOn": "2013-05-08T09:33:27+07:00",
+      "insurance": [
+        {
+          "reference": "Coverage/coverage1"
+        }
+      ],
+      "performer": {
+        "reference": "PractitionerRole/practitioner1"
+      }
     }
-    let medicationRequestJson = {
-      "resource": {
-        "resourceType": "MedicationRequest",
-        "id": "smart-MedicationRequest-103",
-        "status": "draft",
-        "intent": "order",
-        "medicationCodeableConcept": {
+    for (var i = 0; i < selected_codes.length; i++) {
+      let obj = {
+        "code": {
           "coding": [
             {
-              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-              "code": key,
-              "display": text
+              "system": "http://loinc.org",
+              "code": selected_codes[i]
             }
           ],
-          "text": text
         },
-        "subject": {
-          "reference": "Patient/" + this.state.patientId
-        },
-        "dosageInstruction": [
-          {
-            "text": dosageInstructionText,
-            "timing": {
-
-              "frequency": this.state.frequency,
-
-            },
-
-            "doseAndRate": {
-              "doseQuantity": {
-                "value": this.state.dosageAmount,
-                "unit": this.state.unit,
-                "system": "http://unitsofmeasure.org",
-                "code": this.state.unit
-              }
-            }
-          }
-        ],
-        "dispenseRequest": {
-          "numberOfRepeatsAllowed": 1,
-          "quantity": {
-            "value": 1,
-            "unit": "mL",
-            "system": "http://unitsofmeasure.org",
-            "code": "mL"
-          },
-          "expectedSupplyDuration": {
-            "value": days,
-            "unit": "days",
-            "system": "http://unitsofmeasure.org",
-            "code": "d"
-          }
+        "valueQuantity": {
+          "value": this.state.quantity,
         }
       }
-    }
-    // "99183": "Physician attendance and supervision of hyperbaric oxygen therapy, per session",
-    // console.log("------------final device request", serviceRequest)
-    let request = {
-      hookInstance: "d1577c69-dfbe-44ad-ba6d-3e05e953b2ea",
-      fhirServer: this.state.config.provider_fhir_url,
-      payerName: this.state.payer,
-      // service_code: this.state.service_code,
-      fhirAuthorization: {
-        "access_token": this.state.accessToken,
-        // "token_type": this.props.config.authorization_service.token_type, // json
-        // "expires_in": this.props.config.authorization_service.expires_in, // json
-        // "scope": this.props.config.authorization_service.scope,
-        // "subject": this.props.config.authorization_service.subject,
-      },
-      userId: this.state.practitionerId,
-      patientId: patientId,
-      context: {
-        userId: this.state.practitionerId,
-        patientId: '',
-        coverageId: this.state.coverageId,
-        encounterId: this.state.encounterId,
-        patient: patientId
+      if (i == 0) {
+        deviceRequest["codeCodeableConcept"] = obj.code;
       }
-    };
+      deviceRequest.parameter.push(obj)
+    }
     let patientResource;
     if (this.state.prefetch === true) {
-
-      patientResource = this.state.patientResource
-      request.context.patientId = patientId
-      request.context.patient = patientResource
+      patientResource = this.state.patientResource;
     }
     else {
       patientResource = {
@@ -1213,46 +1122,88 @@ class ProviderRequest extends Component {
       }
       this.setState({ patientResource: patientResource });
       console.log(patientResource, JSON.stringify(patientResource))
-      request.context.patient = patientResource;
     }
-    if (this.state.hookName === 'order-review') {
-      request.hook = this.state.hook
-      request.context.orders = {
-        resourceType: "Bundle",
-        entry: [
-          {
-            resource: serviceRequest
-          }
-        ]
+    let requestEntryObj = {}
+    let prefetchObj = {}
+    if (this.state.hook === "order-review") {
+      prefetchObj = {
+        "deviceRequestBundle": {
+          "resourceType": "Bundle",
+          "type": "collection",
+          "entry": [
+            {
+              "resource": deviceRequest
+            },
+            {
+              "resource": patientResource
+            },
+            {
+              "resource": PractitionerRole
+            },
+            {
+              "resource": coverage
+            },
+            {
+              "resource": organization
+            }
+          ]
+        }
+      }
+      requestEntryObj = {
+        resource: deviceRequest
+      }
+    } else {
+      prefetchObj = {
+        "serviceRequestBundle": {
+          "resourceType": "Bundle",
+          "type": "collection",
+          "entry": [
+            {
+              "resource": serviceRequest
+            },
+            {
+              "resource": patientResource
+            },
+            {
+              "resource": PractitionerRole
+            },
+            {
+              "resource": coverage
+            },
+            {
+              "resource": organization
+            }
+          ]
+        }
+      }
+      requestEntryObj = {
+        resource: serviceRequest
       }
     }
-    else if (this.state.hookName === 'order-select') {
-      request.hook = this.state.hook
-      request.context.orders = {
-        resourceType: "Bundle",
-        entry: [
-          {
-            resource: medicationRequestJson
-          }
-        ]
-      }
-    }
-    // if (this.state.hook === 'order-review') {
-    //   request.context.encounterId = this.state.encounterId
-    //   request.context.orders.entry.push(coverage);
-    // }
-    // if (this.state.hook === 'order-select') {
-    //   request.context.orders.entry.push(medicationJson);
-    // }
-
-
-    if (this.state.prefetch) {
-      var prefetchData = await this.getPrefetchData()
-      this.setState({ prefetchData: prefetchData })
-      request.prefetch = this.state.prefetchData;
-    }
+    let request = {
+      hook: this.state.hook,
+      hookInstance: "d1577c69-dfbe-44ad-ba6d-3e05e953b2ea",
+      fhirServer: this.state.config.provider_fhir_url,
+      fhirAuthorization: {
+        "access_token": this.state.accessToken,
+        "token_type": "Bearer",
+        "expires_in": 300,
+        "scope": "patient/Patient.read patient/Observation.read",
+        "subject": "cds-service"
+      },
+      user: "Practitioner/" + this.state.practitionerId,
+      context: {
+        patientId: patientId,
+        orders: {
+          resourceType: "Bundle",
+          entry: [
+            requestEntryObj
+          ]
+        }
+      },
+      "prefetch": prefetchObj
+    };
     return request;
-
   }
   render() {
     return (
