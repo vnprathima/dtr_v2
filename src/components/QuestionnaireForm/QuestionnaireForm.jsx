@@ -797,10 +797,10 @@ export default class QuestionnaireForm extends Component {
                     ]
                 },
                 "subscriber": {
-                    reference: self.makeReference(priorAuthBundle, "Patient") 
+                    reference: self.makeReference(priorAuthBundle, "Patient")
                 },
                 "beneficiary": {
-                    reference: self.makeReference(priorAuthBundle, "Patient") 
+                    reference: self.makeReference(priorAuthBundle, "Patient")
                 },
                 "relationship": {
                     "coding": [
@@ -1231,6 +1231,11 @@ export default class QuestionnaireForm extends Component {
                                 // }
                             })
                         }
+                        <div className="section" style={{ marginBottom: "30px" }}>
+                            <DocumentInput
+                                updateCallback={this.updateDocuments}
+                            />
+                        </div >
                         {/* <div className="section" style={{marginBottom: "30px"}}>
                             <div className="section-header">
                                 <input type="checkbox" name="otherProvider" value={this.state.otherProvider} onChange={this.onChangeOtherProvider} />Request from Other Provider
