@@ -1231,7 +1231,7 @@ export default class QuestionnaireForm extends Component {
                                 // }
                             })
                         }
-                        <div className="section" style={{ marginBottom: "30px" }}>
+                        <div style={{ marginBottom: "30px" }}>
                             <DocumentInput
                                 updateCallback={this.updateDocuments}
                             />
