@@ -2,21 +2,21 @@ import urlUtils from "./util/url";
 
 var serviceUri = urlUtils.getUrlParameter("iss");
 var clientId = urlUtils.getUrlParameter("client_id");
-if (serviceUri.includes("epic") && clientId === undefined) {
+if (serviceUri.indexOf("epic") !== -1 && clientId === undefined) {
   clientId = "7c47a01b-b7d8-41cf-a290-8ed607108e70"; // epic
-} else if (serviceUri.includes("cerner") && clientId === undefined) {
+} else if (serviceUri.indexOf("cerner") !== -1  && clientId === undefined) {
   // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
   clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
-} else if (serviceUri.includes("mettles") && clientId === undefined) {
+} else if (serviceUri.indexOf("mettles")!== -1 && clientId === undefined) {
   clientId = "app-login";
 }
 
 var secret = null; // set me, if confidential
 
 var launchContextId = urlUtils.getUrlParameter("launch");
-if (serviceUri.includes("epic") && launchContextId === undefined) {
+if (serviceUri.indexOf("epic") !== -1 && launchContextId === undefined) {
   launchContextId = "" // epic
-} else if (serviceUri.includes("cerner") && launchContextId === undefined) {
+} else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
   launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
 }
 //var launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
@@ -32,9 +32,9 @@ var scope = ["launch", "user/Patient.read", "user/Patient.write", "user/Procedur
   "user/Organization.read", "user/Organization.write"].join(" ");
 
 var app_context = urlUtils.getUrlParameter("app_context");
-if (serviceUri.includes("epic") && app_context === undefined) {
+if (serviceUri.indexOf("epic") !== -1 && app_context === undefined) {
   app_context = urlUtils.getUrlParameter("epic_appcontext"); // epic
-} else if (serviceUri.includes("cerner") && launchContextId === undefined) {
+} else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
   app_context = urlUtils.getUrlParameter("cerner_appcontext"); //cerner
 }
 
