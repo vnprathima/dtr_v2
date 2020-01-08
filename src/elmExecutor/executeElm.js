@@ -25,7 +25,7 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
   return new Promise(function (resolve, reject) {
     const patientSource = getPatientSource(fhirVersion)
     console.log("SssnStorage", sessionStorage)
-
+    alert("Executing Cql ");
     const neededResources = extractFhirResourcesThatNeedFetching(executionInputs.dataRequirement);
     consoleLog("need to fetch resources", "infoClass");
     console.log("We need to fetch these resources:", neededResources);
@@ -152,9 +152,11 @@ function executeElmAgainstPatientSource(executionInputs, patientSource) {
   try {
     const results = executor.exec(patientSource);
     console.log("execute result---", results)
+    alert("GOT cql results");
     return results.patientResults[Object.keys(results.patientResults)[0]];
   } catch (err) {
     console.log("exec error---", err);
+    alert("Error in CQl execution");
     return {}
   } 
 }
