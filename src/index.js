@@ -436,7 +436,7 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
   tokenPost.onload = function () {
     if (tokenPost.status === 200) {
       try {
-        alert("got token response: "+auth_response);
+        // alert("got token response: "+auth_response);
         auth_response = JSON.parse(tokenPost.responseText);
         sessionStorage["token"] = auth_response.access_token;
         console.log("auth res---", auth_response);
