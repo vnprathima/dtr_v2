@@ -27,12 +27,16 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: [
+            "presets": [
               [
-                "@babel/env",
+                "@babel/preset-env",
                 {
-                  corejs: "2.0.0",
-                  useBuiltIns: "entry"
+                  "corejs": "2.0.0",
+                  "useBuiltIns": "entry",
+                  "targets": {
+                    "esmodules": true,
+                    "ie": "11"
+                  }
                 }
               ]
             ]
