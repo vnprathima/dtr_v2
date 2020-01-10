@@ -1,3 +1,4 @@
+import "@babel/polyfill";
 import "fhirclient"; // sets window.FHIR
 import urlUtils from "./util/url";
 import React from "react";
@@ -340,7 +341,7 @@ function loadDTRApp(auth_response) {
     let urn = "urn:hl7:davinci:crd:"+appContextId;
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
     console.log("launchdataurl----", launchDataURL);
-    alert("launchdataurl---"+launchdataurl);
+    alert("launchdataurl---"+launchDataURL);
     fetch(launchDataURL).then(handleFetchErrors).then(r => r.json())
       .then(launchContext => {
         alert("Got launchContext from CRD !!");

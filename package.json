@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "webpack --config ./webpack.config.prod.js --progress --colors",
+    "build": "webpack-dev-server --config ./webpack.config.dev.js --progress --colors",
     "start": "webpack-dev-server --config ./webpack.config.dev.js  --host 0.0.0.0  --public localhost",
     "startDev": "webpack-dev-server --config ./webpack.config.dev.js --host 0.0.0.0  --public localhost",
     "startProd": "webpack-dev-server --config ./webpack.config.prod.js --host 0.0.0.0  --public localhost",
@@ -25,7 +25,8 @@
     "react-hot-loader": "^4.8.2",
     "style-loader": "^0.23.1",
     "webpack-cli": "3.1.2",
-    "webpack-merge": "^4.1.4"
+    "webpack-merge": "^4.1.4",
+    "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
