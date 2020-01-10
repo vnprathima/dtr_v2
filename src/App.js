@@ -25,10 +25,10 @@ class App extends Component {
   componentDidMount() {
     const fhirWrapper = cqlfhir.FHIRWrapper.FHIRv300();
     this.consoleLog("fetching artifacts", "infoClass");
-    alert("Rendering App-- ");
+    // alert("Rendering App-- ");
     fetchArtifacts(this.props.FHIR_URI_PREFIX, this.props.questionnaireUri, this.smart, this.props.filepath, this.consoleLog)
       .then(artifacts => {
-        alert("Got Requirements to load ");
+        // alert("Got Requirements to load ");
         console.log("fetched needed artifacts:", artifacts)
         this.setState({ "claimEndpoint": artifacts.claimEndpoint })
         sessionStorage['claim_endpoint'] = artifacts.claimEndpoint;

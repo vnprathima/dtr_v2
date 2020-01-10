@@ -333,24 +333,24 @@ function loadDTRApp(auth_response) {
   }).then((response) => {
     return response.json()
   }).then((response) => {
-    alert("Got Patient---");
+    // alert("Got Patient---");
     if(auth_response.hasOwnProperty("appContext")){
       appContextId = auth_response.appContext;
-      alert("Got AppContext---"+appContextId);
+      // alert("Got AppContext---"+appContextId);
     }
     let urn = "urn:hl7:davinci:crd:"+appContextId;
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
     console.log("launchdataurl----", launchDataURL);
-    alert("launchdataurl---"+launchDataURL);
+    // alert("launchdataurl---"+launchDataURL);
     fetch(launchDataURL).then(handleFetchErrors).then(r => r.json())
       .then(launchContext => {
-        alert("Got launchContext from CRD !!");
+        // alert("Got launchContext from CRD !!");
         if (!auth_response.hasOwnProperty("patient")) {
           patient = launchContext.patientId;
-          alert("Got patient from launchContext: "+patient);
+          // alert("Got patient from launchContext: "+patient);
         }
         console.log("launch context---", launchContext);
-        alert("Launch Context "+JSON.stringify(launchContext));
+        // alert("Launch Context "+JSON.stringify(launchContext));
         const appContext = {
           template: launchContext.template,
           request: launchContext.request,
