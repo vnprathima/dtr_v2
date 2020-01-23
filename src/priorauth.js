@@ -64,7 +64,7 @@ claimResponseGet.onload = function() {
     message += "PriorAuth ID: " + priorAuthId + "\n";
     message += "Patient: " + patientId;
     console.log(message);
-    alert(message);
+    //alert(message);
     return;
   }
 };
