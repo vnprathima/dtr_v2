@@ -1,3 +1,4 @@
+window.alert("In index.js");
 import "@babel/polyfill";
 import "fhirclient"; // sets window.FHIR
 import urlUtils from "./util/url";
@@ -7,16 +8,20 @@ import App from "./App.js";
 import { stat } from "fs";
 import ProviderRequest from "./ProviderRequest";
 
+alert("Loaded imports");
+
 // get the URL parameters received from the authorization server
 var state = urlUtils.getUrlParameter("state"); // session key
 const code = urlUtils.getUrlParameter("code"); // authorization code
 var appContextId = urlUtils.getUrlParameter("appContextId") // when internal provider request
 
+alert("Got url params - "+state);
 if(appContextId !== undefined){
   state = sessionStorage.getItem("state");
 } else {
   appContextId = state;
 }
+alert("App context id"+ appContextId);
 // load the app parameters stored in the session
 const params = JSON.parse(sessionStorage[state]); // load app session
 const tokenUri = params.tokenUri;
@@ -333,18 +338,18 @@ function loadDTRApp(auth_response) {
   }).then((response) => {
     return response.json()
   }).then((response) => {
-    // alert("Got Patient---");
+     alert("Got Patient---");
     if(auth_response.hasOwnProperty("appContext")){
       appContextId = auth_response.appContext;
-      // alert("Got AppContext---"+appContextId);
+      alert("Got AppContext---"+appContextId);
     }
     let urn = "urn:hl7:davinci:crd:"+appContextId;
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
     console.log("launchdataurl----", launchDataURL);
-    // alert("launchdataurl---"+launchDataURL);
+     alert("launchdataurl---"+launchDataURL);
     fetch(launchDataURL).then(handleFetchErrors).then(r => r.json())
       .then(launchContext => {
-        // alert("Got launchContext from CRD !!");
+        alert("Got launchContext from CRD !!");
         if (!auth_response.hasOwnProperty("patient")) {
           patient = launchContext.patientId;
           // alert("Got patient from launchContext: "+patient);
@@ -370,8 +375,11 @@ function loadDTRApp(auth_response) {
             token: auth_response.access_token
           }
         });
+	window.alert("before loading App.js");
+	alert("2 before loading app.js")
         ReactDOM.render(
-          <App
+          
+	<App
             FHIR_URI_PREFIX={FHIR_URI_PREFIX}
             questionnaireUri={appContext.template}
             smart={smart}

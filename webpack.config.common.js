@@ -5,12 +5,12 @@ module.exports = {
     launch: path.resolve(__dirname, "src/launch.js"),
     index: path.resolve(__dirname, "src/index.js"),
     register: path.resolve(__dirname, "src/register.js"),
-    login: path.resolve(__dirname, "src/loginPage.js"),
+    priorauth: path.resolve(__dirname, "src/priorauth.js")
   },
   output: {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "public"),
-    publicPath: "/",
+    publicPath: "/"
   },
   resolve: { extensions: ["*", ".js", ".jsx"] },
   module: {
@@ -27,16 +27,12 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            "presets": [
+            presets: [
               [
-                "@babel/preset-env",
+                "@babel/env",
                 {
-                  "corejs": "2.0.0",
-                  "useBuiltIns": "entry",
-                  "targets": {
-                    "esmodules": true,
-                    "ie": "11"
-                  }
+                  corejs: "2.0.0",
+                  useBuiltIns: "entry"
                 }
               ]
             ]

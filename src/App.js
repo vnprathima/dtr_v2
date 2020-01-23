@@ -7,6 +7,7 @@ import fetchArtifacts from "./util/fetchArtifacts";
 import QuestionnaireForm from "./components/QuestionnaireForm/QuestionnaireForm";
 import Testing from "./components/ConsoleBox/Testing";
 // import sample from './sample_questionnaire.json';
+window.alert("in App.js")
 class App extends Component {
   constructor(props) {
     super(props);
@@ -25,10 +26,10 @@ class App extends Component {
   componentDidMount() {
     const fhirWrapper = cqlfhir.FHIRWrapper.FHIRv300();
     this.consoleLog("fetching artifacts", "infoClass");
-    // alert("Rendering App-- ");
+    window.alert("fetchartifacts in componentDidMount-- ");
     fetchArtifacts(this.props.FHIR_URI_PREFIX, this.props.questionnaireUri, this.smart, this.props.filepath, this.consoleLog)
       .then(artifacts => {
-        // alert("Got Requirements to load ");
+        window.alert("Got Requirements to load ");
         console.log("fetched needed artifacts:", artifacts)
         this.setState({ "claimEndpoint": artifacts.claimEndpoint })
         sessionStorage['claim_endpoint'] = artifacts.claimEndpoint;
@@ -80,9 +81,11 @@ class App extends Component {
   }
 
   render() {
+     window.alert("before render");	
     if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
       return (
         <div className="App">
+
           <QuestionnaireForm smart={this.smart} qform={this.state.questionnaire}
             cqlPrepoulationResults={this.state.cqlPrepoulationResults}
             serviceRequest={this.state.serviceRequest} bundle={this.state.bundle}
@@ -99,5 +102,5 @@ class App extends Component {
     }
   }
 }
-
+window.alert("after  App class")
 export default hot(module)(App);
