@@ -27,14 +27,14 @@ module.exports = merge(common, {
         { from: /launch/, to: "/launch.html" },
         { from: /register/, to: "/register.html" },
         { from: /priorauth/, to: "/priorauth.html" },
-	{ from: /login/, to: '/login.html' }
+      	{ from: /login/, to: '/login.html' }
       ]
     },
     disableHostCheck: true,
     proxy: [
       {
         context: ["/fetchFhirUri", "/getfile"],
-        target: "http://cdex.mettles.com/crd",
+        target: "https://drfp.mettles.com/crd",
         changeOrigin: true,
         secure: false
       }

@@ -209,7 +209,7 @@ export default class QuestionnaireForm extends Component {
         const Http = new XMLHttpRequest();
         // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/ClaimResponse/" + this.state.claimResponse.id;
         // const priorAuthUrl = "http://cdex.mettles.com:9000/fhir/ClaimResponse/" + this.state.claimResponse.id;
-        const priorAuthUrl = "http://cdex.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + this.state.claimResponse.id;
+        const priorAuthUrl = "https://drfp.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + this.state.claimResponse.id;
         Http.open("GET", priorAuthUrl);
         Http.setRequestHeader("Content-Type", "application/fhir+json");
         Http.send();
@@ -1060,7 +1060,7 @@ export default class QuestionnaireForm extends Component {
                     // const priorAuthUrl = "https://davinci-prior-auth.logicahealth.org/fhir/Claim/$submit";
                     // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/Claim/$submit";
                     // const priorAuthUrl = "http://cdex.mettles.com:9000/fhir/Claim/$submit";
-                    var priorAuthUrl = "http://cdex.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
+                    var priorAuthUrl = "https://drfp.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
                     if (self.props.hasOwnProperty("claimEndpoint") && self.props.claimEndpoint !== null) {
                         priorAuthUrl = self.props.claimEndpoint;
                     }

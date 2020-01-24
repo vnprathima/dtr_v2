@@ -95,7 +95,7 @@ conformanceGet.send();
 function redirect(conformanceStatement) {
 
   var authUri, tokenUri;
-  if (serviceUri.search('cdex.mettles.com') > 0) {
+  if (serviceUri.search('mettles.com') > 0) {
     authUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/auth";
     tokenUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token"
   } else {
