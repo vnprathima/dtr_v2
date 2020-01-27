@@ -3,6 +3,7 @@ import config from '../globalConfiguration.json';
 
 
 export async function createToken(grantType, user, username, password, login = false) {
+    alert("In createToken--"+ login + "---"+username + "---"+ password);
     const types = {
         error: "errorClass",
         info: "infoClass",
@@ -63,6 +64,7 @@ export async function createToken(grantType, user, username, password, login = f
     const searchParams = Object.keys(params).map((key) => {
         return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
     }).join('&');
+    alert("berore token post--"+ searchParams);
     // We get the token from the url
     const tokenResponse = await fetch(tokenUrl, {
         method: "POST",

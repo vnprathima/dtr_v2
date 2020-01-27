@@ -150,35 +150,42 @@ export default class Login extends Component {
 
   async onClickLoginSubmit() {
     this.setState({ loading: true, login_error_msg: '' });
+    alert("In on clickSubmit method--");
     let tokenResponse = await createToken('password', 'app-login', this.state.name, this.state.password, true);
-      if (tokenResponse !== null && tokenResponse !== undefined) {
-        localStorage.setItem('username', this.state.name);
-        localStorage.setItem('password', this.state.password);
-        var url = "https://drfp.mettles.com/cds/getConfig";
-        let body = { "user_name": this.state.name }
-        console.log(body);
-        let self = this;
-        await fetch(url, {
-          method: "POST",
-          body: JSON.stringify(body)
-        }).then(response => {
-          return response.json();
-        }).then((configuration) => {
-          console.log("Configuartion response---", configuration);
-          // sessionStorage.setItem('config', JSON.stringify(configuration))
-          // sessionStorage.setItem('npi', config.npi);
-          // sessionStorage.setItem('isLoggedIn', true);
-          localStorage.setItem('isLoggedIn', true);
-          localStorage.setItem('config', JSON.stringify(configuration));
-          localStorage.setItem('npi', config.npi);
-
-          window.location = `${window.location.protocol}//${window.location.host}/index?state=${sessionStorage.getItem("state")}`;
-          // this.props.history.push(sessionStorage.getItem("redirectTo"));
-        }).catch((reason) => {
-          self.setState({ loading: false, login_error_msg: "Unable to login !! Please try again." });
-          console.log("Configuartion not recieved from the server", reason)
-        });
-      }
+    alert("Got token--");
+    this.setState({ loading: false });
+    if (tokenResponse !== null && tokenResponse !== undefined) {
+      alert("In valid token response--");
+      localStorage.setItem('username', this.state.name);
+      localStorage.setItem('password', this.state.password);
+      var url = "https://drfp.mettles.com/cds/getConfig";
+      let body = { "user_name": this.state.name }
+      console.log(body);
+      let self = this;
+      alert("Before Config fetch--")
+      await fetch(url, {
+        method: "POST",
+        body: JSON.stringify(body)
+      }).then(response => {
+        return response.json();
+      }).then((configuration) => {
+        alert("Got Configuartion response---");
+        console.log("Configuartion response---", configuration);
+        // sessionStorage.setItem('config', JSON.stringify(configuration))
+        // sessionStorage.setItem('npi', config.npi);
+        // sessionStorage.setItem('isLoggedIn', true);
+        localStorage.setItem('isLoggedIn', true);
+        localStorage.setItem('config', JSON.stringify(configuration));
+        localStorage.setItem('npi', config.npi);
+        alert("before redirect---");
+        window.location = `${window.location.protocol}//${window.location.host}/index?state=${sessionStorage.getItem("state")}`;
+        // this.props.history.push(sessionStorage.getItem("redirectTo"));
+      }).catch((reason) => {
+        alert("Error in config fetch")
+        self.setState({ loading: false, login_error_msg: "Unable to login !! Please try again." });
+        console.log("Configuartion not recieved from the server", reason)
+      });
+    }
   }
   handleKeyPress = (e) => {
     if (e.key === 'Enter') {
