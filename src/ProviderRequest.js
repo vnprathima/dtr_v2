@@ -1,3 +1,4 @@
+
 import React, { Component } from 'react';
 import { hot } from "react-hot-loader";
 import SelectPayer from './components/SelectPayer';
@@ -13,6 +14,7 @@ import Loader from 'react-loader-spinner';
 import { createToken } from './components/Authentication';
 import { Dropdown } from 'semantic-ui-react';
 import stateOptions from './stateOptions'
+import "isomorphic-fetch";
 
 const types = {
   error: "errorClass",
@@ -533,29 +535,34 @@ class ProviderRequest extends Component {
 
   async submit_info() {
     // this.setState({ loadingSteps: false, stepsErrorString: undefined });
-    // this.resetSteps();
-    let token = await createToken(this.state.config.provider_grant_type, 'provider', localStorage.getItem('username'), localStorage.getItem('password'), true);
-    token = "Bearer " + token;
+      // this.resetSteps();
+      //alert("in submit");
+    //let token = await createToken(this.state.config.provider_grant_type, 'provider', localStorage.getItem('username'), localStorage.getItem('password'), true);
+    //token = "Bearer " + token;
     var myHeaders = new Headers({
-      "Content-Type": "application/json",
-      "authorization": token,
+      "Content-Type": "application/json"
+      //"authorization": token,
     });
-    let accessToken = this.state.accessToken;
-    accessToken = token;
-    console.log(accessToken, 'accesstoken')
-    this.setState({ accessToken });
-    let json_request = await this.getJson();
+//    let accessToken = this.state.accessToken;
+  //  accessToken = token;
+   // console.log(accessToken, 'accesstoken')
+     // this.setState({ accessToken });
+      //alert("before json");
+     let json_request = await this.getJson();
 
     let url = '';
     if (this.state.hook === 'order-review') {
-      url = this.state.config.crd_order_review_url;
+	url = this.state.config.crd_order_review_url;
+	url="https://drfp.mettles.com/crd/r4/cds-services/order-review-crd";
     }
     if (this.state.hook === 'order-select') {
-      url = this.state.config.crd_url;
+	url = this.state.config.crd_url;
+	url="https://drfp.mettles.com/crd/r4/cds-services/order-select-crd";
     }
     console.log("json_request", json_request, this.state.config.crd_url)
-    try {
-
+      try {
+	  let self = this;
+	//alert(JSON.stringify(json_request));
       await fetch(url, {
         method: "POST",
         headers: myHeaders,
@@ -567,12 +574,13 @@ class ProviderRequest extends Component {
         let appContext = cardResponse['cards'][0].links[0].appContext;
         sessionStorage.setItem("appContext", appContext);
         sessionStorage.setItem("showCDSHook", false);
-        this.setState({ response: cardResponse });
+        self.setState({ response: cardResponse });
         window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
       }).catch((reason) => {
         self.setState({ loading: false, login_error_msg: "Unable to get CRD Response !! Please try again." });
       });
     } catch (error) {
+	//alert("In catch"+error);
       var res_json = {
         "cards": [{
           "source": {
@@ -663,7 +671,7 @@ class ProviderRequest extends Component {
             </div>
           </header>
 
-          <main id="main" style={{ marginTop: "92px" }}>
+          <div id="main" style={{ marginTop: "92px" }}>
 
             <div className="form">
               <div className="container">
@@ -897,7 +905,7 @@ class ProviderRequest extends Component {
                 }
               </div>
             </div>
-          </main>
+          </div>
         </div>
       </React.Fragment >);
   };

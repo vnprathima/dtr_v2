@@ -21,9 +21,12 @@ if(appContextId !== undefined){
 } else {
   appContextId = state;
 }
+console.log("state"+state);
 //alert("App context id"+ appContextId);
 // load the app parameters stored in the session
-const params = JSON.parse(sessionStorage[state]); // load app session
+const s = sessionStorage.getItem("state")
+console.log("state---"+sessionStorage.getItem(s));
+const params = JSON.parse(sessionStorage.getItem(s)); // load app session
 const tokenUri = params.tokenUri;
 const clientId = params.clientId;
 const secret = params.secret;

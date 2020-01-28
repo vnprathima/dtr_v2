@@ -33,7 +33,7 @@ var scope = ["launch", "user/Patient.read", "user/Patient.write", "user/Procedur
 
 var app_context = urlUtils.getUrlParameter("app_context");
 if (serviceUri.indexOf("epic") !== -1 && app_context === undefined) {
-  app_context = urlUtils.getUrlParameter("epic_appcontext"); // epic
+  app_context = Math.round(Math.random() * 100000000).toString(); // epic
 } else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
   app_context = urlUtils.getUrlParameter("cerner_appcontext"); //cerner
 }
@@ -57,9 +57,9 @@ console.log("redirectURI", redirectUri);
 // FHIR Service Conformance Statement URL
 var conformanceUri = serviceUri + "/metadata";
 
-sessionStorage["serviceUri"] = serviceUri
-sessionStorage["launchContextId"] = launchContextId
-sessionStorage["launchUri"] = launchUri
+sessionStorage.setItem("serviceUri", serviceUri)
+sessionStorage.setItem("launchContextId", launchContextId)
+sessionStorage.setItem("launchUri", launchUri)
 // Let's request the conformance statement from the SMART on FHIR API server and
 // find out the endpoint URLs for the authorization server
 let conformanceStatement;
@@ -112,14 +112,14 @@ function redirect(conformanceStatement) {
     });
   }
   // retain a couple parameters in the session for later use
-  sessionStorage[state] = JSON.stringify({
+    sessionStorage.setItem(state,JSON.stringify({
     clientId: clientId,
     secret: secret,
     serviceUri: serviceUri,
     redirectUri: redirectUri,
     tokenUri: tokenUri,
     launchContextId: launchContextId
-  });
+    }));
   // finally, redirect the browser to the authorizatin server and pass the needed
   // parameters for the authorization request in the URL
   // //alert("redirecting to: "+authUri + "?" + "response_type=code&" + "client_id=" + encodeURIComponent(clientId) + "&" + "scope=" + encodeURIComponent(scope) + "&" + "redirect_uri=" + encodeURIComponent(redirectUri) + "&" + "aud=" + encodeURIComponent(serviceUri) + "&" + "launch=" + encodeURIComponent(launchContextId) + "&" + "state=" + state)
