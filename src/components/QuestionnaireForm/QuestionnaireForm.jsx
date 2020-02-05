@@ -60,7 +60,8 @@ export default class QuestionnaireForm extends Component {
             showBundle: false,
             priorAuthBundle: {},
             showPreview: false,
-            previewloading: false
+            previewloading: false,
+            documentReference: {}
         };
 
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
@@ -288,22 +289,13 @@ export default class QuestionnaireForm extends Component {
     }
 
     updateDocuments(elementName, object) {
-        console.log(elementName, object, 'is it workinggg')
+        console.log(elementName, object, 'is it workinggg document')
         this.setState({ [elementName]: object })
         var fileInputData = {
-            "resourceType": "Communication",
-            "id": "376",
-            "meta": {
-                "versionId": "1",
-                "lastUpdated": "2018-10-08T07:22:32.421+00:00"
-            },
-            "status": "preparation",
-            "identifier": [
-                {
-                    "use": "official"
-                }
-            ],
-            "payload": [],
+            "resourceType": "DocumentReference",
+            "id": this.randomString,
+            "status": "current",
+            "content": [],
         }
         if (this.state.files != null) {
             for (var i = 0; i < this.state.files.length; i++) {
@@ -314,7 +306,7 @@ export default class QuestionnaireForm extends Component {
                     reader.onload = function (e) {
                         // get file content  
                         fileInputData.payload.push({
-                            "contentAttachment": {
+                            "attachment": {
                                 "data": reader.result,
                                 "contentType": content_type,
                                 "title": file_name,
@@ -326,9 +318,9 @@ export default class QuestionnaireForm extends Component {
                 })(this.state.files[i])
             }
         }
-        console.log("Resource Json before communication--", fileInputData);
+        console.log("Document JSon--", fileInputData);
         // this.props.saveDocuments(this.props.files,fileInputData)
-        this.setState({ communicationJson: fileInputData })
+        this.setState({ documentReference: fileInputData })
         // return fileInputData
     }
 
@@ -1018,6 +1010,9 @@ export default class QuestionnaireForm extends Component {
             }
             priorAuthBundle.entry.unshift({ resource: priorAuthClaim })
 
+            // Add documents in claim
+            priorAuthBundle.entry.unshift({ resource: this.state.documentReference })
+            
             resolve(priorAuthBundle);
         });
 
