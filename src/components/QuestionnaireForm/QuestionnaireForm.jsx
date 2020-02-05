@@ -716,29 +716,26 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle.entry.unshift({ resource: response })
             priorAuthBundle.entry.unshift({ resource: self.props.serviceRequest });
 
-
+            
             const orgRes = {
-                "resourceType": "Organization",
-                "id": "516",
-                "identifier": [
-                    {
-                        "system": "http://hl7.org.fhir/sid/us-npi",
-                        "value": "1568461820"
-                    }
-                ],
-                "name": "Rest Haven ILLIANA Christian Co",
-                "address": [
+                "resourceType": "Organization"
+            };
+            let payer = sessionStorage.getItem("payerName");
+            if (payer === "united_health_care"){
+                orgRes["id"] = "516"
+                orgRes["name"] = "United Health Care"
+                orgRes['address'] = [
                     {
                         "use": "work",
                         "line": [
-                            "18601 North Creek Dr A"
+                            "9700 Health Care Lane"
                         ],
-                        "city": "Tinley Park",
-                        "state": "IL",
-                        "postalCode": "604776398"
+                        "city": "Minnetonka",
+                        "state": "Minnesota",
+                        "postalCode": "55343"
                     }
-                ],
-                "contact": [
+                ]
+                orgRes["contact"] = [
                     {
                         "name": [
                             {
@@ -758,8 +755,54 @@ export default class QuestionnaireForm extends Component {
                         ]
                     }
                 ]
-
-            };
+                orgRes["identifier"] = [
+                    {
+                        "system": "urn:ietf:rfc:3986",
+                        "value": "96855.9662.3575.4099.5718.533.8838"
+                    }
+                ]
+            }
+            if (payer === "medicare_fee_for_service"){
+                orgRes["id"] = "516"
+                orgRes["name"] = "Medicare Fee for service"
+                orgRes['address'] = [
+                    {
+                        "use": "work",
+                        "line": [
+                            "7210 Ambassador Road"
+                        ],
+                        "city": "Windsor Mill",
+                        "state": "MaryLand",
+                        "postalCode": "21244"
+                    }
+                ]
+                orgRes["contact"] = [
+                    {
+                        "name": [
+                            {
+                                "use": "official",
+                                "family": "Oliver",
+                                "given": [
+                                    "James"
+                                ]
+                            }
+                        ],
+                        "telecom": [
+                            {
+                                "system": "phone",
+                                "value": "725-778-5600",
+                                "use": "home"
+                            }
+                        ]
+                    }
+                ]
+                orgRes["identifier"] = [
+                    {
+                        "system": "urn:ietf:rfc:3986",
+                        "value": "17086.5403.3613.5769.6889.6096.6384"
+                    }
+                ]
+            }
             priorAuthBundle.entry.unshift({ resource: orgRes })
 
             console.log(priorAuthBundle);
@@ -1012,7 +1055,7 @@ export default class QuestionnaireForm extends Component {
 
             // Add documents in claim
             priorAuthBundle.entry.unshift({ resource: this.state.documentReference })
-            
+
             resolve(priorAuthBundle);
         });
 
