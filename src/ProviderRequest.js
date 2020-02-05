@@ -84,6 +84,7 @@ class ProviderRequest extends Component {
       firstName: '',
       lastName: '',
       prefetchloading: false,
+      noRules:false,
       genderOptions: [{ key: 'male', text: 'Male', value: 'male' },
       { key: 'female', text: 'Female', value: 'female' },
       { key: 'other', text: 'Other', value: 'other' },
@@ -142,6 +143,7 @@ class ProviderRequest extends Component {
     this.changebirthDate = this.changebirthDate.bind(this);
     this.onPatientPostalChange = this.onPatientPostalChange.bind(this);
     this.getHookFromCategory = this.getHookFromCategory.bind(this);
+    this.noRulesChange = this.noRulesChange.bind(this);
   }
 
   getUrlParameter(sParam) {
@@ -413,6 +415,12 @@ class ProviderRequest extends Component {
   onPractitionerChange(event) {
     this.setState({ practitionerId: event.target.value });
   }
+  noRulesChange(event){
+    let noRules = this.state.noRules;
+    noRules = !noRules;
+    console.log("no rules toggle--"+noRules);
+    this.setState({ noRules });
+  }
   onCoverageChange(event) {
     this.setState({ coverageId: event.target.value });
   }
@@ -575,7 +583,7 @@ class ProviderRequest extends Component {
         sessionStorage.setItem("appContext", appContext);
         sessionStorage.setItem("showCDSHook", false);
         self.setState({ response: cardResponse });
-        window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
+        //window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
       }).catch((reason) => {
         self.setState({ loading: false, login_error_msg: "Unable to get CRD Response !! Please try again." });
       });
@@ -829,6 +837,15 @@ class ProviderRequest extends Component {
                     <div className="validation"></div>
                   </div>
                 </div>
+                <div className="form-row">
+                  <div className="form-group col-md-3 offset-1">
+                    <h4 className="title">No Rules</h4>
+                  </div>
+                  <div className="form-group col-md-8">
+                    <input type="checkbox" style={{"marginLeft":"-350px"}} name="noRules" className="form-control" id="noRules"
+                      checked={this.state.noRules} onChange={this.noRulesChange}/>
+                  </div>
+                </div>
                 <div className="text-center">
                   <button type="button" onClick={this.startLoading}>Submit
                     <div id="fse" className={"spinner " + (this.state.loading ? "visible" : "invisible")}>
@@ -977,9 +994,14 @@ class ProviderRequest extends Component {
     }
     let organization = {
       "resourceType": "Organization",
-      "id": this.state.payer,
       "name": this.state.payer
     }
+    if(noRules){
+       organization["id"] = "default_"+this.state.payer
+    } else {
+      organization["id"] = this.state.payer
+    }
+    
     let coverage = {
       resourceType: "Coverage",
       id: "coverage1",
@@ -994,7 +1016,7 @@ class ProviderRequest extends Component {
       ],
       payor: [
         {
-          reference: "Organization/" + this.state.payer
+          reference: "Organization/" + organization["id"]
         }
       ]
     };
