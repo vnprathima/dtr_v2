@@ -305,7 +305,7 @@ export default class QuestionnaireForm extends Component {
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         // get file content  
-                        fileInputData.payload.push({
+                        fileInputData.content.push({
                             "attachment": {
                                 "data": reader.result,
                                 "contentType": content_type,
@@ -1054,7 +1054,7 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle.entry.unshift({ resource: priorAuthClaim })
 
             // Add documents in claim
-            priorAuthBundle.entry.unshift({ resource: this.state.documentReference })
+            priorAuthBundle.entry.unshift({ resource: self.state.documentReference })
 
             resolve(priorAuthBundle);
         });
