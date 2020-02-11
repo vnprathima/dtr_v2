@@ -39,6 +39,7 @@ function doSearch(smart, type, q, callback) {
       .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
   } else {
+    console.log("Search calls else: ",type, q);
     smart.patient.api
       .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
@@ -137,14 +138,23 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
           } else if (r === "Patient") {
             readResources(neededResources, callback);
           } else {
-
             doSearch(smart, r, q, (results, error) => {
               if (results) {
                 entryResources.push(...results);
+                if(q["code"] !== undefined){
+                  consoleLog("got " + r +"?code="+q["code"], "infoClass");
+                } else {
+                  consoleLog("got " + r , "infoClass");
+                }
               }
               if (error) {
                 console.error(error);
-                consoleLog(error.data.statusText, "errorClass");
+                if(q["code"] !== undefined){
+                  consoleLog(error.data.statusText + " for " + r+"?code="+q["code"], "errorClass");
+                } else {
+                  consoleLog(error.data.statusText + " for " + r, "errorClass");
+                }
+                
               }
               readResources(neededResources, callback);
             });

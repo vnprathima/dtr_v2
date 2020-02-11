@@ -587,7 +587,6 @@ export default class QuestionnaireForm extends Component {
     }
 
     generateBundle() {
-
         var self = this;
         return new Promise(function (resolve, reject) {
             console.log(self.state.sectionLinks);
@@ -716,142 +715,155 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle.entry.unshift({ resource: response })
             priorAuthBundle.entry.unshift({ resource: self.props.serviceRequest });
 
-            
-            const orgRes = {
+
+            let orgRes = {
                 "resourceType": "Organization"
             };
-            let payer = sessionStorage.getItem("payerName");
-            if (payer === "united_health_care"){
-                orgRes["id"] = "516"
-                orgRes["name"] = "United Health Care"
-                orgRes['address'] = [
-                    {
-                        "use": "work",
-                        "line": [
-                            "9700 Health Care Lane"
-                        ],
-                        "city": "Minnetonka",
-                        "state": "Minnesota",
-                        "postalCode": "55343"
-                    }
-                ]
-                orgRes["contact"] = [
-                    {
-                        "name": [
-                            {
-                                "use": "official",
-                                "family": "Randall",
-                                "given": [
-                                    "Janice"
-                                ]
-                            }
-                        ],
-                        "telecom": [
-                            {
-                                "system": "phone",
-                                "value": "803-763-5900",
-                                "use": "home"
-                            }
-                        ]
-                    }
-                ]
-                orgRes["identifier"] = [
-                    {
-                        "system": "urn:ietf:rfc:3986",
-                        "value": "96855.9662.3575.4099.5718.533.8838"
-                    }
-                ]
-            }
-            if (payer === "medicare_fee_for_service"){
-                orgRes["id"] = "516"
-                orgRes["name"] = "Medicare Fee for service"
-                orgRes['address'] = [
-                    {
-                        "use": "work",
-                        "line": [
-                            "7210 Ambassador Road"
-                        ],
-                        "city": "Windsor Mill",
-                        "state": "MaryLand",
-                        "postalCode": "21244"
-                    }
-                ]
-                orgRes["contact"] = [
-                    {
-                        "name": [
-                            {
-                                "use": "official",
-                                "family": "Oliver",
-                                "given": [
-                                    "James"
-                                ]
-                            }
-                        ],
-                        "telecom": [
-                            {
-                                "system": "phone",
-                                "value": "725-778-5600",
-                                "use": "home"
-                            }
-                        ]
-                    }
-                ]
-                orgRes["identifier"] = [
-                    {
-                        "system": "urn:ietf:rfc:3986",
-                        "value": "17086.5403.3613.5769.6889.6096.6384"
-                    }
-                ]
+            let org_resource = sessionStorage.getItem("organization");
+            if (org_resource !== undefined || org_resource !== null) {
+                orgRes = JSON.parse(org_resource);
+            } else {
+                let payer = sessionStorage.getItem("payerName");
+                if (payer === "united_health_care") {
+                    orgRes["id"] = "516"
+                    orgRes["name"] = "United Health Care"
+                    orgRes['address'] = [
+                        {
+                            "use": "work",
+                            "line": [
+                                "9700 Health Care Lane"
+                            ],
+                            "city": "Minnetonka",
+                            "state": "Minnesota",
+                            "postalCode": "55343"
+                        }
+                    ]
+                    orgRes["contact"] = [
+                        {
+                            "name": [
+                                {
+                                    "use": "official",
+                                    "family": "Randall",
+                                    "given": [
+                                        "Janice"
+                                    ]
+                                }
+                            ],
+                            "telecom": [
+                                {
+                                    "system": "phone",
+                                    "value": "803-763-5900",
+                                    "use": "home"
+                                }
+                            ]
+                        }
+                    ]
+                    orgRes["identifier"] = [
+                        {
+                            "system": "urn:ietf:rfc:3986",
+                            "value": "96855.9662.3575.4099.5718.533.8838"
+                        }
+                    ]
+                }
+                if (payer === "medicare_fee_for_service") {
+                    orgRes["id"] = "516"
+                    orgRes["name"] = "Medicare Fee for service"
+                    orgRes['address'] = [
+                        {
+                            "use": "work",
+                            "line": [
+                                "7210 Ambassador Road"
+                            ],
+                            "city": "Windsor Mill",
+                            "state": "MaryLand",
+                            "postalCode": "21244"
+                        }
+                    ]
+                    orgRes["contact"] = [
+                        {
+                            "name": [
+                                {
+                                    "use": "official",
+                                    "family": "Oliver",
+                                    "given": [
+                                        "James"
+                                    ]
+                                }
+                            ],
+                            "telecom": [
+                                {
+                                    "system": "phone",
+                                    "value": "725-778-5600",
+                                    "use": "home"
+                                }
+                            ]
+                        }
+                    ]
+                    orgRes["identifier"] = [
+                        {
+                            "system": "urn:ietf:rfc:3986",
+                            "value": "17086.5403.3613.5769.6889.6096.6384"
+                        }
+                    ]
+                }
             }
             priorAuthBundle.entry.unshift({ resource: orgRes })
 
             console.log(priorAuthBundle);
 
-            const coverageRes =
-            {
-                "resourceType": "Coverage",
-                "id": "SP1234",
-                "text": {
-                    "status": "generated",
-                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">A human-readable rendering of a Self Pay Agreement.</div>"
-                },
-                "identifier": [
-                    {
-                        "system": "http://hospitalx.com/selfpayagreement",
-                        "value": "SP12345678"
-                    }
-                ],
-                "status": "active",
-                "type": {
-                    "coding": [
+            let coverageRes = {
+                "resourceType": "Coverage"
+            };
+            let coverage_res = sessionStorage.getItem("coverage");
+            if (coverage_res !== undefined || coverage_res !== null) {
+                coverageRes = JSON.parse(coverage_res);
+            } else {
+                coverageRes =
+                {
+                    "resourceType": "Coverage",
+                    "id": "SP1234",
+                    "text": {
+                        "status": "generated",
+                        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">A human-readable rendering of a Self Pay Agreement.</div>"
+                    },
+                    "identifier": [
                         {
-                            "system": "http://terminology.hl7.org/CodeSystem/coverage-selfpay",
-                            "code": "pay",
-                            "display": "PAY"
+                            "system": "http://hospitalx.com/selfpayagreement",
+                            "value": "SP12345678"
+                        }
+                    ],
+                    "status": "active",
+                    "type": {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/coverage-selfpay",
+                                "code": "pay",
+                                "display": "PAY"
+                            }
+                        ]
+                    },
+                    "subscriber": {
+                        reference: self.makeReference(priorAuthBundle, "Patient")
+                    },
+                    "beneficiary": {
+                        reference: self.makeReference(priorAuthBundle, "Patient")
+                    },
+                    "relationship": {
+                        "coding": [
+                            {
+                                "code": "self"
+                            }
+                        ]
+                    },
+                    "period": {
+                        "end": "2012-03-17"
+                    },
+                    "payor": [
+                        {
+                            "reference": "Organization/516"
                         }
                     ]
-                },
-                "subscriber": {
-                    reference: self.makeReference(priorAuthBundle, "Patient")
-                },
-                "beneficiary": {
-                    reference: self.makeReference(priorAuthBundle, "Patient")
-                },
-                "relationship": {
-                    "coding": [
-                        {
-                            "code": "self"
-                        }
-                    ]
-                },
-                "period": {
-                    "end": "2012-03-17"
-                },
-                "payor": [
-                    {
-                        "reference": "Organization/516"
-                    }
-                ]
+                }
             }
             priorAuthBundle.entry.unshift({ resource: coverageRes })
             const locationResource = {
@@ -1054,7 +1066,9 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle.entry.unshift({ resource: priorAuthClaim })
 
             // Add documents in claim
-            priorAuthBundle.entry.unshift({ resource: self.state.documentReference })
+            if (Object.keys(self.state.documentReference).length > 0) {
+                priorAuthBundle.entry.unshift({ resource: self.state.documentReference })
+            }
 
             resolve(priorAuthBundle);
         });

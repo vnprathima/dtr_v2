@@ -36,6 +36,7 @@
     "core-js": "^2.5.7",
     "cql-exec-fhir": "^1.3.0",
     "cql-execution": "~1.4.1",
+    "dateformat": "^3.0.3",
     "es6-promise": "^4.2.6",
     "fhir-kit-client": "^1.4.2",
     "fhirclient": "^0.1.15",

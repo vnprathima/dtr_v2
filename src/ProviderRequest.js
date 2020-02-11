@@ -15,6 +15,7 @@ import { createToken } from './components/Authentication';
 import { Dropdown } from 'semantic-ui-react';
 import stateOptions from './stateOptions'
 import "isomorphic-fetch";
+// var dateFormat = require('dateformat');
 
 const types = {
   error: "errorClass",
@@ -84,30 +85,17 @@ class ProviderRequest extends Component {
       firstName: '',
       lastName: '',
       prefetchloading: false,
-      noRules:false,
+      noRules: false,
+      coverageResources: [],
+      coverage: {},
+      crd_error_msg:'',
       genderOptions: [{ key: 'male', text: 'Male', value: 'male' },
       { key: 'female', text: 'Female', value: 'female' },
       { key: 'other', text: 'Other', value: 'other' },
       { key: 'unknown', text: 'Unknown', value: 'unknown' },
       ],
-      stateOptions: stateOptions,
-      requirementSteps: [{ 'step_no': 1, 'step_str': 'Communicating with CRD system.', 'step_status': 'step_loading' },
-      {
-        'step_no': 2, 'step_str': 'Retrieving the required 4 FHIR resources on crd side.', 'step_status': 'step_not_started'
-      },
-      { 'step_no': 3, 'step_str': 'Executing HyperbaricOxygenTherapy.cql on cds server and generating requirements', 'step_status': 'step_not_started', 'step_link': 'https://github.com/mettlesolutions/coverage_determinations/blob/master/src/data/Misc/Home%20Oxygen%20Therapy/homeOxygenTherapy.cql', 'cql_name': 'homeOxygenTheraphy.cql' },
-      { 'step_no': 4, 'step_str': 'Generating cards based on requirements .', 'step_status': 'step_not_started' },
-      { 'step_no': 5, 'step_str': 'Retrieving Smart App', 'step_status': 'step_not_started' }],
-      errors: {},
-      loadingSteps: false
+      stateOptions: stateOptions
     }
-    this.requirementSteps = [
-      { 'step_no': 1, 'step_str': 'Communicating with CRD system.', 'step_status': 'step_loading' },
-      { 'step_no': 2, 'step_str': 'Fetching required FHIR resources at CRD', 'step_status': 'step_not_started' },
-      { 'step_no': 3, 'step_str': 'Executing CQL at CDS and generating requirements', 'step_status': 'step_not_started', 'step_link': 'https://github.com/mettlesolutions/coverage_determinations/blob/master/src/data/Misc/Home%20Oxygen%20Therapy/homeOxygenTherapy.cql', 'cql_name': 'homeOxygenTheraphy.cql' },
-      { 'step_no': 4, 'step_str': 'Generating cards based on requirements .', 'step_status': 'step_not_started' },
-      { 'step_no': 5, 'step_str': 'Retrieving Smart App', 'step_status': 'step_not_started' }];
-    this.currentstep = 0;
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
       code: (foo => { return !foo.match(/^[a-z0-9]+$/i) })
@@ -132,7 +120,6 @@ class ProviderRequest extends Component {
     this.changeMedicationStDate = this.changeMedicationStDate.bind(this);
     this.changeMedicationEndDate = this.changeMedicationEndDate.bind(this);
     this.onClickLogout = this.onClickLogout.bind(this);
-    this.redirectByType = this.redirectByType.bind(this);
     this.consoleLog = this.consoleLog.bind(this);
     this.getPrefetchData = this.getPrefetchData.bind(this);
     this.readFHIR = this.readFHIR.bind(this);
@@ -143,7 +130,7 @@ class ProviderRequest extends Component {
     this.changebirthDate = this.changebirthDate.bind(this);
     this.onPatientPostalChange = this.onPatientPostalChange.bind(this);
     this.getHookFromCategory = this.getHookFromCategory.bind(this);
-    this.noRulesChange = this.noRulesChange.bind(this);
+    // this.noRulesChange = this.noRulesChange.bind(this);
   }
 
   getUrlParameter(sParam) {
@@ -161,12 +148,8 @@ class ProviderRequest extends Component {
     if (!localStorage.getItem('isLoggedIn')) {
       window.location = `${window.location.protocol}//${window.location.host}/login`;
     }
-    let reqType = this.getUrlParameter("req_type");
-    if (reqType == "medication_prescribe") {
-      this.medication_prescribe = true
-      this.medicationButton();
-    }
-
+    this.handlePrefetch()
+    this.getCoverageInfo()
   }
   consoleLog(content, type) {
     let jsonContent = {
@@ -182,6 +165,33 @@ class ProviderRequest extends Component {
   }
   handlePatientStateChange = (event, data) => {
     this.setState({ patientState: data.value })
+  }
+  getCoverageInfo() {
+    var tempURL = sessionStorage.getItem("serviceUri") + "/Coverage?patient=" + this.state.patientId;
+    fetch(tempURL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json+fhir',
+        'Accept-Encoding': 'gzip, deflate, sdch, br',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+      }
+    }).then((response) => {
+      return response.json()
+    }).then((coverageRes) => {
+      console.log("Coverage resource", coverageRes.total);
+      if (coverageRes.total > 0) {
+        console.log("if total>0", coverageRes.entry);
+        let coverageResources = this.state.coverageResources
+        for (var r in coverageRes.entry) {
+          console.log("in loop,", r)
+          coverageResources.push(coverageRes.entry[r].resource);
+        }
+        this.setState({ coverageResources });
+        console.log("Coversge reso", this.state.coverageResources)
+      }
+    });
   }
   handlePrefetch = async () => {
     console.log(this.state.prefetch, 'here kya')
@@ -200,6 +210,7 @@ class ProviderRequest extends Component {
     }).then((response) => {
       return response.json()
     }).then((patientResource) => {
+
       console.log("Patient get response", patientResource);
       this.setState({ prefetchloading: false });
       if (patientResource.hasOwnProperty("resourceType") && patientResource.resourceType === 'Patient') {
@@ -211,6 +222,11 @@ class ProviderRequest extends Component {
         this.setState({ birthDate: patientResource.birthDate })
         this.setState({ patientState: patientResource.address[0].state })
         this.setState({ patientPostalCode: patientResource.address[0].postalCode })
+      } else{
+        const errorMsg = "Token post request failed. Try launching again !!";
+        document.body.innerText = errorMsg;
+        console.error(errorMsg);
+        return; 
       }
     }).catch((reason) => {
       console.log("No response recieved from the server", reason)
@@ -415,12 +431,12 @@ class ProviderRequest extends Component {
   onPractitionerChange(event) {
     this.setState({ practitionerId: event.target.value });
   }
-  noRulesChange(event){
-    let noRules = this.state.noRules;
-    noRules = !noRules;
-    console.log("no rules toggle--"+noRules);
-    this.setState({ noRules });
-  }
+  // noRulesChange(event) {
+  //   let noRules = this.state.noRules;
+  //   noRules = !noRules;
+  //   console.log("no rules toggle--" + noRules);
+  //   this.setState({ noRules });
+  // }
   onCoverageChange(event) {
     this.setState({ coverageId: event.target.value });
   }
@@ -472,105 +488,40 @@ class ProviderRequest extends Component {
     localStorage.removeItem('npi');
     window.location = `${window.location.protocol}//${window.location.host}/login`;
   }
-
-  redirectByType(redirect_value) {
-    console.log("Redirect by tyyoe", redirect_value)
-    if (redirect_value == "medication_prescribe") {
-      // this.props.history.push("/provider_request?req_type=medication_prescribe")
-      window.location.href = window.location.origin + "/provider_request?req_type=medication_prescribe"
-    }
-    else {
-      window.location.href = window.location.origin + "/provider_request"
-    }
-    // else if(redirect_value == "measure_report"){
-
-    // }
-  }
-
-  setSteps(index) {
-    console.log('werd')
-    var steps = this.requirementSteps;
-    if (this.state.hook === "home-oxygen-theraphy") {
-      this.requirementSteps[2].step_link = 'https://github.com/mettlesolutions/coverage_determinations/blob/master/src/data/Misc/Home%20Oxygen%20Therapy/homeOxygenTherapy.cql'
-      this.requirementSteps[2].cql_name = "homeOxygenTheraphy.cql"
-    }
-    else if (this.state.hook === "order-review") {
-      this.requirementSteps[2].cql_name = "HyperbaricOxygenTherapy.cql"
-      this.requirementSteps[2].step_link = "https://github.com/mettlesolutions/coverage_determinations/blob/master/src/data/NCD/Cat1/HyperbaricOxygenTherapy/HyperbaricOxygenTherapy.cql"
-    }
-    if (index <= steps.length) {
-      var self = this;
-      setTimeout(function () {
-        if (index !== 0) {
-          steps[index - 1].step_status = "step_done"
-        }
-        // console.log(index, steps[index])
-        if (index !== steps.length) {
-          steps[index].step_status = "step_loading"
-        }
-        for (var i = index + 1; i < steps.length; i++) {
-          steps[i].step_status = "step_not_started"
-        }
-        self.setState({ requirementSteps: steps });
-        if (index < steps.length) {
-          if (!(self.state.patientId === 37555 && index >= 1)) {
-            self.setSteps(index + 1);
-            steps[index].hideLoader = false;
-          }
-          else {
-            setTimeout(function () {
-              steps[index].hideLoader = true;
-              self.setState({ stepsErrorString: "Unable to generate requirements.", requirementSteps: steps });
-            }, 5000)
-          }
-        }
-        if (index === steps.length) {
-          self.setState({ "loadCards": true })
-        }
-
-      }, 3000)
-    }
-  }
-
-  resetSteps() {
-    var steps = this.requirementSteps;
-    steps[0].step_status = "step_loading"
-    for (var i = 1; i < steps.length; i++) {
-      steps[i].step_status = "step_not_started"
-    }
-    this.setState({ requirementSteps: steps, loadCards: false });
+  setCoverage(coverage) {
+    let coverageId = coverage.id;
+    this.setState({ coverageId })
+    this.setState({ coverage });
   }
 
   async submit_info() {
-    // this.setState({ loadingSteps: false, stepsErrorString: undefined });
-      // this.resetSteps();
-      //alert("in submit");
+    //alert("in submit");
     //let token = await createToken(this.state.config.provider_grant_type, 'provider', localStorage.getItem('username'), localStorage.getItem('password'), true);
     //token = "Bearer " + token;
     var myHeaders = new Headers({
       "Content-Type": "application/json"
       //"authorization": token,
     });
-//    let accessToken = this.state.accessToken;
-  //  accessToken = token;
-   // console.log(accessToken, 'accesstoken')
-     // this.setState({ accessToken });
-      //alert("before json");
-     let json_request = await this.getJson();
+    //    let accessToken = this.state.accessToken;
+    //  accessToken = token;
+    // console.log(accessToken, 'accesstoken')
+    // this.setState({ accessToken });
+    //alert("before json");
+    let json_request = await this.getJson();
 
     let url = '';
     if (this.state.hook === 'order-review') {
-	url = this.state.config.crd_order_review_url;
-	url="https://drfp.mettles.com/crd/r4/cds-services/order-review-crd";
+      url = this.state.config.crd_order_review_url;
+      url = "https://drfp.mettles.com/crd/r4/cds-services/order-review-crd";
     }
     if (this.state.hook === 'order-select') {
-	url = this.state.config.crd_url;
-	url="https://drfp.mettles.com/crd/r4/cds-services/order-select-crd";
+      url = this.state.config.crd_url;
+      url = "https://drfp.mettles.com/crd/r4/cds-services/order-select-crd";
     }
     console.log("json_request", json_request, this.state.config.crd_url)
-      try {
-	  let self = this;
-	//alert(JSON.stringify(json_request));
+    try {
+      let self = this;
+      //alert(JSON.stringify(json_request));
       await fetch(url, {
         method: "POST",
         headers: myHeaders,
@@ -583,12 +534,16 @@ class ProviderRequest extends Component {
         sessionStorage.setItem("appContext", appContext);
         sessionStorage.setItem("showCDSHook", false);
         self.setState({ response: cardResponse });
-        //window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
+        if (appContext !== null) {
+          window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
+        } else {
+          self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, "+cardResponse['cards'][0].links[0].label });
+        }
       }).catch((reason) => {
-        self.setState({ loading: false, login_error_msg: "Unable to get CRD Response !! Please try again." });
+        self.setState({ loading: false, crd_error_msg: "Unable to get CRD Response !! Please try again." });
       });
     } catch (error) {
-	//alert("In catch"+error);
+      //alert("In catch"+error);
       var res_json = {
         "cards": [{
           "source": {
@@ -616,49 +571,9 @@ class ProviderRequest extends Component {
     }
   }
   renderClaimSubmit() {
-    const { prefetch } = this.state
     return (
       <React.Fragment>
         <div>
-          {/*<div className="main_heading">
-            <span style={{ lineHeight: "35px" }}>PILOT INCUBATOR </span>
-            {this.medication_prescribe &&
-              <div className="menu_conf" onClick={() => this.redirectByType("default")}>
-                <i style={{ paddingLeft: "5px", paddingRight: "7px" }} className="fa fa-home"></i>
-                Home</div>
-            }
-            <div className="menu">
-              <button className="menubtn"><i style={{ paddingLeft: "3px", paddingRight: "7px" }} className="fa fa-user-circle" aria-hidden="true"></i>
-                {sessionStorage.getItem('name')}<i style={{ paddingLeft: "7px", paddingRight: "3px" }} className="fa fa-caret-down"></i>
-              </button>
-              <div className="menu-content">
-                <button className="logout-btn" onClick={this.onClickLogout}>
-                  <i style={{ paddingLeft: "3px", paddingRight: "7px" }} className="fa fa-sign-out" aria-hidden="true"></i>Logout</button>
-              </div>
-            </div>
-
-            <div className="menu_conf" onClick={() => this.setRequestType('config-view')}>
-              <i style={{ paddingLeft: "5px", paddingRight: "7px" }} className="fa fa-cog"></i>
-              Configuration</div>
-            <div className="menu_conf" onClick={() => this.setRequestType('x12-converter')}>
-              <i style={{ paddingLeft: "5px", paddingRight: "7px" }} className="fa fa-exchange"></i>
-              X12 Converter</div>
-            <div className="menu">
-              <button className="menubtn"><i style={{ paddingLeft: "3px", paddingRight: "7px" }} className="fa fa-list" aria-hidden="true"></i>
-                Clinical Reasoning<i style={{ paddingLeft: "7px", paddingRight: "3px" }} className="fa fa-caret-down"></i>
-              </button>
-              <div className="menu-content submenu">
-
-                <button className="submenu-item" onClick={() => this.redirectByType("medication_prescribe")}>
-                  <i style={{ paddingLeft: "3px", paddingRight: "7px" }} aria-hidden="true"></i>Medication Prescribe</button>
-                <button className="submenu-item" onClick={() => this.setRequestType('reporting-scenario')}>
-                  <i style={{ paddingLeft: "3px", paddingRight: "7px" }} aria-hidden="true"></i>Measure Report </button>
-              </div>
-            </div>
-            <div className="menu_conf" onClick={() => this.setRequestType('cdex-view')}>
-              <i style={{ paddingLeft: "5px", paddingRight: "7px" }} className="fa fa-exchange"></i>
-              CDEX</div>
-          </div>*/}
           <header id="inpageheader">
             <div className="container">
 
@@ -691,34 +606,7 @@ class ProviderRequest extends Component {
                 </div>
                 {(this.state.hookName === 'order-review' || this.state.hookName === 'order-select') &&
                   <div>
-                    {/* <div>
-                      <div className="header">
-                            Your Fhir URL*
-                    </div>
-                    <div className="dropdown">
-                        <Input className='ui fluid input' type="text" name="fhirUrl" fluid value={this.state.fhirUrl} onChange={this.onFhirUrlChange}></Input>
-                      </div>
-                      {this.state.validateFhirUrl === true  &&
-                      <div className='errorMsg dropdown'>{config.errorMsg}</div>
-                    }
-                    </div>
-                  <div>
-                    <div className="header">
-                            Bearer Access Token*
-                    </div>
-                    <div className="dropdown">
-                        <Input className='ui fluid input' type="text" name="accessToken" fluid value={this.state.accessToken} onChange={this.onAccessTokenChange}></Input>
-                    </div>
-                    {this.state.validateAccessToken === true  &&
-                      <div className='errorMsg dropdown'>{config.errorMsg}</div>
-                    }
-                  </div>*/}
 
-                    {/* <DropdownPayer
-                          elementName='payer'
-                          updateCB={this.updateStateElement}
-                        /> */}
-                    <SelectPayer elementName='payer' updateCB={this.updateStateElement} />
                     <div className="form-row">
                       <div className="form-group col-md-3 offset-1">
                         <h4 className="title">Beneficiary Id</h4>
@@ -815,6 +703,39 @@ class ProviderRequest extends Component {
                       <div className='errorMsg dropdown'>{this.props.config.errorMsg}</div>
                     } */}
                   </div>}
+                {this.state.coverageResources.length > 0 &&
+                  <div className="form-row">
+                    <div className="form-group col-md-3 offset-1">
+                      <h4 className="title">Select Coverage</h4>
+                    </div>
+                    <div className="form-group col-md-8">
+                      {this.state.coverageResources.map((element) => {
+                        return (
+                          <div key={element.id}>
+                            <button
+                              className={"radio-button btn " + (this.state.coverageId === element.id ? "selected" : null)}
+                              onClick={() => {
+                                this.setCoverage(element)
+                              }}
+                            >
+                            </button>
+                            <span className="text-radio tooltip-x">
+                              <div><b>Coverage</b></div>
+                              <div><b>Status</b>: {element.status}</div>
+                              <div><b>Subscriber</b>: {element.subscriber.display}</div>
+                              <div><b>Beneficiary</b>: {element.beneficiary.display}</div>
+                              {/* <div><b>Coverage Start Date</b>: {dateFormat(element.period.start,"fulldate")}</div> */}
+                              <div><b>Payor</b>: {element.payor[0].display}</div>
+                              <div><b>Class</b>: plan: Value: {element.class[0].value} Name: {element.class[0].name}</div>
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>}
+                {this.state.coverageResources.length === 0 &&
+                  <SelectPayer elementName='payer' updateCB={this.updateStateElement} />
+                }
                 <DropdownServiceCode elementName="selected_codes" updateCB={this.updateStateElement} />
 
                 <div className="form-row">
@@ -837,15 +758,15 @@ class ProviderRequest extends Component {
                     <div className="validation"></div>
                   </div>
                 </div>
-                <div className="form-row">
+                {/* <div className="form-row">
                   <div className="form-group col-md-3 offset-1">
                     <h4 className="title">No Rules</h4>
                   </div>
                   <div className="form-group col-md-8">
-                    <input type="checkbox" style={{"marginLeft":"-350px"}} name="noRules" className="form-control" id="noRules"
-                      checked={this.state.noRules} onChange={this.noRulesChange}/>
+                    <input type="checkbox" style={{ "marginLeft": "-350px" }} name="noRules" className="form-control" id="noRules"
+                      checked={this.state.noRules} onChange={this.noRulesChange} />
                   </div>
-                </div>
+                </div> */}
                 <div className="text-center">
                   <button type="button" onClick={this.startLoading}>Submit
                     <div id="fse" className={"spinner " + (this.state.loading ? "visible" : "invisible")}>
@@ -857,69 +778,12 @@ class ProviderRequest extends Component {
                       />
                     </div>
                   </button>
-
-
                 </div>
-                {this.state.loadingSteps &&
-                  <div className="right-form" style={{ paddingLeft: "2%", listStyle: "none", paddingTop: "3%" }} >
-                    <ol style={{ listStyle: "none" }}>
-                      {this.state.requirementSteps.map((key, i) => {
-                        return (
-                          <li key={i}>
-                            <div>
-                              {this.state.requirementSteps[i].step_status === 'step_done' &&
-                                <div>
-                                  <div style={{ color: "green" }} id="fse" className="visible">
-                                    <span style={{ float: "left" }}  >{this.state.requirementSteps[i].step_no + ". " + this.state.requirementSteps[i].step_str + "   "} <i style={{ color: "green" }} className="fa fa-check" aria-hidden="true"></i></span>
-                                  </div>
-                                  <div style={{ paddingLeft: "25px" }} >
-                                    {
-                                      this.state.requirementSteps[i].step_no === 2 &&
-                                      <span style={{ float: "left", paddingBottom: "20px", color: "gray" }}  >Successfully fetched 4 FHIR resources.</span>
-
-                                    }
-                                    {
-                                      this.state.requirementSteps[i].step_no === 3 &&
-                                      <span style={{ float: "left", paddingBottom: "20px", color: "gray" }}>Successfully executed <a target="_blank" href={this.state.requirementSteps[i].step_link}>{this.state.requirementSteps[i].cql_name}</a> on CDS.</span>
-
-                                    }
-                                  </div>
-                                </div>
-                              }
-                              {this.state.requirementSteps[i].step_status === 'step_loading' &&
-                                <div style={{ color: "brown" }} id="fse" className="visible">
-                                  <span style={{ float: "left" }}  >{this.state.requirementSteps[i].step_no + ". " + this.state.requirementSteps[i].step_str + "   "}</span>
-                                  {
-                                    (this.state.requirementSteps[i].hideLoader === false || this.state.requirementSteps[i].hideLoader === undefined) &&
-                                    <div style={{ float: "right" }} >
-                                      <Loader
-                                        style={{ float: "right" }}
-                                        type="ThreeDots"
-                                        color="brown"
-                                        height={6}
-                                        width={30}
-                                      />
-                                    </div>
-                                  }
-                                </div>
-                              }
-                              {this.state.requirementSteps[i].step_status === 'step_not_started' &&
-                                <div id="fse" className="visible">
-                                  <span style={{ float: "left" }}  >{this.state.requirementSteps[i].step_no + ". " + this.state.requirementSteps[i].step_str + "   "}</span>
-                                </div>
-                              }
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ol>
-                    <div style={{ paddingLeft: "6%", }}>
-                      {this.state.stepsErrorString !== undefined &&
-                        <span style={{ color: "red", marginBottom: "20px" }}>{this.state.stepsErrorString}</span>
-                      }
-                    </div>
-                  </div>
-                }
+                <div>
+                  {this.state.crd_error_msg &&
+                    <div className="text-center"><p>{this.state.crd_error_msg}</p></div>
+                  }
+                </div>
               </div>
             </div>
           </div>
@@ -944,7 +808,28 @@ class ProviderRequest extends Component {
       }
     }
   }
-
+  async getOrganization(org_ref) {
+    var tempURL = sessionStorage.getItem("serviceUri") + "/" + org_ref;
+    let org = await fetch(tempURL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json+fhir',
+        'Accept-Encoding': 'gzip, deflate, sdch, br',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+      }
+    }).then((response) => {
+      return response.json()
+    }).then((orgRes) => {
+      console.log("------Organization----response", orgRes);
+      return orgRes;
+    }).catch((reason) => {
+      console.log("No response recieved from the server for Organization", reason)
+      return false;
+    })
+    return org;
+  }
   async getResources(token, resource, identifier) {
     var url = this.state.config.payer_fhir_url + '/' + resource + "?identifier=" + identifier;
     // console.log("url-------",url,token);
@@ -980,11 +865,9 @@ class ProviderRequest extends Component {
     return randomstring
   }
   async getJson() {
-    var patientId = null;
-    patientId = this.state.patientId;
-    if (!this.state.prefetch) {
-      patientId = this.randomString();
-    }
+    var patientId = this.state.patientId;
+    let coverage = {}
+    let organization = {}
     let PractitionerRole = {
       "resourceType": "PractitionerRole",
       "id": "practitioner1",
@@ -992,34 +875,46 @@ class ProviderRequest extends Component {
         "reference": "Practitioner/" + this.state.practitionerId
       }
     }
-    let organization = {
-      "resourceType": "Organization",
-      "name": this.state.payer
-    }
-    if(noRules){
-       organization["id"] = "default_"+this.state.payer
+    if (this.state.coverageId === '') {
+      organization = {
+        "resourceType": "Organization",
+        "name": this.state.payer
+      }
+      // if (noRules) {
+      //   organization["id"] = "default_" + this.state.payer
+      // } else {
+      //   organization["id"] = this.state.payer
+      // }
+      coverage = {
+        resourceType: "Coverage",
+        id: "coverage1",
+        class: [
+          {
+            type: {
+              system: "http://hl7.org/fhir/coverage-class",
+              code: "plan"
+            },
+            value: "Medicare Part D"
+          }
+        ],
+        payor: [
+          {
+            reference: "Organization/" + organization["id"]
+          }
+        ]
+      };
     } else {
-      organization["id"] = this.state.payer
+      coverage = this.state.coverage;
+      sessionStorage.setItem("coverage", JSON.stringify(coverage))
+      if (coverage.hasOwnProperty("payor")) {
+        let org_ref = coverage.payor[0].reference
+        let org = await this.getOrganization(org_ref)
+        if (org) {
+          organization = org
+          sessionStorage.setItem("organization", JSON.stringify(organization))
+        }
+      }
     }
-    
-    let coverage = {
-      resourceType: "Coverage",
-      id: "coverage1",
-      class: [
-        {
-          type: {
-            system: "http://hl7.org/fhir/coverage-class",
-            code: "plan"
-          },
-          value: "Medicare Part D"
-        }
-      ],
-      payor: [
-        {
-          reference: "Organization/" + organization["id"]
-        }
-      ]
-    };
     let selected_codes = this.state.selected_codes;
     let serviceRequest = {
       "resourceType": "ServiceRequest",
@@ -1038,7 +933,7 @@ class ProviderRequest extends Component {
       "authoredOn": "2013-05-08T09:33:27+07:00",
       "insurance": [
         {
-          "reference": "Coverage/coverage1"
+          "reference": "Coverage/" + coverage.id
         }
       ],
       "performer": {
@@ -1078,7 +973,7 @@ class ProviderRequest extends Component {
       "authoredOn": "2013-05-08T09:33:27+07:00",
       "insurance": [
         {
-          "reference": "Coverage/coverage1"
+          "reference": "Coverage/" + coverage.id
         }
       ],
       "performer": {

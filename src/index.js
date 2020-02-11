@@ -378,7 +378,6 @@ function loadDTRApp(auth_response) {
             token: auth_response.access_token
           }
         });
-	//window.//alert("before loading App.js");
 	//alert("2 before loading app.js")
         ReactDOM.render(
           
