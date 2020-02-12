@@ -27,9 +27,10 @@ if (serviceUri.indexOf("epic") !== -1 && launchContextId === undefined) {
 //      1. permission to read all of the patient's record
 //      2. permission to launch the app in the specific context
 var scope = ["launch", "user/Patient.read", "user/Patient.write", "user/Procedure.read",
-  "user/Practitioner.read", "patient/Condition.read", "patient/Coverage.read",
+  "user/Practitioner.read", "patient/Condition.read","user/Condition.read", "patient/Coverage.read",
   "patient/Organization.read", "patient/Organization.write",
-  "user/Organization.read", "user/Organization.write"].join(" ");
+  "user/Organization.read", "user/Organization.write","patient/Observation.read",
+  "user/Observation.read",].join(" ");
 
 var app_context = urlUtils.getUrlParameter("app_context");
 if (serviceUri.indexOf("epic") !== -1 && app_context === undefined) {

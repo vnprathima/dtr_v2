@@ -720,9 +720,7 @@ export default class QuestionnaireForm extends Component {
                 "resourceType": "Organization"
             };
             let org_resource = sessionStorage.getItem("organization");
-            if (org_resource !== undefined || org_resource !== null) {
-                orgRes = JSON.parse(org_resource);
-            } else {
+            if (org_resource === undefined || org_resource === "" || org_resource === null || org_resource.length === 0) {
                 let payer = sessionStorage.getItem("payerName");
                 if (payer === "united_health_care") {
                     orgRes["id"] = "516"
@@ -806,18 +804,18 @@ export default class QuestionnaireForm extends Component {
                         }
                     ]
                 }
+            } else {
+                orgRes = JSON.parse(org_resource);
             }
             priorAuthBundle.entry.unshift({ resource: orgRes })
-
-            console.log(priorAuthBundle);
+            console.log("org res---", orgRes);
 
             let coverageRes = {
                 "resourceType": "Coverage"
             };
             let coverage_res = sessionStorage.getItem("coverage");
-            if (coverage_res !== undefined || coverage_res !== null) {
-                coverageRes = JSON.parse(coverage_res);
-            } else {
+            if (coverage_res === undefined || coverage_res === "" || coverage_res === null || coverage_res.length === 0) {
+
                 coverageRes =
                 {
                     "resourceType": "Coverage",
@@ -864,8 +862,12 @@ export default class QuestionnaireForm extends Component {
                         }
                     ]
                 }
+            } else {
+                coverageRes = JSON.parse(coverage_res);
             }
             priorAuthBundle.entry.unshift({ resource: coverageRes })
+            console.log("Coverage res---", coverageRes);
+            
             const locationResource = {
                 "resourceType": "Location",
                 "id": "29955",
@@ -888,7 +890,7 @@ export default class QuestionnaireForm extends Component {
                     }
                 ],
                 "managingOrganization": {
-                    "reference": "Organization/516"
+                    "reference": "Organization/" + orgRes.id
                 },
                 "name": "South Wing, second floor",
                 "address": {
