@@ -88,7 +88,7 @@ class ProviderRequest extends Component {
       noRules: false,
       coverageResources: [],
       coverage: {},
-      crd_error_msg:'',
+      crd_error_msg: '',
       genderOptions: [{ key: 'male', text: 'Male', value: 'male' },
       { key: 'female', text: 'Female', value: 'female' },
       { key: 'other', text: 'Other', value: 'other' },
@@ -220,13 +220,15 @@ class ProviderRequest extends Component {
         this.setState({ lastName: patientResource.name[0].family })
         this.setState({ gender: patientResource.gender })
         this.setState({ birthDate: patientResource.birthDate })
-        this.setState({ patientState: patientResource.address[0].state })
-        this.setState({ patientPostalCode: patientResource.address[0].postalCode })
-      } else{
+        if (patientResource.address !== undefined) {
+          this.setState({ patientState: patientResource.address[0].state })
+          this.setState({ patientPostalCode: patientResource.address[0].postalCode })
+        }
+      } else {
         const errorMsg = "Token post request failed. Try launching again !!";
         document.body.innerText = errorMsg;
         console.error(errorMsg);
-        return; 
+        return;
       }
     }).catch((reason) => {
       console.log("No response recieved from the server", reason)
@@ -537,7 +539,7 @@ class ProviderRequest extends Component {
         if (appContext !== null) {
           window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
         } else {
-          self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, "+cardResponse['cards'][0].links[0].label });
+          self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
         }
       }).catch((reason) => {
         self.setState({ loading: false, crd_error_msg: "Unable to get CRD Response !! Please try again." });

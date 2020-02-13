@@ -131,8 +131,8 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
               },
               "identifier": [
                 {
-                  "system": "http://hl7.org/fhir/sid/us-npi",
-                  "value": "1932102951"
+                  "system": "",
+                  "value": ""
                 }
               ],
               "active": true,
