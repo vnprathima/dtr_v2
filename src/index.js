@@ -16,16 +16,16 @@ const code = urlUtils.getUrlParameter("code"); // authorization code
 var appContextId = urlUtils.getUrlParameter("appContextId") // when internal provider request
 
 //alert("Got url params - "+state);
-if(appContextId !== undefined){
+if (appContextId !== undefined) {
   state = sessionStorage.getItem("state");
 } else {
   appContextId = state;
 }
-console.log("state"+state);
+console.log("state" + state);
 //alert("App context id"+ appContextId);
 // load the app parameters stored in the session
 const s = sessionStorage.getItem("state")
-console.log("state---"+sessionStorage.getItem(s));
+console.log("state---" + sessionStorage.getItem(s));
 const params = JSON.parse(sessionStorage.getItem(s)); // load app session
 const tokenUri = params.tokenUri;
 const clientId = params.clientId;
@@ -298,10 +298,13 @@ function updatePatient(auth_response, patientRes) {
 
 function handleFetchErrors(response) {
   if (!response.ok) {
-    console.log("failed to get resource", "errorClass");
-    reject("Failure when fetching resource.");
+    const errorMsg = "Invalid app context. Unable to fetch resources !!";
+    document.body.innerText = errorMsg;
+    console.error(errorMsg,response);
+    return {"error":errorMsg};
   }
   return response;
+  
 }
 
 function searchPatient(auth_response) {
@@ -341,15 +344,15 @@ function loadDTRApp(auth_response) {
   }).then((response) => {
     return response.json()
   }).then((response) => {
-     //alert("Got Patient---");
-    if(auth_response.hasOwnProperty("appContext")){
+    //alert("Got Patient---");
+    if (auth_response.hasOwnProperty("appContext")) {
       appContextId = auth_response.appContext;
       //alert("Got AppContext---"+appContextId);
     }
-    let urn = "urn:hl7:davinci:crd:"+appContextId;
+    let urn = "urn:hl7:davinci:crd:" + appContextId;
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
     console.log("launchdataurl----", launchDataURL);
-     //alert("launchdataurl---"+launchDataURL);
+    //alert("launchdataurl---"+launchDataURL);
     fetch(launchDataURL).then(handleFetchErrors).then(r => r.json())
       .then(launchContext => {
         //alert("Got launchContext from CRD !!");
@@ -378,10 +381,10 @@ function loadDTRApp(auth_response) {
             token: auth_response.access_token
           }
         });
-	//alert("2 before loading app.js")
+        //alert("2 before loading app.js")
         ReactDOM.render(
-          
-	<App
+
+          <App
             FHIR_URI_PREFIX={FHIR_URI_PREFIX}
             questionnaireUri={appContext.template}
             smart={smart}
@@ -418,7 +421,7 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
         sessionStorage.setItem("auth_response", JSON.stringify(auth_response));
         console.log("auth res---", auth_response);
         if (auth_response.hasOwnProperty("patient")) {
-          sessionStorage.setItem("auth_patient_id",auth_response.patient);
+          sessionStorage.setItem("auth_patient_id", auth_response.patient);
         }
         // createPatient(auth_response);
         // searchPatient(auth_response);
@@ -447,7 +450,7 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
 } else if (sessionStorage.getItem("auth_response") !== null && sessionStorage.getItem("showCDSHook") === "false") {
   auth_response = JSON.parse(sessionStorage.getItem("auth_response"));
   loadDTRApp(auth_response);
-} else if (sessionStorage.getItem("showCDSHook") === null ||  sessionStorage.getItem("showCDSHook")==="false") {
+} else if (sessionStorage.getItem("showCDSHook") === null || sessionStorage.getItem("showCDSHook") === "false") {
   // obtain authorization token from the authorization service using the authorization code
   tokenPost.open("POST", tokenUri);
   tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

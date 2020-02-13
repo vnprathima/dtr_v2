@@ -721,12 +721,12 @@ class ProviderRequest extends Component {
                             </button>
                             <span className="text-radio tooltip-x">
                               <div><b>Coverage</b></div>
-                              <div><b>Status</b>: {element.status}</div>
-                              <div><b>Subscriber</b>: {element.subscriber.display}</div>
+                              {/* <div><b>Status</b>: {element.status}</div> */}
+                              {/* <div><b>Subscriber</b>: {element.subscriber.display}</div> */}
                               <div><b>Beneficiary</b>: {element.beneficiary.display}</div>
                               {/* <div><b>Coverage Start Date</b>: {dateFormat(element.period.start,"fulldate")}</div> */}
                               <div><b>Payor</b>: {element.payor[0].display}</div>
-                              <div><b>Class</b>: plan: Value: {element.class[0].value} Name: {element.class[0].name}</div>
+                              {/* <div><b>Class</b>: plan: Value: {element.class[0].value} Name: {element.class[0].name}</div> */}
                             </span>
                           </div>
                         )

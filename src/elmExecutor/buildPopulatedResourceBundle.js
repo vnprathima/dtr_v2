@@ -39,7 +39,7 @@ function doSearch(smart, type, q, callback) {
       .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
   } else {
-    console.log("Search calls else: ",type, q);
+    console.log("Search calls else: ", type, q);
     smart.patient.api
       .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
@@ -82,8 +82,8 @@ function randomString() {
   var string_length = 16;
   var randomstring = '';
   for (var i = 0; i < string_length; i++) {
-      var rnum = Math.floor(Math.random() * chars.length);
-      randomstring += chars.substring(rnum, rnum + 1);
+    var rnum = Math.floor(Math.random() * chars.length);
+    randomstring += chars.substring(rnum, rnum + 1);
   }
   return randomstring
 }
@@ -138,23 +138,53 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
           } else if (r === "Patient") {
             readResources(neededResources, callback);
           } else {
+            if (r === "Coverage") {
+              q = { "patient": sessionStorage.getItem("patientId") }
+            }
             doSearch(smart, r, q, (results, error) => {
               if (results) {
                 entryResources.push(...results);
-                if(q["code"] !== undefined){
-                  consoleLog("got " + r +"?code="+q["code"], "infoClass");
+                if (q["code"] !== undefined) {
+                  consoleLog("got " + r + "?code=" + q["code"], "infoClass");
                 } else {
-                  consoleLog("got " + r , "infoClass");
+                  consoleLog("got " + r, "infoClass");
+                }
+                if (r === "Coverage" && results[0].hasOwnProperty("payor") && results[0].payor[0].hasOwnProperty("reference")) {
+                  sessionStorage.setItem("coverage",JSON.stringify(results[0]));
+                  let payor = results[0].payor[0].reference;
+                  let org_id = payor.split("/")[1]
+                  //Search Payor Organization if exists
+                  doSearch(smart, "Organization", { "_id": org_id }, (results, error) => {
+                    if (results) {
+                      sessionStorage.setItem("coverage",JSON.stringify(results[0]));
+                      entryResources.push(...results);
+                      if (q["code"] !== undefined) {
+                        consoleLog("got Organization?_id=" + org_id, "infoClass");
+                      } else {
+                        consoleLog("got Organization", "infoClass");
+                      }
+                    }
+                    if (error) {
+                      console.error(error);
+                      if (q["code"] !== undefined) {
+                        consoleLog(error.data.statusText + " for " + r + "?code=" + q["code"], "errorClass");
+                      } else {
+                        consoleLog(error.data.statusText + " for " + r, "errorClass");
+                      }
+
+                    }
+                    readResources(neededResources, callback);
+                  });
                 }
               }
               if (error) {
                 console.error(error);
-                if(q["code"] !== undefined){
-                  consoleLog(error.data.statusText + " for " + r+"?code="+q["code"], "errorClass");
+                if (q["code"] !== undefined) {
+                  consoleLog(error.data.statusText + " for " + r + "?code=" + q["code"], "errorClass");
                 } else {
                   consoleLog(error.data.statusText + " for " + r, "errorClass");
                 }
-                
+
               }
               readResources(neededResources, callback);
             });

@@ -601,9 +601,7 @@ export default class QuestionnaireForm extends Component {
                 authored: authored,
                 status: "completed", //TODO: Get status from somewhere
                 item: []
-
             }
-
 
             let currentItem = response.item;
             let currentLevel = 0;
@@ -715,7 +713,6 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle.entry.unshift({ resource: response })
             priorAuthBundle.entry.unshift({ resource: self.props.serviceRequest });
 
-
             let orgRes = {
                 "resourceType": "Organization"
             };
@@ -815,7 +812,6 @@ export default class QuestionnaireForm extends Component {
             };
             let coverage_res = sessionStorage.getItem("coverage");
             if (coverage_res === undefined || coverage_res === "" || coverage_res === null || coverage_res.length === 0) {
-
                 coverageRes =
                 {
                     "resourceType": "Coverage",
@@ -867,7 +863,7 @@ export default class QuestionnaireForm extends Component {
             }
             priorAuthBundle.entry.unshift({ resource: coverageRes })
             console.log("Coverage res---", coverageRes);
-            
+
             const locationResource = {
                 "resourceType": "Location",
                 "id": "29955",
