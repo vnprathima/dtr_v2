@@ -124,63 +124,36 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
           } else{
             let practitioner = [{
               "resourceType": "Practitioner",
-              "id": "mettles-Practitioner-1",
+              "id": "1912007",
               "meta": {
-                "versionId": "2",
-                "lastUpdated": "2019-12-12T13:47:43.533+00:00"
+                "versionId": "1",
+                "lastUpdated": "2019-06-24T15:22:23.000Z"
+              },
+              "text": {
+                "status": "generated",
+                "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Practitioner</b></p><p><b>Name</b>: McCurdy, Michael</p><p><b>Status</b>: Active</p></div>"
               },
               "identifier": [
                 {
-                  "system": "",
-                  "value": ""
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+                      "valueCode": "unknown"
+                    }
+                  ]
                 }
               ],
               "active": true,
               "name": [
                 {
-                  "family": "Careful",
+                  "use": "usual",
+                  "text": "McCurdy, Michael",
+                  "family": "McCurdy",
                   "given": [
-                    "Adam"
+                    "Michael"
                   ],
-                  "prefix": [
-                    "Dr"
-                  ]
-                }
-              ],
-              "address": [
-                {
-                  "use": "home",
-                  "line": [
-                    "534 Erewhon St"
-                  ],
-                  "city": "PleasantVille",
-                  "state": "Vic",
-                  "postalCode": "3999"
-                }
-              ],
-              "qualification": [
-                {
-                  "identifier": [
-                    {
-                      "system": "http://example.org/UniversityIdentifier",
-                      "value": "12345"
-                    }
-                  ],
-                  "code": {
-                    "coding": [
-                      {
-                        "system": "http://terminology.hl7.org/CodeSystem/v2-0360/2.7",
-                        "code": "BS",
-                        "display": "Bachelor of Science"
-                      }
-                    ],
-                    "text": "Bachelor of Science"
-                  },
                   "period": {
-                    "start": "1995"
-                  },
-                  "issuer": {
-                    "display": "Arizona State University"
+                    "start": "2013-09-27T04:25:59.000Z"
                   }
                 }
               ]

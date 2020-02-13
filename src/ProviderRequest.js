@@ -242,7 +242,8 @@ class ProviderRequest extends Component {
   }
 
   updateStateElement = (elementName, text) => {
-    if (elementName === "selected_codes" && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text[0])) {
+    if (elementName === "selected_codes" && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text[0]) >= 0) {
+      console.log("In if codes----",text[0]);
       this.setState({ hook: "order-review" });
     } else {
       this.setState({ hook: "order-select" });
@@ -294,7 +295,7 @@ class ProviderRequest extends Component {
 
   async readFHIR(resourceType, resourceId) {
     const fhirClient = new Client({ baseUrl: this.state.config.provider_fhir_url });
-    fhirClient.bearerToken = this.state.accessToken;
+    fhirClient.bearerToken = sessionStorage.getItem("token");
     let readResponse = await fhirClient.read({ resourceType: resourceType, id: resourceId });
     // console.log('Read Rsponse', readResponse)
     return readResponse;
@@ -1113,24 +1114,33 @@ class ProviderRequest extends Component {
       hookInstance: "d1577c69-dfbe-44ad-ba6d-3e05e953b2ea",
       fhirServer: this.state.config.provider_fhir_url,
       fhirAuthorization: {
-        "access_token": this.state.accessToken,
+        "access_token": sessionStorage.getItem("token"),
         "token_type": "Bearer",
         "expires_in": 300,
-        "scope": "patient/Patient.read patient/Observation.read",
+        "scope": "patient/Patient.read patient/Coverage.read",
         "subject": "cds-service"
       },
       user: "Practitioner/" + this.state.practitionerId,
       context: {
-        patientId: patientId,
-        orders: {
-          resourceType: "Bundle",
-          entry: [
-            requestEntryObj
-          ]
-        }
+        patientId: patientId
       },
       "prefetch": prefetchObj
     };
+    if(this.state.hook=== "order-review"){
+      request.context["orders"] = {
+        resourceType: "Bundle",
+        entry: [
+          requestEntryObj
+        ]
+      }
+    } else {
+      request.context["draftOrders"] = {
+        resourceType: "Bundle",
+        entry: [
+          requestEntryObj
+        ]
+      }
+    }
     return request;
   }
   render() {
