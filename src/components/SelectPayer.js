@@ -49,7 +49,7 @@ export class SelectPayer extends Component {
 
   async getResources() {
       //var url = this.props.config.cds_service.get_payers;
-      var url = "https://drfp.mettles.com/cds/getPayers";
+      var url = "https://sm.mettles.com/cds/getPayers";
     // let token;
     // token = await createToken(this.props.config.provider.grant_type, 'provider', sessionStorage.getItem('username'), sessionStorage.getItem('password'))
     let headers = {

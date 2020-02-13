@@ -34,7 +34,7 @@ module.exports = merge(common, {
     proxy: [
       {
         context: ["/fetchFhirUri", "/getfile"],
-        target: "https://drfp.mettles.com/crd",
+        target: "https://sm.mettles.com/crd",
         changeOrigin: true,
         secure: false
       }

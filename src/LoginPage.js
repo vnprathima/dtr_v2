@@ -159,7 +159,7 @@ export default class Login extends Component {
      // alert("In valid token response--");
       localStorage.setItem('username', this.state.name);
       localStorage.setItem('password', this.state.password);
-      var url = "https://drfp.mettles.com/cds/getConfig";
+      var url = "https://sm.mettles.com/cds/getConfig";
       let body = { "user_name": this.state.name }
       console.log(body);
       let self = this;

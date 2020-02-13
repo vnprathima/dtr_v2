@@ -512,11 +512,11 @@ class ProviderRequest extends Component {
     let url = '';
     if (this.state.hook === 'order-review') {
       url = this.state.config.crd_order_review_url;
-      url = "https://drfp.mettles.com/crd/r4/cds-services/order-review-crd";
+      url = "https://sm.mettles.com/crd/r4/cds-services/order-review-crd";
     }
     if (this.state.hook === 'order-select') {
       url = this.state.config.crd_url;
-      url = "https://drfp.mettles.com/crd/r4/cds-services/order-select-crd";
+      url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
     }
     console.log("json_request", json_request, this.state.config.crd_url)
     try {

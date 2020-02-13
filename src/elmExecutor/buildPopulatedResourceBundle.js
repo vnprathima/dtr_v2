@@ -97,6 +97,8 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
       pt => {
         console.log("got pt", pt);
         consoleLog("got pt:" + pt, "infoClass");
+        sessionStorage['patientObject'] = JSON.stringify(pt)
+        const entryResources = [pt];
         try {
           if (pt.hasOwnProperty("managingOrganization")) {
             console.log("organization----------", pt.managingOrganization, neededResources);
@@ -119,12 +121,76 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
               },
               "type": "Practitioner"
             })
+          } else{
+            let practitioner = [{
+              "resourceType": "Practitioner",
+              "id": "mettles-Practitioner-1",
+              "meta": {
+                "versionId": "2",
+                "lastUpdated": "2019-12-12T13:47:43.533+00:00"
+              },
+              "identifier": [
+                {
+                  "system": "http://hl7.org/fhir/sid/us-npi",
+                  "value": "1932102951"
+                }
+              ],
+              "active": true,
+              "name": [
+                {
+                  "family": "Careful",
+                  "given": [
+                    "Adam"
+                  ],
+                  "prefix": [
+                    "Dr"
+                  ]
+                }
+              ],
+              "address": [
+                {
+                  "use": "home",
+                  "line": [
+                    "534 Erewhon St"
+                  ],
+                  "city": "PleasantVille",
+                  "state": "Vic",
+                  "postalCode": "3999"
+                }
+              ],
+              "qualification": [
+                {
+                  "identifier": [
+                    {
+                      "system": "http://example.org/UniversityIdentifier",
+                      "value": "12345"
+                    }
+                  ],
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/v2-0360/2.7",
+                        "code": "BS",
+                        "display": "Bachelor of Science"
+                      }
+                    ],
+                    "text": "Bachelor of Science"
+                  },
+                  "period": {
+                    "start": "1995"
+                  },
+                  "issuer": {
+                    "display": "Arizona State University"
+                  }
+                }
+              ]
+            }]
+            entryResources.push(...practitioner);
           }
         } catch (err) {
           console.log("Unable to fetch Organization / Practitioner from patient");
         }
-        sessionStorage['patientObject'] = JSON.stringify(pt)
-        const entryResources = [pt];
+        
         const readResources = (neededResources, callback) => {
           const rq = neededResources.pop();
           let r = "";
@@ -149,7 +215,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
                 } else {
                   consoleLog("got " + r, "infoClass");
                 }
-                if (r === "Coverage" && results[0].hasOwnProperty("payor") && results[0].payor[0].hasOwnProperty("reference")) {
+                if (r === "Coverage" && results.length > 0 && results[0].hasOwnProperty("payor") && results[0].payor[0].hasOwnProperty("reference")) {
                   sessionStorage.setItem("coverage",JSON.stringify(results[0]));
                   let payor = results[0].payor[0].reference;
                   let org_id = payor.split("/")[1]
@@ -171,7 +237,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
                       } else {
                         consoleLog(error.data.statusText + " for " + r, "errorClass");
                       }
-
                     }
                     readResources(neededResources, callback);
                   });
