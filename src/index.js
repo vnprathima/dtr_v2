@@ -423,13 +423,19 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
         if (auth_response.hasOwnProperty("patient")) {
           sessionStorage.setItem("auth_patient_id", auth_response.patient);
         }
+        if (auth_response.hasOwnProperty("appContext")) {
+          sessionStorage.setItem("showCDSHook",false);
+          loadDTRApp(auth_response);
+        } else {
+          ReactDOM.render(
+            <ProviderRequest />,
+            document.getElementById("root")
+          );
+        }
         // createPatient(auth_response);
         // searchPatient(auth_response);
         // createOrganization(auth_response);
-        ReactDOM.render(
-          <ProviderRequest />,
-          document.getElementById("root")
-        );
+        
       } catch (e) {
         const errorMsg = "Failed to parse auth response";
         document.body.innerText = errorMsg;
@@ -443,10 +449,15 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
 } else if (sessionStorage.getItem("auth_response") !== null && sessionStorage.getItem("showCDSHook") === "true") {
   console.log("In pro--")
   auth_response = JSON.parse(sessionStorage.getItem("auth_response"));
-  ReactDOM.render(
-    <ProviderRequest />,
-    document.getElementById("root")
-  );
+  if (auth_response.hasOwnProperty("appContext")) {
+    sessionStorage.setItem("showCDSHook",false);
+    loadDTRApp(auth_response);
+  } else {
+    ReactDOM.render(
+      <ProviderRequest />,
+      document.getElementById("root")
+    );
+  }
 } else if (sessionStorage.getItem("auth_response") !== null && sessionStorage.getItem("showCDSHook") === "false") {
   auth_response = JSON.parse(sessionStorage.getItem("auth_response"));
   loadDTRApp(auth_response);

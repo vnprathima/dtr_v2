@@ -1112,7 +1112,7 @@ class ProviderRequest extends Component {
     let request = {
       hook: this.state.hook,
       hookInstance: "d1577c69-dfbe-44ad-ba6d-3e05e953b2ea",
-      fhirServer: this.state.config.provider_fhir_url,
+      fhirServer: sessionStorage.getItem("serviceUri"),
       fhirAuthorization: {
         "access_token": sessionStorage.getItem("token"),
         "token_type": "Bearer",
