@@ -35,9 +35,12 @@ var scope = ["launch", "user/Patient.read", "user/Patient.write", "user/Procedur
 var app_context = urlUtils.getUrlParameter("app_context");
 if (serviceUri.indexOf("epic") !== -1 && app_context === undefined) {
   app_context = Math.round(Math.random() * 100000000).toString(); // epic
-} else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
+} else if (serviceUri.indexOf("cerner") !== -1 && app_context === undefined) {
   app_context = urlUtils.getUrlParameter("cerner_appcontext"); //cerner
-}
+  if(app_context === undefined){
+    app_context = Math.round(Math.random() * 100000000).toString();
+  }
+} 
 
 var state = app_context;
 if (state === undefined) {
