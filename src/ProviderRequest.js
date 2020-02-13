@@ -878,7 +878,8 @@ class ProviderRequest extends Component {
     if (this.state.coverageId === '') {
       organization = {
         "resourceType": "Organization",
-        "name": this.state.payer
+        "name": this.state.payer,
+        "id": this.state.payer
       }
       // if (noRules) {
       //   organization["id"] = "default_" + this.state.payer
