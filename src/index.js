@@ -348,6 +348,9 @@ function loadDTRApp(auth_response) {
     if (auth_response.hasOwnProperty("appContext")) {
       appContextId = auth_response.appContext;
       //alert("Got AppContext---"+appContextId);
+    } else if (auth_response.hasOwnProperty("cerner_appcontext")) {
+      appContextId = auth_response.cerner_appcontext;
+      //alert("Got AppContext---"+appContextId);
     }
     let urn = "urn:hl7:davinci:crd:" + appContextId;
     let launchDataURL = "../fetchFhirUri/" + encodeURIComponent(urn);
@@ -426,6 +429,9 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
         if (auth_response.hasOwnProperty("appContext")) {
           sessionStorage.setItem("showCDSHook",false);
           loadDTRApp(auth_response);
+        } else if (auth_response.hasOwnProperty("cerner_appcontext")) {
+          sessionStorage.setItem("showCDSHook",false);
+          loadDTRApp(auth_response);
         } else {
           ReactDOM.render(
             <ProviderRequest />,
@@ -450,6 +456,9 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
   console.log("In pro--")
   auth_response = JSON.parse(sessionStorage.getItem("auth_response"));
   if (auth_response.hasOwnProperty("appContext")) {
+    sessionStorage.setItem("showCDSHook",false);
+    loadDTRApp(auth_response);
+  } else if (auth_response.hasOwnProperty("cerner_appcontext")) {
     sessionStorage.setItem("showCDSHook",false);
     loadDTRApp(auth_response);
   } else {
