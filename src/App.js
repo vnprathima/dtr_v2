@@ -4,8 +4,8 @@ import "./App.css";
 import cqlfhir from "cql-exec-fhir";
 import executeElm from "./elmExecutor/executeElm";
 import fetchArtifacts from "./util/fetchArtifacts";
-import QuestionnaireForm from "./components/QuestionnaireForm/QuestionnaireForm";
-import Testing from "./components/ConsoleBox/Testing";
+//import Testing from "./components/ConsoleBox/Testing";
+import UiFactory from "./UiFactory.js";
 // import sample from './sample_questionnaire.json';
 //window.alert("in App.js")
 class App extends Component {
@@ -21,6 +21,9 @@ class App extends Component {
     }
     this.smart = props.smart;
     this.consoleLog = this.consoleLog.bind(this);
+    sessionStorage['UI_TYPE'] = "cerner_ui";
+    this.ui = new UiFactory().getUi();
+
   }
 
   componentDidMount() {
@@ -83,22 +86,11 @@ class App extends Component {
   render() {
      //window.alert("before render");	
     if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
-      return (
-        <div className="App">
-
-          <QuestionnaireForm smart={this.smart} qform={this.state.questionnaire}
-            cqlPrepoulationResults={this.state.cqlPrepoulationResults}
-            serviceRequest={this.state.serviceRequest} bundle={this.state.bundle}
-            claimEndpoint={this.state.claimEndpoint} />
-        </div>
-      );
+      return (this.ui.getQuestionnaireFormApp(this.smart,this.state.questionnaire,this.state.cqlPrepoulationResults,
+                                                this.state.serviceRequest,this.state.bundle,this.state.claimEndpoint)
+        );
     } else {
-      return (
-        <div className="App">
-          <p>Loading...</p>
-          <Testing logs={this.state.logs} />
-        </div>
-      );
+      return (this.ui.getError(this.state.logs));
     }
   }
 }

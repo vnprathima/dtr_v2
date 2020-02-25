@@ -13,12 +13,12 @@ import { findValueByPrefix } from '../../util/util.js';
 import OpenChoice from '../Inputs/OpenChoiceInput/OpenChoice';
 import DocumentInput from '../Inputs/DocumentInput/DocumentInput';
 import { isTSEnumMember } from '@babel/types';
-
 import Select from "react-dropdown-select";
 import providerOptions from "../../providerOptions.json";
 import { faCarrot } from '@fortawesome/free-solid-svg-icons';
 import Loader from 'react-loader-spinner';
 import prior_auth_working from '../../prior_auth_working.json';
+import UiFactory from "../../UiFactory.js";
 
 // const state = urlUtils.getUrlParameter("state"); // session key
 // const code = urlUtils.getUrlParameter("code"); // authorization code
@@ -35,6 +35,7 @@ export default class QuestionnaireForm extends Component {
         if (!sessionStorage.hasOwnProperty("providerSource")) {
             sessionStorage["providerSource"] = 1
         }
+        this.ui = new UiFactory().getUi();
         this.state = {
             containedResources: null,
             items: null,
@@ -440,35 +441,17 @@ export default class QuestionnaireForm extends Component {
                         level={level}
                     />
                 case "string":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="text"
-                        inputTypeDisplay="string"
-                        valueType="valueString"
-                    />
+                    return this.ui.getTextInput(item.linkId,item,this.updateQuestionValue,
+                                                this.retrieveValue,"text","string","valueString");
+
 
                 case "text":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="textArea"
-                        inputTypeDisplay="text"
-                        valueType="valueString"
-                    />
+                    return this.ui.getTextInput(item.linkId,item,this.updateQuestionValue,
+                                                this.retrieveValue,"textArea","text","valueString");
+
                 case "choice":
-                    return <ChoiceInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        containedResources={this.state.containedResources}
-                        valueType="valueCoding"
-                    />
+                    return this.ui.getChoiceInput(item.linkId,item,this.updateQuestionValue,
+                                                this.retrieveValue,this.state.containedResources,"valueCoding");
                 case "boolean":
                     return <BooleanInput
                         key={item.linkId}
