@@ -3,19 +3,21 @@ import React, { Component } from 'react';
 import { hot } from "react-hot-loader";
 import SelectPayer from './components/SelectPayer';
 import DropdownServiceCode from './components/DropdownServiceCode';
+import DropdownCoverage from './components/DropdownCoverage';
 import { DateInput } from 'semantic-ui-calendar-react';
 import Client from 'fhir-kit-client';
 import "react-datepicker/dist/react-datepicker.css";
-import DisplayBox from './components/DisplayBox';
+// import DisplayBox from './components/DisplayBox';
 // import './font-awesome/css/font-awesome.min.css';
 import './index.css';
 import './components/consoleBox.css';
 import Loader from 'react-loader-spinner';
-import { createToken } from './components/Authentication';
+// import { createToken } from './components/Authentication';
 import { Dropdown } from 'semantic-ui-react';
 import stateOptions from './stateOptions'
 import "isomorphic-fetch";
 // var dateFormat = require('dateformat');
+import DropdownEncounter from './components/DropdownEncounter';
 
 const types = {
   error: "errorClass",
@@ -29,7 +31,7 @@ class ProviderRequest extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      config: localStorage.getItem('config') !== undefined ? JSON.parse(localStorage.getItem('config')) : {},
+      config: sessionStorage.getItem('config') !== undefined ? JSON.parse(sessionStorage.getItem('config')) : {},
       patient: null,
       accessToken: '',
       scope: '',
@@ -94,7 +96,9 @@ class ProviderRequest extends Component {
       { key: 'other', text: 'Other', value: 'other' },
       { key: 'unknown', text: 'Unknown', value: 'unknown' },
       ],
-      stateOptions: stateOptions
+      stateOptions: stateOptions,
+      encounters: [],
+      provider_fhir_url: ''
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
@@ -103,54 +107,38 @@ class ProviderRequest extends Component {
     this.medication_prescribe = false;
     this.startLoading = this.startLoading.bind(this);
     this.submit_info = this.submit_info.bind(this);
-    this.onFhirUrlChange = this.onFhirUrlChange.bind(this);
-    this.onAccessTokenChange = this.onAccessTokenChange.bind(this);
-    this.onScopeChange = this.onScopeChange.bind(this);
-    this.onEncounterChange = this.onEncounterChange.bind(this);
     this.onPatientChange = this.onPatientChange.bind(this);
     this.onChangeFirstName = this.onChangeFirstName.bind(this);
     this.onChangeLastName = this.onChangeLastName.bind(this);
-    this.medicationButton = this.medicationButton.bind(this);
     this.onQuantityChange = this.onQuantityChange.bind(this);
     this.onPractitionerChange = this.onPractitionerChange.bind(this);
     this.changeDosageAmount = this.changeDosageAmount.bind(this);
     this.changefrequency = this.changefrequency.bind(this);
-    this.changeMedicationInput = this.changeMedicationInput.bind(this);
-    this.onCoverageChange = this.onCoverageChange.bind(this);
-    this.changeMedicationStDate = this.changeMedicationStDate.bind(this);
-    this.changeMedicationEndDate = this.changeMedicationEndDate.bind(this);
     this.onClickLogout = this.onClickLogout.bind(this);
     this.consoleLog = this.consoleLog.bind(this);
     this.getPrefetchData = this.getPrefetchData.bind(this);
     this.readFHIR = this.readFHIR.bind(this);
     this.onClickMenu = this.onClickMenu.bind(this);
-    this.getUrlParameter = this.getUrlParameter.bind(this);
     this.handleGenderChange = this.handleGenderChange.bind(this);
     this.handlePatientStateChange = this.handlePatientStateChange.bind(this);
     this.changebirthDate = this.changebirthDate.bind(this);
     this.onPatientPostalChange = this.onPatientPostalChange.bind(this);
-    this.getHookFromCategory = this.getHookFromCategory.bind(this);
-    // this.noRulesChange = this.noRulesChange.bind(this);
+    this.getResourceData = this.getResourceData.bind(this);
   }
 
-  getUrlParameter(sParam) {
-    var sPageURL = window.location.search.substring(1);
-    var sURLVariables = sPageURL.split("&");
-    for (var i = 0; i < sURLVariables.length; i++) {
-      var sParameterName = sURLVariables[i].split("=");
-      if (sParameterName[0] === sParam) {
-        var res = sParameterName[1].replace(/\+/g, "%20");
-        return decodeURIComponent(res);
-      }
-    }
-  }
   componentDidMount() {
-    if (!localStorage.getItem('isLoggedIn')) {
-      window.location = `${window.location.protocol}//${window.location.host}/login`;
+    if (!sessionStorage.getItem('isLoggedIn')) {
+      sessionStorage.setItem('redirectTo', "/provider_request");
+      this.props.history.push("/login");
+    }
+    if(this.state.config !== undefined){
+        this.setState({provider_fhir_url:this.state.config.provider_fhir_url})
+    } else {
+        this.setState({provider_fhir_url:sessionStorage.getItem("serviceUri")});
     }
     this.handlePrefetch()
-    this.getCoverageInfo()
   }
+
   consoleLog(content, type) {
     let jsonContent = {
       content: content,
@@ -166,103 +154,89 @@ class ProviderRequest extends Component {
   handlePatientStateChange = (event, data) => {
     this.setState({ patientState: data.value })
   }
-  getCoverageInfo() {
-    var tempURL = sessionStorage.getItem("serviceUri") + "/Coverage?patient=" + this.state.patientId;
-    fetch(tempURL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json+fhir',
-        'Accept-Encoding': 'gzip, deflate, sdch, br',
-        'Accept-Language': 'en-US,en;q=0.8',
-        'Authorization': 'Bearer ' + sessionStorage.getItem("token")
-      }
-    }).then((response) => {
-      return response.json()
-    }).then((coverageRes) => {
-      console.log("Coverage resource", coverageRes.total);
-      if (coverageRes.total > 0) {
-        console.log("if total>0", coverageRes.entry);
-        let coverageResources = this.state.coverageResources
-        for (var r in coverageRes.entry) {
-          console.log("in loop,", r)
-          coverageResources.push(coverageRes.entry[r].resource);
-        }
-        this.setState({ coverageResources });
-        console.log("Coversge reso", this.state.coverageResources)
-      }
-    });
-  }
-  handlePrefetch = async () => {
-    console.log(this.state.prefetch, 'here kya')
-    this.setState({ prefetch: true });
-    this.setState({ prefetchloading: true });
-    var tempURL = sessionStorage.getItem("serviceUri") + "/Patient/" + this.state.patientId;
-    fetch(tempURL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json+fhir',
-        'Accept-Encoding': 'gzip, deflate, sdch, br',
-        'Accept-Language': 'en-US,en;q=0.8',
-        'Authorization': 'Bearer ' + sessionStorage.getItem("token")
-      }
-    }).then((response) => {
-      return response.json()
-    }).then((patientResource) => {
 
-      console.log("Patient get response", patientResource);
-      this.setState({ prefetchloading: false });
-      if (patientResource.hasOwnProperty("resourceType") && patientResource.resourceType === 'Patient') {
-        this.setState({ prefetchloading: false });
-        this.setState({ patientResource: patientResource })
-        this.setState({ firstName: patientResource.name[0].given })
-        this.setState({ lastName: patientResource.name[0].family })
-        this.setState({ gender: patientResource.gender })
-        this.setState({ birthDate: patientResource.birthDate })
-        if (patientResource.address !== undefined) {
-          this.setState({ patientState: patientResource.address[0].state })
-          this.setState({ patientPostalCode: patientResource.address[0].postalCode })
-        }
-      } else {
-        const errorMsg = "Token post request failed. Try launching again !!";
-        document.body.innerText = errorMsg;
-        console.error(errorMsg);
-        return;
-      }
-    }).catch((reason) => {
-      console.log("No response recieved from the server", reason)
-      this.setState({ gender: '' })
-      this.setState({ birthDate: '' })
-      this.setState({ patientState: '' })
-      this.setState({ patientPostalCode: '' })
-      this.setState({ firstName: '' })
-      this.setState({ lastName: '' })
-    });
+  handlePrefetch = async () => {
+    if (this.state.patientId !== null) {
+      console.log(this.state.prefetch, 'here kya')
+      this.setState({ prefetch: true });
+      this.setState({ prefetchloading: true });
+      this.getResourceData(sessionStorage.getItem("token"),
+        "Patient", "/" + this.state.patientId).then((patientResource) => {
+          console.log("Patient get response", patientResource);
+          this.setState({ prefetchloading: false });
+          if (patientResource.hasOwnProperty("resourceType") && patientResource.resourceType === 'Patient') {
+            this.setState({ prefetchloading: false });
+            this.setState({ patientResource: patientResource })
+            this.setState({ firstName: patientResource.name[0].given })
+            this.setState({ lastName: patientResource.name[0].family })
+            this.setState({ gender: patientResource.gender })
+            this.setState({ birthDate: patientResource.birthDate })
+            if (patientResource.address !== undefined) {
+              this.setState({ patientState: patientResource.address[0].state })
+              this.setState({ patientPostalCode: patientResource.address[0].postalCode })
+            }
+          } else {
+            const errorMsg = "Token post request failed. Try launching again !!";
+            document.body.innerText = errorMsg;
+            console.error(errorMsg);
+            return;
+          }
+        }).catch((reason) => {
+          console.log("No response recieved from the server", reason)
+          this.setState({ gender: '' })
+          this.setState({ birthDate: '' })
+          this.setState({ patientState: '' })
+          this.setState({ patientPostalCode: '' })
+          this.setState({ firstName: '' })
+          this.setState({ lastName: '' })
+        });
+      this.getResourceData(sessionStorage.getItem("token"),
+        "Encounter", "?patient=" + this.state.patientId).then((encounterRes) => {
+          if (encounterRes.resourceType === "Bundle" && encounterRes.total > 0) {
+            this.setState({ encounters: encounterRes.entry })
+          }
+        }).catch((reason) => {
+          console.log("No response recieved from the server", reason)
+        });
+      this.getResourceData(sessionStorage.getItem("token"),
+        "Coverage", "?patient=" + this.state.patientId).then((coverageRes) => {
+          console.log("Coverage resource", coverageRes.total);
+          if (coverageRes.total > 0) {
+            console.log("if total>0", coverageRes.entry);
+            let coverageResources = this.state.coverageResources
+            for (var r in coverageRes.entry) {
+              console.log("in loop,", r)
+              coverageResources.push(coverageRes.entry[r].resource);
+            }
+            this.setState({ coverageResources });
+            console.log("Coversge reso", this.state.coverageResources)
+          }
+        }).catch((reason) => {
+          console.log("No response recieved from the server", reason)
+        });
+    }
   }
 
   updateStateElement = (elementName, text) => {
-    if (elementName === "selected_codes" && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text[0]) >= 0) {
-      console.log("In if codes----",text[0]);
-      this.setState({ hook: "order-review" });
-    } else {
-      this.setState({ hook: "order-select" });
+    let value = text;
+    if (elementName === "selected_codes" ) {
+      console.log("In if selected_codes----", text);
+      if(text.hasOwnProperty("codes") && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text.codes[0]) >= 0)
+      { 
+        
+        value = text.codes
+        this.setState({ hook: "order-review" });
+      }
+      else {
+        this.setState({ hook: "order-select" });
+      }
     }
-    this.setState({ [elementName]: text });
-  }
-  async getHookFromCategory() {
-    let category_name = this.state.category_name;
-    let hook = this.state.hook;
-    if (category_name === "Healthcare") {
-      hook = "home-health-service";
-    } else if (category_name === "Ambulate or other medical transport services") {
-      hook = "ambulatory-transport";
-    } else if (category_name === "Durable Medical Equipment") {
-      hook = "home-oxygen-therapy";
-    }
-    this.setState({ hook: hook });
-    console.log("hook ----", this.state.hook);
-    return hook;
+    //  else {
+    //   this.setState({ hook: "order-select" });
+    // }
+
+    console.log("Ellelelm",elementName,text)
+    this.setState({ [elementName]: value });
   }
 
   validateForm() {
@@ -294,7 +268,7 @@ class ProviderRequest extends Component {
   }
 
   async readFHIR(resourceType, resourceId) {
-    const fhirClient = new Client({ baseUrl: this.state.config.provider_fhir_url });
+    const fhirClient = new Client({ baseUrl: this.state.provider_fhir_url });
     fhirClient.bearerToken = sessionStorage.getItem("token");
     let readResponse = await fhirClient.read({ resourceType: resourceType, id: resourceId });
     // console.log('Read Rsponse', readResponse)
@@ -342,82 +316,23 @@ class ProviderRequest extends Component {
     return prefetchData;
   }
 
-  async getResourceData(token, prefectInput) {
+  async getResourceData(token, resourceType, query) {
     let headers = {
       "Content-Type": "application/json",
       'Authorization': "Bearer " + token
     }
-    // console.log("Prefetch input--", JSON.stringify(prefectInput));
-    const url = this.state.config.crd_url + "prefetch";
-    await fetch(url, {
-      method: "POST",
+    const url = this.state.provider_fhir_url + "/" + resourceType + query;
+    let res = fetch(url, {
+      method: "GET",
       headers: headers,
-      body: JSON.stringify(prefectInput),
     }).then((response) => {
       return response.json();
     }).then((response) => {
-      this.setState({ prefetchData: response });
+      return response
     })
+    return res;
   }
 
-  medicationButton() {
-    console.log('Medication')
-    this.setState({ hookName: 'order-select' })
-    // this.setState({patientId : ''})
-    this.setState({ hook: null })
-    // this.setState({quantity : ''})
-    // this.setState({ service_code: "" })
-    // this.setState({quantity : ''})
-
-  }
-
-  setRequestType(req) {
-    this.setState({ request: req });
-    if (req === "coverage-requirement") {
-      this.setState({ auth_active: "" });
-      this.setState({ req_active: "active" });
-      this.setState({ hook: "" })
-    }
-    if (req === "patient-view") {
-      this.setState({ auth_active: "active" });
-      this.setState({ req_active: "" });
-      this.setState({ request: "coverage-requirement" });
-      this.setState({ hook: "patient-view" });
-    }
-    if (req === "config-view") {
-      window.location = `${window.location.protocol}//${window.location.host}/configuration`;
-    }
-    if (req === "x12-converter") {
-      window.location = `${window.location.protocol}//${window.location.host}/x12converter`;
-    }
-    if (req === "reporting-scenario") {
-      window.location = `${window.location.protocol}//${window.location.host}/reportingScenario`;
-    }
-    if (req === "cdex-view") {
-      window.location = `${window.location.protocol}//${window.location.host}/cdex`;
-    }
-  }
-
-  setPatientView(req, res) {
-    this.setState({ request: req });
-    this.setState({ hook: res });
-    this.setState({ auth_active: "active" });
-    this.setState({ req_active: "" });
-  }
-  onFhirUrlChange(event) {
-    this.setState({ fhirUrl: event.target.value });
-    this.setState({ validateFhirUrl: false });
-  }
-  onAccessTokenChange(event) {
-    this.setState({ accessToken: event.target.value });
-    this.setState({ validateAccessToken: false });
-  }
-  onScopeChange(event) {
-    this.setState({ scope: event.target.value });
-  }
-  onEncounterChange(event) {
-    this.setState({ encounterId: event.target.value });
-  }
   onPatientChange(event) {
     this.setState({ patientId: event.target.value });
     this.setState({ validatePatient: false });
@@ -440,23 +355,6 @@ class ProviderRequest extends Component {
   //   console.log("no rules toggle--" + noRules);
   //   this.setState({ noRules });
   // }
-  onCoverageChange(event) {
-    this.setState({ coverageId: event.target.value });
-  }
-  changeMedicationInput(event) {
-    this.setState({ medicationInput: event.target.value });
-  }
-  changeMedicationStDate = (event, { name, value }) => {
-
-    if (this.state.hasOwnProperty(name)) {
-      this.setState({ [name]: value });
-    }
-  }
-  changeMedicationEndDate = (event, { name, value }) => {
-    if (this.state.hasOwnProperty(name))
-      this.setState({ [name]: value });
-
-  }
   changebirthDate = (event, { name, value }) => {
     if (this.state.hasOwnProperty(name)) {
       this.setState({ [name]: value });
@@ -514,11 +412,11 @@ class ProviderRequest extends Component {
 
     let url = '';
     if (this.state.hook === 'order-review') {
-      url = this.state.config.crd_order_review_url;
+      // url = this.state.config.crd_order_review_url;
       url = "https://sm.mettles.com/crd/r4/cds-services/order-review-crd";
     }
     if (this.state.hook === 'order-select') {
-      url = this.state.config.crd_url;
+      // url = this.state.config.crd_url;
       url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
     }
     console.log("json_request", json_request, this.state.config.crd_url)
@@ -577,35 +475,25 @@ class ProviderRequest extends Component {
     return (
       <React.Fragment>
         <div>
-          <header id="inpageheader">
-            <div className="container">
-
-              <div id="logo" className="pull-left">
-                <h1><a href="#intro" className="scrollto">Beryllium</a></h1>
-                {/* <a href="#intro"><img src={process.env.PUBLIC_URL + "/assets/img/logo.png"} alt="" title="" /></a> */}
-              </div>
-
-              <nav id="nav-menu-container">
-                <ul className="nav-menu">
-                  <li className="menu-has-children"><a href="">{localStorage.getItem('username')}</a>
-                    <ul>
-                      <li><a href="" onClick={this.onClickLogout}>Logout</a></li>
-                    </ul>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          </header>
-
+          <Header />
           <div id="main" style={{ marginTop: "92px" }}>
 
             <div className="form">
               <div className="container">
                 <div className="section-header">
-                  <h3>Prior Authorization
-                  <div className="sub-heading">Submit your request to check for prior authorization.</div>
-                  </h3>
-
+                  <h3>Prior Authorization</h3>
+                  <p>Submit your request to check for prior authorization.</p>
+                </div>
+                <div className="form-row">
+                  <div className="form-group col-md-3 offset-1">
+                    <h4 className="title">NPI</h4>
+                  </div>
+                  <div className="form-group col-md-8">
+                    <input type="text" name="practitioner" className="form-control" id="name" placeholder="Practitioner NPI"
+                      value={this.state.practitionerId} onChange={this.onPractitionerChange}
+                      data-rule="minlen:4" data-msg="Please enter at least 4 chars" />
+                    <div className="validation"></div>
+                  </div>
                 </div>
                 {(this.state.hookName === 'order-review' || this.state.hookName === 'order-select') &&
                   <div>
@@ -706,13 +594,24 @@ class ProviderRequest extends Component {
                       <div className='errorMsg dropdown'>{this.props.config.errorMsg}</div>
                     } */}
                   </div>}
-                {this.state.coverageResources.length > 0 &&
+                {this.state.encounters.length > 0 &&
                   <div className="form-row">
                     <div className="form-group col-md-3 offset-1">
-                      <h4 className="title">Select Coverage</h4>
+                      <h4 className="title">Encounter</h4>
                     </div>
                     <div className="form-group col-md-8">
-                      {this.state.coverageResources.map((element) => {
+                      <DropdownEncounter elementName="encounterId" encounters={this.state.encounters} updateCB={this.updateStateElement}/>
+                    </div>
+                  </div>
+                }
+                {  this.state.coverageResources.length > 0 &&
+                  <div className="form-row">
+                    <div className="form-group col-md-3 offset-1">
+                      <h4 className="title">Coverage</h4>
+                    </div>
+                    <div className="form-group col-md-8">
+                     <DropdownCoverage  elementName="coverageId" coverages={this.state.coverageResources} updateCB={this.updateStateElement}/>
+                      {/*this.state.coverageResources.map((element) => {
                         return (
                           <div key={element.id}>
                             <button
@@ -724,18 +623,19 @@ class ProviderRequest extends Component {
                             </button>
                             <span className="text-radio tooltip-x">
                               <div><b>Coverage</b></div>
-                              {/* <div><b>Status</b>: {element.status}</div> */}
-                              {/* <div><b>Subscriber</b>: {element.subscriber.display}</div> */}
+                              {// <div><b>Status</b>: {element.status}</div> }
+                              {// <div><b>Subscriber</b>: {element.subscriber.display}</div> }
                               <div><b>Beneficiary</b>: {element.beneficiary.display}</div>
-                              {/* <div><b>Coverage Start Date</b>: {dateFormat(element.period.start,"fulldate")}</div> */}
+                              {// <div><b>Coverage Start Date</b>: {dateFormat(element.period.start,"fulldate")}</div> }
                               <div><b>Payor</b>: {element.payor[0].display}</div>
-                              {/* <div><b>Class</b>: plan: Value: {element.class[0].value} Name: {element.class[0].name}</div> */}
+                              {// <div><b>Class</b>: plan: Value: {element.class[0].value} Name: {element.class[0].name}</div> }
                             </span>
                           </div>
                         )
-                      })}
+                      }) 
+                    */}
                     </div>
-                  </div>}
+                  </div> }
                 {this.state.coverageResources.length === 0 &&
                   <SelectPayer elementName='payer' updateCB={this.updateStateElement} />
                 }
@@ -750,17 +650,7 @@ class ProviderRequest extends Component {
                       value={this.state.quantity} onChange={this.onQuantityChange} />
                   </div>
                 </div>
-                <div className="form-row">
-                  <div className="form-group col-md-3 offset-1">
-                    <h4 className="title">NPI</h4>
-                  </div>
-                  <div className="form-group col-md-8">
-                    <input type="text" name="practitioner" className="form-control" id="name" placeholder="Practitioner NPI"
-                      value={this.state.practitionerId} onChange={this.onPractitionerChange}
-                      data-rule="minlen:4" data-msg="Please enter at least 4 chars" />
-                    <div className="validation"></div>
-                  </div>
-                </div>
+
                 {/* <div className="form-row">
                   <div className="form-group col-md-3 offset-1">
                     <h4 className="title">No Rules</h4>
@@ -812,7 +702,7 @@ class ProviderRequest extends Component {
     }
   }
   async getOrganization(org_ref) {
-    var tempURL = sessionStorage.getItem("serviceUri") + "/" + org_ref;
+    var tempURL = this.state.provider_fhir_url + "/" + org_ref;
     let org = await fetch(tempURL, {
       method: 'GET',
       headers: {
@@ -1112,7 +1002,7 @@ class ProviderRequest extends Component {
     let request = {
       hook: this.state.hook,
       hookInstance: "d1577c69-dfbe-44ad-ba6d-3e05e953b2ea",
-      fhirServer: sessionStorage.getItem("serviceUri"),
+      fhirServer: this.state.provider_fhir_url,
       fhirAuthorization: {
         "access_token": sessionStorage.getItem("token"),
         "token_type": "Bearer",
@@ -1126,7 +1016,7 @@ class ProviderRequest extends Component {
       },
       "prefetch": prefetchObj
     };
-    if(this.state.hook=== "order-review"){
+    if (this.state.hook === "order-review") {
       request.context["orders"] = {
         resourceType: "Bundle",
         entry: [
@@ -1150,7 +1040,4 @@ class ProviderRequest extends Component {
       </div>)
   }
 }
-
 export default hot(module)(ProviderRequest);
-
-

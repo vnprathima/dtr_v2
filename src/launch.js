@@ -18,6 +18,7 @@ if (serviceUri.indexOf("epic") !== -1 && launchContextId === undefined) {
   launchContextId = "" // epic
 } else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
   launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
+  sessionStorage.setItem("currentEHR","Cerner");
 }
 //var launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
 //var launchContextId = "3OVyU5YcVCHZUDAeMQaia3Cw4kzALBblPY7BPV9Jjk5S083PusHli0A_UCiVNJywGiE57fx_KpynO3esOeQL9dOcQXMIGPd6HYMlSyqiZ30fxcd754kfN2jPoP-Tis9a";

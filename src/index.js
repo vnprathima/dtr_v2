@@ -386,7 +386,6 @@ function loadDTRApp(auth_response) {
         });
         //alert("2 before loading app.js")
         ReactDOM.render(
-
           <App
             FHIR_URI_PREFIX={FHIR_URI_PREFIX}
             questionnaireUri={appContext.template}

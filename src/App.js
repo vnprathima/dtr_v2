@@ -7,6 +7,11 @@ import fetchArtifacts from "./util/fetchArtifacts";
 //import Testing from "./components/ConsoleBox/Testing";
 import UiFactory from "./UiFactory.js";
 // import sample from './sample_questionnaire.json';
+
+
+// aggregateTranslations({ configPath: './terraI18n.config.js' });
+
+
 //window.alert("in App.js")
 class App extends Component {
   constructor(props) {
@@ -84,7 +89,7 @@ class App extends Component {
   }
 
   render() {
-     //window.alert("before render");	
+    //window.alert("before render");	
     if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
       return (this.ui.getQuestionnaireFormApp(this.smart,this.state.questionnaire,this.state.cqlPrepoulationResults,
                                                 this.state.serviceRequest,this.state.bundle,this.state.claimEndpoint)

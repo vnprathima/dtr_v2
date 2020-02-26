@@ -269,6 +269,7 @@ export default class QuestionnaireForm extends Component {
     updateQuestionValue(elementName, object, type) {
         // callback function for children to update
         // parent state containing the linkIds
+        console.log("Update question --",elementName, object, type);
         this.setState(prevState => ({
             [type]: {
                 ...prevState[type],
