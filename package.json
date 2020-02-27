@@ -73,7 +73,7 @@
     "terra-heading": "^4.25.0",
     "terra-icon": "^3.27.0",
     "terra-section-header": "^2.31.0",
-    "terra-theme-provider": "file:node_modules/terra-theme-provider",
+    "terra-theme-provider": "^3.19.0",
     "terra-ui": "0.0.0",
     "whatwg-fetch": "^3.0.0"
   },
