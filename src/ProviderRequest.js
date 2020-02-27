@@ -7,8 +7,6 @@ import DropdownCoverage from './components/DropdownCoverage';
 import { DateInput } from 'semantic-ui-calendar-react';
 import Client from 'fhir-kit-client';
 import "react-datepicker/dist/react-datepicker.css";
-// import DisplayBox from './components/DisplayBox';
-// import './font-awesome/css/font-awesome.min.css';
 import './index.css';
 import './components/consoleBox.css';
 import Loader from 'react-loader-spinner';
@@ -87,7 +85,6 @@ class ProviderRequest extends Component {
       firstName: '',
       lastName: '',
       prefetchloading: false,
-      noRules: false,
       coverageResources: [],
       coverage: {},
       crd_error_msg: '',
@@ -98,7 +95,7 @@ class ProviderRequest extends Component {
       ],
       stateOptions: stateOptions,
       encounters: [],
-      provider_fhir_url: ''
+      provider_fhir_url: sessionStorage.getItem("serviceUri")
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
@@ -127,15 +124,7 @@ class ProviderRequest extends Component {
   }
 
   componentDidMount() {
-    if (!sessionStorage.getItem('isLoggedIn')) {
-      sessionStorage.setItem('redirectTo', "/provider_request");
-      this.props.history.push("/login");
-    }
-    if(this.state.config !== undefined){
-        this.setState({provider_fhir_url:this.state.config.provider_fhir_url})
-    } else {
-        this.setState({provider_fhir_url:sessionStorage.getItem("serviceUri")});
-    }
+    console.log("Fhir url--" + this.state.provider_fhir_url, "----" + sessionStorage.getItem("serviceUri"));
     this.handlePrefetch()
   }
 
@@ -219,23 +208,18 @@ class ProviderRequest extends Component {
 
   updateStateElement = (elementName, text) => {
     let value = text;
-    if (elementName === "selected_codes" ) {
+    if (elementName === "selected_codes") {
       console.log("In if selected_codes----", text);
-      if(text.hasOwnProperty("codes") && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text.codes[0]) >= 0)
-      { 
-        
+      if (text.hasOwnProperty("codes") && ["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"].indexOf(text.codes[0]) >= 0) {
         value = text.codes
         this.setState({ hook: "order-review" });
       }
       else {
         this.setState({ hook: "order-select" });
       }
+      value = text.codeObjects;
     }
-    //  else {
-    //   this.setState({ hook: "order-select" });
-    // }
-
-    console.log("Ellelelm",elementName,text)
+    console.log("Ellelelm", elementName, text)
     this.setState({ [elementName]: value });
   }
 
@@ -278,16 +262,7 @@ class ProviderRequest extends Component {
   async getPrefetchData() {
     // console.log(this.state.hook);
     var docs = [];
-    if (this.state.hook === "patient-view") {
-      var prefectInput = { "Patient": this.state.patientId };
-    }
-    else if (this.state.hook === "liver-transplant") {
-      prefectInput = {
-        "Patient": this.state.patientId,
-        "Practitioner": this.state.practitionerId
-      }
-    }
-    else if (this.state.hook === "order-review") {
+    if (this.state.hook === "order-review") {
       prefectInput = {
         "Patient": this.state.patientId,
         "Encounter": this.state.encounterId,
@@ -318,7 +293,10 @@ class ProviderRequest extends Component {
 
   async getResourceData(token, resourceType, query) {
     let headers = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
+      'Accept': 'application/json+fhir',
+      'Accept-Encoding': 'gzip, deflate, sdch, br',
+      'Accept-Language': 'en-US,en;q=0.8',
       'Authorization': "Bearer " + token
     }
     const url = this.state.provider_fhir_url + "/" + resourceType + query;
@@ -349,12 +327,6 @@ class ProviderRequest extends Component {
   onPractitionerChange(event) {
     this.setState({ practitionerId: event.target.value });
   }
-  // noRulesChange(event) {
-  //   let noRules = this.state.noRules;
-  //   noRules = !noRules;
-  //   console.log("no rules toggle--" + noRules);
-  //   this.setState({ noRules });
-  // }
   changebirthDate = (event, { name, value }) => {
     if (this.state.hasOwnProperty(name)) {
       this.setState({ [name]: value });
@@ -419,7 +391,7 @@ class ProviderRequest extends Component {
       // url = this.state.config.crd_url;
       url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
     }
-    console.log("json_request", json_request, this.state.config.crd_url)
+    // console.log("json_request", json_request, this.state.config.crd_url)
     try {
       let self = this;
       //alert(JSON.stringify(json_request));
@@ -475,7 +447,25 @@ class ProviderRequest extends Component {
     return (
       <React.Fragment>
         <div>
-          <Header />
+          <header id="inpageheader">
+            <div className="container">
+
+              <div id="logo" className="pull-left">
+                <h1><a href="#intro" className="scrollto">Beryllium</a></h1>
+                {/* <a href="#intro"><img src={process.env.PUBLIC_URL + "/assets/img/logo.png"} alt="" title="" /></a> */}
+              </div>
+
+              <nav id="nav-menu-container">
+                <ul className="nav-menu">
+                  {/* <li className="menu-has-children"><a href="">{localStorage.getItem('username')}</a>
+                    <ul>
+                      <li><a href="" onClick={this.onClickLogout}>Logout</a></li>
+                    </ul>
+                  </li> */}
+                </ul>
+              </nav>
+            </div>
+          </header>
           <div id="main" style={{ marginTop: "92px" }}>
 
             <div className="form">
@@ -600,17 +590,17 @@ class ProviderRequest extends Component {
                       <h4 className="title">Encounter</h4>
                     </div>
                     <div className="form-group col-md-8">
-                      <DropdownEncounter elementName="encounterId" encounters={this.state.encounters} updateCB={this.updateStateElement}/>
+                      <DropdownEncounter elementName="encounterId" encounters={this.state.encounters} updateCB={this.updateStateElement} />
                     </div>
                   </div>
                 }
-                {  this.state.coverageResources.length > 0 &&
+                {this.state.coverageResources.length > 0 &&
                   <div className="form-row">
                     <div className="form-group col-md-3 offset-1">
                       <h4 className="title">Coverage</h4>
                     </div>
                     <div className="form-group col-md-8">
-                     <DropdownCoverage  elementName="coverageId" coverages={this.state.coverageResources} updateCB={this.updateStateElement}/>
+                      <DropdownCoverage elementName="coverageId" coverages={this.state.coverageResources} updateCB={this.updateStateElement} />
                       {/*this.state.coverageResources.map((element) => {
                         return (
                           <div key={element.id}>
@@ -635,31 +625,11 @@ class ProviderRequest extends Component {
                       }) 
                     */}
                     </div>
-                  </div> }
+                  </div>}
                 {this.state.coverageResources.length === 0 &&
                   <SelectPayer elementName='payer' updateCB={this.updateStateElement} />
                 }
                 <DropdownServiceCode elementName="selected_codes" updateCB={this.updateStateElement} />
-
-                <div className="form-row">
-                  <div className="form-group col-md-3 offset-1">
-                    <h4 className="title">Quantity</h4>
-                  </div>
-                  <div className="form-group col-md-8">
-                    <input type="text" name="quantity" className="form-control" id="name" placeholder="Quantity"
-                      value={this.state.quantity} onChange={this.onQuantityChange} />
-                  </div>
-                </div>
-
-                {/* <div className="form-row">
-                  <div className="form-group col-md-3 offset-1">
-                    <h4 className="title">No Rules</h4>
-                  </div>
-                  <div className="form-group col-md-8">
-                    <input type="checkbox" style={{ "marginLeft": "-350px" }} name="noRules" className="form-control" id="noRules"
-                      checked={this.state.noRules} onChange={this.noRulesChange} />
-                  </div>
-                </div> */}
                 <div className="text-center">
                   <button type="button" onClick={this.startLoading}>Submit
                     <div id="fse" className={"spinner " + (this.state.loading ? "visible" : "invisible")}>
@@ -768,17 +738,13 @@ class ProviderRequest extends Component {
         "reference": "Practitioner/" + this.state.practitionerId
       }
     }
+
     if (this.state.coverageId === '') {
       organization = {
         "resourceType": "Organization",
         "name": this.state.payer,
         "id": this.state.payer
       }
-      // if (noRules) {
-      //   organization["id"] = "default_" + this.state.payer
-      // } else {
-      //   organization["id"] = this.state.payer
-      // }
       coverage = {
         resourceType: "Coverage",
         id: "coverage1",
@@ -798,7 +764,8 @@ class ProviderRequest extends Component {
         ]
       };
     } else {
-      coverage = this.state.coverage;
+      console.log("Coverage resources--", this.state.coverageResources, this.state.coverageId)
+      coverage = this.state.coverageResources.find(cov => cov.id === this.state.coverageId);
       sessionStorage.setItem("coverage", JSON.stringify(coverage))
       if (coverage.hasOwnProperty("payor")) {
         let org_ref = coverage.payor[0].reference
@@ -807,91 +774,13 @@ class ProviderRequest extends Component {
           organization = org
           sessionStorage.setItem("organization", JSON.stringify(organization))
         }
-      }
-    }
-    let selected_codes = this.state.selected_codes;
-    let serviceRequest = {
-      "resourceType": "ServiceRequest",
-      "identifier": [
-        {
-          "value": this.randomString()
-        }
-      ],
-      "status": "draft",
-      "intent": "order",
-      "category": [],
-      "subject": {
-        "reference": "Patient/" + patientId
-      },
-      "quantity": { "value": this.state.quantity },
-      "authoredOn": "2013-05-08T09:33:27+07:00",
-      "insurance": [
-        {
-          "reference": "Coverage/" + coverage.id
-        }
-      ],
-      "performer": {
-        "reference": "PractitionerRole/practitioner1"
-      }
-    }
-
-    for (var i = 0; i < selected_codes.length; i++) {
-      let obj = {
-        "code": {
-          "coding": [
-            {
-              "system": "http://loinc.org",
-              "code": selected_codes[i]
-            }
-          ],
+      } else {
+        organization = {
+          "resourceType": "Organization",
+          "name": this.state.payer,
+          "id": this.state.payer
         }
       }
-      if (i == 0) {
-        serviceRequest["code"] = obj.code;
-      }
-      serviceRequest.category.push(obj)
-    }
-    let deviceRequest = {
-      "resourceType": "DeviceRequest",
-      "identifier": [
-        {
-          "value": this.randomString()
-        }
-      ],
-      "status": "draft",
-      "intent": "order",
-      "parameter": [],
-      "subject": {
-        "reference": "Patient/" + patientId
-      },
-      "authoredOn": "2013-05-08T09:33:27+07:00",
-      "insurance": [
-        {
-          "reference": "Coverage/" + coverage.id
-        }
-      ],
-      "performer": {
-        "reference": "PractitionerRole/practitioner1"
-      }
-    }
-    for (var i = 0; i < selected_codes.length; i++) {
-      let obj = {
-        "code": {
-          "coding": [
-            {
-              "system": "http://loinc.org",
-              "code": selected_codes[i]
-            }
-          ],
-        },
-        "valueQuantity": {
-          "value": this.state.quantity,
-        }
-      }
-      if (i == 0) {
-        deviceRequest["codeCodeableConcept"] = obj.code;
-      }
-      deviceRequest.parameter.push(obj)
     }
     let patientResource;
     if (this.state.prefetch === true) {
@@ -942,7 +831,6 @@ class ProviderRequest extends Component {
       this.setState({ patientResource: patientResource });
       console.log(patientResource, JSON.stringify(patientResource))
     }
-    let requestEntryObj = {}
     let prefetchObj = {}
     if (this.state.hook === "order-review") {
       prefetchObj = {
@@ -951,9 +839,6 @@ class ProviderRequest extends Component {
           "type": "collection",
           "entry": [
             {
-              "resource": deviceRequest
-            },
-            {
               "resource": patientResource
             },
             {
@@ -967,9 +852,6 @@ class ProviderRequest extends Component {
             }
           ]
         }
-      }
-      requestEntryObj = {
-        resource: deviceRequest
       }
     } else {
       prefetchObj = {
@@ -978,9 +860,6 @@ class ProviderRequest extends Component {
           "type": "collection",
           "entry": [
             {
-              "resource": serviceRequest
-            },
-            {
               "resource": patientResource
             },
             {
@@ -994,9 +873,6 @@ class ProviderRequest extends Component {
             }
           ]
         }
-      }
-      requestEntryObj = {
-        resource: serviceRequest
       }
     }
     let request = {
@@ -1012,23 +888,89 @@ class ProviderRequest extends Component {
       },
       user: "Practitioner/" + this.state.practitionerId,
       context: {
-        patientId: patientId
+        patientId: patientId,
+        encounterId: this.state.encounterId,
       },
       "prefetch": prefetchObj
     };
+    let selected_codes = this.state.selected_codes;
     if (this.state.hook === "order-review") {
       request.context["orders"] = {
         resourceType: "Bundle",
-        entry: [
-          requestEntryObj
-        ]
+        entry: []
+      }
+      for (var i = 0; i < selected_codes.length; i++) {
+        console.log("IIn device request--",selected_codes[i], i);
+        let deviceRequest = {
+          "resourceType": "DeviceRequest",
+          "identifier": [
+            {
+              "value": this.randomString()
+            }
+          ],
+          "status": "draft",
+          "intent": "order",
+          "subject": {
+            "reference": "Patient/" + patientId
+          },
+          "authoredOn": "2013-05-08T09:33:27+07:00",
+          "insurance": [
+            {
+              "reference": "Coverage/" + coverage.id
+            }
+          ],
+          "performer": {
+            "reference": "PractitionerRole/practitioner1"
+          },
+          "codeCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": selected_codes[i].value
+              }
+            ],
+          }
+        }
+        request.context.orders.entry.push({ "resource": deviceRequest });
       }
     } else {
       request.context["draftOrders"] = {
         resourceType: "Bundle",
-        entry: [
-          requestEntryObj
-        ]
+        entry: []
+      }
+      for (var i = 0; i < selected_codes.length; i++) {
+        let serviceRequest = {
+          "resourceType": "ServiceRequest",
+          "identifier": [
+            {
+              "value": this.randomString()
+            }
+          ],
+          "status": "draft",
+          "intent": "order",
+          "subject": {
+            "reference": "Patient/" + patientId
+          },
+          "quantity": { "value": selected_codes[i].quantity },
+          "authoredOn": "2013-05-08T09:33:27+07:00",
+          "insurance": [
+            {
+              "reference": "Coverage/" + coverage.id
+            }
+          ],
+          "performer": {
+            "reference": "PractitionerRole/practitioner1"
+          },
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": selected_codes[i].value
+              }
+            ],
+          }
+        }
+        request.context.draftOrders.entry.push({ "resource": serviceRequest });
       }
     }
     return request;

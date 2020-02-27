@@ -2,35 +2,9 @@ import React, {Component} from 'react';
 import {Dropdown} from 'semantic-ui-react';
 var dateFormat = require('dateformat');
 
-
-export const options = [
-  { key: 'Coverage/5', value: 'Coverage/5', text: 'Coverage 5',resource_json:{
-    resourceType: "Coverage",
-    id: "5",
-    class: [
-      {
-        type: {
-          system: "http://hl7.org/fhir/coverage-class",
-          code: "plan"
-        },
-        value: "Medicare Part D"
-      }
-    ],
-    payor: [
-      {
-        reference: "Organization/6"
-      }
-    ]
-    }
-  },
-  { key: 'Coverage/2', value: 'Coverage/2', text: 'Coverage b',resource_json:{} },
-  { key: 'Coverage/3', value: 'Coverage/3', text: 'Coverage c',resource_json:{} },
-
-]
-
 let blackBorder = "blackBorder";
 
-export const coverageOptions = [];
+const coverageOptions = [];
 
 export default class DropdownCoverage extends Component {
   constructor(props){

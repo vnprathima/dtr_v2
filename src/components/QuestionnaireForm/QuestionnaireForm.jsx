@@ -2,21 +2,17 @@ import React, { Component } from 'react';
 import urlUtils from "../../util/url";
 
 
-import './QuestionnaireForm.css';
+// import './QuestionnaireForm.css';
 
 import Section from '../Section/Section';
 import TextInput from '../Inputs/TextInput/TextInput';
-import ChoiceInput from '../Inputs/ChoiceInput/ChoiceInput';
 import BooleanInput from '../Inputs/BooleanInput/BooleanInput';
 import QuantityInput from '../Inputs/QuantityInput/QuantityInput';
 import { findValueByPrefix } from '../../util/util.js';
 import OpenChoice from '../Inputs/OpenChoiceInput/OpenChoice';
-import DocumentInput from '../Inputs/DocumentInput/DocumentInput';
 import { isTSEnumMember } from '@babel/types';
 import Select from "react-dropdown-select";
 import providerOptions from "../../providerOptions.json";
-import { faCarrot } from '@fortawesome/free-solid-svg-icons';
-import Loader from 'react-loader-spinner';
 import prior_auth_working from '../../prior_auth_working.json';
 import UiFactory from "../../UiFactory.js";
 
@@ -269,7 +265,7 @@ export default class QuestionnaireForm extends Component {
     updateQuestionValue(elementName, object, type) {
         // callback function for children to update
         // parent state containing the linkIds
-        console.log("Update question --",elementName, object, type);
+        console.log("Update question --", elementName, object, type);
         this.setState(prevState => ({
             [type]: {
                 ...prevState[type],
@@ -434,25 +430,20 @@ export default class QuestionnaireForm extends Component {
         if (enable && (this.state.turnOffValues.indexOf(item.linkId) < 0)) {
             switch (item.type) {
                 case "group":
-                    return <Section
-                        key={item.linkId}
-                        componentRenderer={this.renderComponent}
-                        updateCallback={this.updateQuestionValue}
-                        item={item}
-                        level={level}
-                    />
+                    return this.ui.getSection(item.linkId, this.renderComponent,this.updateQuestionValue,
+                        item, level)
                 case "string":
-                    return this.ui.getTextInput(item.linkId,item,this.updateQuestionValue,
-                                                this.retrieveValue,"text","string","valueString");
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "text", "string", "valueString");
 
 
                 case "text":
-                    return this.ui.getTextInput(item.linkId,item,this.updateQuestionValue,
-                                                this.retrieveValue,"textArea","text","valueString");
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "textArea", "text", "valueString");
 
                 case "choice":
-                    return this.ui.getChoiceInput(item.linkId,item,this.updateQuestionValue,
-                                                this.retrieveValue,this.state.containedResources,"valueCoding");
+                    return this.ui.getChoiceInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, this.state.containedResources, "valueCoding");
                 case "boolean":
                     return <BooleanInput
                         key={item.linkId}
@@ -483,15 +474,9 @@ export default class QuestionnaireForm extends Component {
                         valueType="valueUri"
                     />
                 case "date":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="date"
-                        inputTypeDisplay="date"
-                        valueType="valueDate"
-                    />
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "date", "date", "valueDate");
+
                 case "time":
                     return <TextInput
                         key={item.linkId}
@@ -1172,17 +1157,17 @@ export default class QuestionnaireForm extends Component {
         return null
     }
 
-    removeFilledFields() {
-        if (this.state.turnOffValues.length > 0) {
-            this.setState({ turnOffValues: [] });
+    toggleFilledFields(self) {
+        if (self.state.turnOffValues.length > 0) {
+            self.setState({ turnOffValues: [] });
         } else {
             const returnArray = [];
-            this.state.orderedLinks.forEach((e) => {
-                if (this.isNotEmpty(this.state.values[e]) && this.state.itemTypes[e] && this.state.itemTypes[e].enabled) {
+            self.state.orderedLinks.forEach((e) => {
+                if (self.isNotEmpty(self.state.values[e]) && self.state.itemTypes[e] && self.state.itemTypes[e].enabled) {
                     returnArray.push(e);
                 }
             });
-            this.setState({ turnOffValues: returnArray });
+            self.setState({ turnOffValues: returnArray });
         }
     }
     randomString() {
@@ -1201,206 +1186,14 @@ export default class QuestionnaireForm extends Component {
 
     render() {
         return (
-            <div>{this.state.displayQuestionnaire &&
-                <div>
-                    <div className="floating-tools">
-                        <p className="filter-filled" >Show Prefilled : <input type="checkbox" onClick={() => {
-                            this.removeFilledFields();
-                        }}></input></p>
-                    </div>
-                    <div className="container">
-                        <div className="section-header">
-                            <h3>{this.props.qform.title}</h3>
-                            {/* <p>Setup FHIR information and others</p> */}
-                        </div>
-                    </div>
-                    {/* <h2 className="document-header">{this.props.qform.title}
+            <div>
+                {this.state.displayQuestionnaire &&
+                    this.ui.getQuestionnaireTemplate(this,this.toggleFilledFields,this.props.qform.title, this.state.items,this.renderComponent, this.updateDocuments, this.state.showPreview, this.state.priorAuthBundle, this.state.previewloading, this.state.loading)
+                }
+                {!this.state.displayQuestionnaire &&
 
-                    </h2> */}
-
-                    <div className="sidenav">
-                        {this.state.orderedLinks.map((e) => {
-                            if (Object.keys(this.state.sectionLinks).indexOf(e) < 0) {
-                                const value = this.state.values[e];
-                                let extraClass;
-                                let indicator;
-                                if (this.state.itemTypes[e] && this.state.itemTypes[e].enabled) {
-                                    extraClass = (this.isNotEmpty(value) ? "sidenav-active" : "")
-                                    indicator = true;
-                                } else {
-                                    if (this.isNotEmpty(value) && this.state.turnOffValues.indexOf(e) > -1) {
-                                        extraClass = "sidenav-manually-disabled";
-                                    } else if (value) {
-                                        extraClass = "sidenav-disabled filled"
-                                    } else {
-                                        extraClass = "sidenav-disabled"
-                                    }
-
-                                }
-                                return <div
-                                    key={e}
-                                    className={"sidenav-box " + extraClass}
-                                    onClick={() => {
-                                        indicator ? window.scrollTo(0, this.state.itemTypes[e].ref.current.previousSibling.offsetTop) : null;
-                                    }}
-                                >
-                                    {e}
-                                </div>
-                            }
-                        })}
-                        <div className="sidenav-box "></div>
-                    </div>
-                    {/* <div className="wrapper">
-                    {
-                        this.state.items.map((item) => {
-                            return this.renderComponent(item, 0);
-                        })
-                    }
-                </div> */}
-                    <div className="wrapper1">
-                        {
-                            this.state.items.map((item) => {
-                                // if (item.linkId <= (this.state.items.length / 2 + 1)) {
-                                return this.renderComponent(item, 0);
-                                // }
-                            })
-                        }
-                        <div style={{ marginBottom: "30px" }}>
-                            <DocumentInput
-                                updateCallback={this.updateDocuments}
-                            />
-                        </div >
-                        {/* <div className="section" style={{marginBottom: "30px"}}>
-                            <div className="section-header">
-                                <input type="checkbox" name="otherProvider" value={this.state.otherProvider} onChange={this.onChangeOtherProvider} />Request from Other Provider
-                            </div>
-                            {this.state.otherProvider &&
-                                <div className="entry-block" style={{ marginLeft: "30px"}}>
-                                    <div className="header-input">Select Provider</div>
-                                    <Select style={{ width: "50%" }} className="text-input" options={providerOptions} onChange={(values) => this.setProviderSource(values)} />
-                                    <div className="header-input">Select Queries</div>
-                                    {this.state.providerQueries.map((item, key) => {
-                                        return this.renderQueries(item, key);
-                                    })}
-                                    
-                                    <button className="btn comm-btn" onClick={this.submitCommunicationRequest}>Send Request</button>
-                                    
-                                    {this.state.communicationRequestId && 
-                                        <div className="decision-card alert-success">Request Posted successfully to {this.state.otherProviderName} - ({this.state.communicationRequestId}) </div>
-                                    }
-                                </div>
-                            }
-                        </div> */}
-                        {/* <div className="section">
-                            <h3 className="section-header" style={{ marginLeft: "-15px" }}>Please attach the following documents</h3>
-                            <ol>
-                                <li>OASIS Evaluation form</li>
-                                <li>Face to face discussion details</li>
-                            </ol>
-                        </div>
-                        <DocumentInput
-                            updateCallback={this.updateDocuments}
-                        /> */}
-                        {this.state.showPreview &&
-                            <div><pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(this.state.priorAuthBundle, null, 2)}</pre></div>
-                        }
-                        <div className="text-center" style={{ marginBottom: "50px" }}>
-                            <button type="button" style={{ background: "grey" }} onClick={this.previewBundle}>Preview
-                                        <div id="fse" className={"spinner " + (this.state.previewloading ? "visible" : "invisible")}>
-                                    <Loader
-                                        type="Oval"
-                                        color="#fff"
-                                        height={15}
-                                        width={15}
-                                    />
-                                </div>
-                            </button>
-                            <button type="button" onClick={this.outputResponse}>Submit Prior Authorization
-                                        <div id="fse" className={"spinner " + (this.state.loading ? "visible" : "invisible")}>
-                                    <Loader
-                                        type="Oval"
-                                        color="#fff"
-                                        height={15}
-                                        width={15}
-                                    />
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                    {/* <div className="wrapper2">
-
-                        {
-                            this.state.items.map((item) => {
-                                if (item.linkId > (this.state.items.length / 2 + 1)) {
-                                    return this.renderComponent(item, 0);
-                                }
-                            })
-                        }
-                        <div className="text-center">
-                            <button type="button" onClick={this.outputResponse}>Submit Prior Authorization
-                                        <div id="fse" className={"spinner " + (this.state.loading ? "visible" : "invisible")}>
-                                    <Loader
-                                        type="Oval"
-                                        color="#fff"
-                                        height={15}
-                                        width={15}
-                                    />
-                                </div>
-                            </button>
-                        </div>
-                        <div>
-                            <button className="btn refreshButton" onClick={this.relaunch}>Refresh</button>
-                        </div>
-                    </div> */}
-
-                </div>}
-
-                <div>
-                    {!this.state.displayQuestionnaire &&
-                        <div>
-                            <div style={{ fontSize: "1.5em", background: "#98ce94", padding: "10px" }}> {this.state.claimMessage}</div>
-                            <div className="form-row">
-                                <div className="col-3">Status</div>
-                                {this.state.claimResponse.status === "active" &&
-                                    <div className="col-6">: Affirmed</div>
-                                }
-                                {this.state.claimResponse.status !== "active" &&
-                                    <div className="col-6">: {this.state.claimResponse.status}</div>
-                                }
-                            </div>
-                            <div className="form-row">
-                                <div className="col-3">Outcome</div>
-                                <div className="col-6">: {this.state.claimResponse.outcome}</div>
-                            </div>
-                            {this.state.claimResponse.outcome !== "queued" &&
-                                <div className="form-row">
-                                    <div className="col-3">Prior Auth Reference No</div>
-                                    <div className="col-6">: {this.state.claimResponse.preAuthRef}</div>
-                                </div>
-                            }
-                            {JSON.stringify(this.state.claimResponse).length > 0 &&
-                                <div style={{ paddingTop: "10px", paddingBottom: "10px" }}>
-                                    <button style={{ float: "right" }} type="button" onClick={this.handleShowBundle}>Show Claim Response Bundle</button>
-
-                                    <button type="button" onClick={this.reloadClaimResponse} >Reload Claim Response
-                                <div id="fse" className={"spinner " + (this.state.resloading ? "visible" : "invisible")}>
-                                            <Loader
-                                                type="Oval"
-                                                color="#fff"
-                                                height={15}
-                                                width={15}
-                                            />
-                                        </div>
-                                    </button></div>
-                            }
-                            {this.state.showBundle &&
-                                <pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(this.state.claimResponseBundle, null, 2)}</pre>
-                            }
-                        </div>
-
-                    }
-
-                </div>
+                    this.ui.getClaimResponseTemplate(this.state.claimMessage, this.state.claimResponse, this.state.resloading, this.state.showBundle, this.state.claimResponseBundle)
+                }
             </div>
 
         );

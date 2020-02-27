@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { hot } from "react-hot-loader";
-import "./App.css";
+// import "./App.css";
 import cqlfhir from "cql-exec-fhir";
 import executeElm from "./elmExecutor/executeElm";
 import fetchArtifacts from "./util/fetchArtifacts";

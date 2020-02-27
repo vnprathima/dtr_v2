@@ -12,10 +12,12 @@ class DropdownServiceCode extends Component {
       service_category: [],
       codes: [],
       codesList: [],
-      selected_codes: []
+      selected_codes: [],
+      selected_options:[]
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
+    this.onChangeAmount = this.onChangeAmount.bind(this);
   };
 
   async componentDidMount() {
@@ -54,10 +56,23 @@ class DropdownServiceCode extends Component {
     }
   }
 
+
+  async onChangeAmount(code , event){
+    var selected_options = this.state.selected_options;
+    selected_options.map((option)=>{
+      if(option.value == code){
+        option.quantity = event.target.value;
+      }
+    })
+    this.setState({selected_options});
+    console.log(this.state.selected_options)
+    this.props.updateCB(this.props.elementName, {codes:this.state.selected_codes,codeObjects:selected_options})
+  } 
+
   async getResources() {
     console.log("Props in  codes----",this.props.config);
       //    var url = this.props.config.cds_service.get_codes;
-      var url = "https://sm.mettles.com/cds/getCodes";
+      var url = "http://cdex.mettles.com/cds/getCodes";
     // let token;
     // token = await createToken(this.props.config.provider.grant_type, 'provider', sessionStorage.getItem('username'), sessionStorage.getItem('password'))
     let headers = {
@@ -80,6 +95,7 @@ class DropdownServiceCode extends Component {
 
   handleCategoryChange = (e, { value }) => {
     this.setState({selected_codes:[]});
+    this.setState({selected_options:[]});
     this.props.updateCB(this.props.elementName, []);
     let codes = this.state.codes;
     codes = [];
@@ -95,9 +111,34 @@ class DropdownServiceCode extends Component {
   }
 
   handleChange = (e, { value }) => {
-    this.props.updateCB(this.props.elementName, value)
     this.setState({ currentValue: value })
     this.setState({selected_codes:value});
+    console.log(value);
+    var selected_options = [];
+    this.state.selected_options.map((option)=>{
+      if(value.indexOf(option.value) > -1){
+        selected_options.push(option);
+      }
+    })
+    value.map((val,key)=>{
+      let found = false;
+      selected_options.map((option)=>{
+        if(val == option.value){
+          found = true;
+        }
+      })
+      if(!found){
+        selected_options.push({value:val,quantity:1})
+
+      }
+
+    });
+    this.setState({selected_options:selected_options});
+    this.props.updateCB(this.props.elementName, {codes:value,codeObjects:selected_options})
+    
+   
+    // var option = {value:value,quantity:quantity}
+    console.log("Valllue",selected_options);
   }
 
   render() {
@@ -138,7 +179,7 @@ class DropdownServiceCode extends Component {
         </div>
         <div className="form-row">
           <div className="form-group col-md-3 offset-1">
-            <h4 className="title">ICD 10 / HCPCS Codes*</h4>
+            <h4 className="title">Codes*</h4>
           </div>
           <div className="form-group col-md-8">
             <Dropdown
@@ -154,6 +195,42 @@ class DropdownServiceCode extends Component {
             />
           </div>
         </div>
+        { this.state.selected_codes.length > 0 &&
+        <div className="form-row">
+          <div className="form-group offset-4">
+            
+          </div>
+          <div className="col-md-8">
+            <table class="table table-bordered">
+              <thead>
+                <tr><td>Code</td><td>Quantity</td></tr>
+              </thead>
+              <tbody>
+                {
+                  this.state.selected_options.map((item)=>{
+                    return(
+                      <tr key={item.value}>
+                        <td>
+                          {item.value}
+                        </td>
+                          <td>
+                             <div className="">
+                                  <input type="number" step="0.01" name="quantity" className="form-control" id="number" placeholder="NPI"
+                                      onChange={(event)=>this.onChangeAmount(item.value,event)}
+                                      value={item.quantity}
+                                       />
+                              </div>
+                          </td>
+                      </tr>
+                    )
+                  })
+
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
       </div>
     )
   }
