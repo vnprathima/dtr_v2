@@ -1,5 +1,16 @@
 const path = require("path");
 
+const aggregateTranslations = require('terra-aggregate-translations');
+
+const aggregateOptions = {
+    baseDir: __dirname,
+    // excludes: ['./node_modules/packageToExclude'],
+    locales: ['en', 'en-US'],
+    format: 'es6',
+};
+
+aggregateTranslations(aggregateOptions);
+
 module.exports = {
   entry: {
     launch: path.resolve(__dirname, "src/launch.js"),
@@ -13,7 +24,10 @@ module.exports = {
     path: path.resolve(__dirname, "public"),
     publicPath: "/"
   },
-  resolve: { extensions: ["*", ".js", ".jsx"] },
+  resolve: {
+    extensions: ["*", ".js", ".jsx"],
+    modules: [path.resolve(__dirname, 'aggregated-translations'), 'node_modules'],
+  },
   module: {
     rules: [
       {
@@ -23,7 +37,7 @@ module.exports = {
         use: { loader: "ignore-loader" }
       },
       {
-        test: /\.(mjs|js|jsx)$/,
+        test: /\.(mjs|js|jsx|.scss)$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
@@ -41,8 +55,8 @@ module.exports = {
         }
       },
       {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
+        test: /\.(css|scss)$/,
+        use: ["style-loader", "css-loader", "sass-loader"]
       }
     ]
   },
