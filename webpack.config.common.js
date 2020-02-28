@@ -37,7 +37,7 @@ module.exports = {
         use: { loader: "ignore-loader" }
       },
       {
-        test: /\.(mjs|js|jsx|.scss)$/,
+        test: /\.(mjs|js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
@@ -55,8 +55,24 @@ module.exports = {
         }
       },
       {
-        test: /\.(css|scss)$/,
-        use: ["style-loader", "css-loader", "sass-loader"]
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.scss$/,
+        use: [{
+          loader: "style-loader"
+        },
+        {
+          loader: "css-loader",
+          options: {
+            modules: true,
+            sourceMap: true
+          }
+        },
+        {
+          loader: "sass-loader",
+        }]
       }
     ]
   },

@@ -2,8 +2,9 @@ const merge = require("webpack-merge");
 const path = require("path");
 const webpack = require("webpack");
 const common = require("./webpack.config.common.js");
+const cerner = require("./node_modules/terra-toolkit/config/webpack/webpack.config");
 
-module.exports = merge(common, {
+module.exports = merge(cerner, common, {
   mode: "development",
   module: {
     rules: [
