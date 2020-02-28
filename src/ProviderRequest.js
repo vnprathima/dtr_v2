@@ -16,7 +16,7 @@ import stateOptions from './stateOptions'
 import "isomorphic-fetch";
 // var dateFormat = require('dateformat');
 import DropdownEncounter from './components/DropdownEncounter';
-import UiFactory from "../../UiFactory.js";
+import UiFactory from "./UiFactory.js";
 import Grid from 'terra-grid';
 
 
@@ -104,7 +104,7 @@ class ProviderRequest extends Component {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
       code: (foo => { return !foo.match(/^[a-z0-9]+$/i) })
     };
-    this.ui = new UiFactory().getUi();
+
     this.medication_prescribe = false;
     this.startLoading = this.startLoading.bind(this);
     this.submit_info = this.submit_info.bind(this);
@@ -150,7 +150,7 @@ class ProviderRequest extends Component {
 
   handlePrefetch = async () => {
     if (this.state.patientId !== null) {
-      // console.log(this.state.prefetch)
+      console.log(this.state.prefetch, 'here kya')
       this.setState({ prefetch: true });
       this.setState({ prefetchloading: true });
       this.getResourceData(sessionStorage.getItem("token"),
