@@ -11,6 +11,9 @@ import Loader from 'react-loader-spinner';
 import CernerTextInput from './components/Inputs/TextInput/CernerTextInput';
 import CernerSection from './components/Section/CernerSection';
 import ThemeProvider from "terra-theme-provider";
+import BooleanInput from './components/Inputs/BooleanInput/BooleanInput';
+import QuantityInput from './components/Inputs/QuantityInput/QuantityInput';
+
 
 const locale = (navigator.languages && navigator.languages[0])
     || navigator.language
@@ -43,7 +46,7 @@ export default class CernerUi {
             <div>
                 <div className="floating-tools">
                     <p className="filter-filled" >Show Prefilled : <input type="checkbox" onClick={() => {
-                        toggleFilledFields(inputThis);
+                        inputThis.toggleFilledFields();
                     }}></input></p>
                 </div>
                 <Arrange
@@ -167,6 +170,29 @@ export default class CernerUi {
             valueType={valueType}
         />
     }
+
+    getOpenChoice(linkId, item, updateQuestionValue, retrieveValue, containedResources, valueType) {
+        return  <OpenChoice
+                    key={linkId}
+                    item={item}
+                    updateCallback={updateQuestionValue}
+                    retrieveCallback={retrieveValue}
+                    inputTypeDisplay="open-choice"
+                    containedResources={this.state.containedResources}
+                    valueType={valueType}
+                />
+    }
+
+    getBooleanInput(linkId, item, updateQuestionValue,
+                        retrieveValue, valueType){
+        return <BooleanInput
+                    key={linkId}
+                    item={item}
+                    updateCallback={updateQuestionValue}
+                    retrieveCallback={retrieveValue}
+                    valueType={valueType}
+                />
+    }
     getSection(linkId,renderComponent,updateQuestionValue,item,level){
         return <CernerSection
                         key={linkId}
@@ -176,5 +202,20 @@ export default class CernerUi {
                         level={level}
                     />
     }
+
+    getQuantityInput(linkId, item, updateNestedQuestionValue,
+                        updateQuestionValue,retrieveValue, quantity, valueQuantity){
+        return <QuantityInput
+                key={linkId}
+                item={item}
+                updateCallback={updateNestedQuestionValue}
+                updateQuestionValue={updateQuestionValue}
+                retrieveCallback={retrieveValue}
+                inputTypeDisplay={quantity}
+                valueType={valueQuantity}
+            />
+        }
+
+
 
 }

@@ -428,6 +428,7 @@ export default class QuestionnaireForm extends Component {
     renderComponent(item, level) {
         const enable = this.checkEnable(item);
         if (enable && (this.state.turnOffValues.indexOf(item.linkId) < 0)) {
+            // item.type="open-choice"
             switch (item.type) {
                 case "group":
                     return this.ui.getSection(item.linkId, this.renderComponent,this.updateQuestionValue,
@@ -445,112 +446,56 @@ export default class QuestionnaireForm extends Component {
                     return this.ui.getChoiceInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, this.state.containedResources, "valueCoding");
                 case "boolean":
-                    return <BooleanInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        valueType="valueBoolean"
-                    />
+                     return this.ui.getBooleanInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "valueBoolean");
+      
                 case "decimal":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="number"
-                        inputTypeDisplay="decimal"
-                        valueType="valueDecimal"
-                    />
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "number", "decimal", "valueDecimal");
+                   
 
                 case "url":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="url"
-                        inputTypeDisplay="url"
-                        valueType="valueUri"
-                    />
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "url", "url", "valueUri");
+                   
                 case "date":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "date", "date", "valueDate");
 
                 case "time":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="time"
-                        inputTypeDisplay="time"
-                        valueType="valueTime"
-                    />
+                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "time", "time", "valueTime");
+                  
                 case "dateTime":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="datetime-local"
-                        inputTypeDisplay="datetime"
-                        valueType="valueDateTime"
-                    />
+                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "datetime-local", "datetime", "valueDateTime");
+                    
 
                 case "attachment":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="file"
-                        inputTypeDisplay="attachment"
-                        valueType="valueAttachment"
-                    />
+                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "file", "attachment", "valueAttachment");
+
 
                 case "integer":
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="number"
-                        inputTypeDisplay="valueInteger"
-                        valueType="integer"
-                    />
+                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "number", "valueInteger", "integer");
+       
 
                 case "quantity":
-                    return <QuantityInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateNestedQuestionValue}
-                        updateQuestionValue={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputTypeDisplay="quantity"
-                        valueType="valueQuantity"
-                    />
+
+                    return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,
+                        this.updateQuestionValue,this.retrieveValue, "quantity", "valueQuantity");
+        
 
                 case "open-choice":
-                    return <OpenChoice
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputTypeDisplay="open-choice"
-                        containedResources={this.state.containedResources}
-                        valueType={["valueCoding", "valueString"]}
-                    />
+                    return this.ui.getOpenChoice(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, this.state.containedResources, ["valueCoding", "valueString"]);
+
                 default:
-                    return <TextInput
-                        key={item.linkId}
-                        item={item}
-                        updateCallback={this.updateQuestionValue}
-                        retrieveCallback={this.retrieveValue}
-                        inputType="text"
-                        inputTypeDisplay="string"
-                        valueType="valueString"
-                    />
+
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "text", "string", "valueString");
+
             }
         }
     }
@@ -1157,17 +1102,17 @@ export default class QuestionnaireForm extends Component {
         return null
     }
 
-    toggleFilledFields(self) {
-        if (self.state.turnOffValues.length > 0) {
-            self.setState({ turnOffValues: [] });
+    toggleFilledFields() {
+        if (this.state.turnOffValues.length > 0) {
+            this.setState({ turnOffValues: [] });
         } else {
             const returnArray = [];
-            self.state.orderedLinks.forEach((e) => {
-                if (self.isNotEmpty(self.state.values[e]) && self.state.itemTypes[e] && self.state.itemTypes[e].enabled) {
+            this.state.orderedLinks.forEach((e) => {
+                if (this.isNotEmpty(this.state.values[e]) && this.state.itemTypes[e] && this.state.itemTypes[e].enabled) {
                     returnArray.push(e);
                 }
             });
-            self.setState({ turnOffValues: returnArray });
+            this.setState({ turnOffValues: returnArray });
         }
     }
     randomString() {

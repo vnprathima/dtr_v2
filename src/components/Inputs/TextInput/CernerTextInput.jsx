@@ -17,6 +17,7 @@ export default class CernerTextInput extends Component {
         this.handleDateChange = this.handleDateChange.bind(this);
         this.onInputChange = this.onInputChange.bind(this);
         this.myRef = React.createRef();
+        this.inputTypes = ['text','decimal','url','datetime-local','datetime','time','file']
     }
 
     componentWillUnmount() {
@@ -98,9 +99,11 @@ export default class CernerTextInput extends Component {
                         onChange={this.onInputChange}>
                     </textarea>
                 }
-                {this.props.inputType === "text" &&
-                    <Input name={this.props.item.text} id={this.props.linkId} ariaLabel={this.props.item.text} value={this.state.value} onChange={this.onInputChange} />
+                {(this.inputTypes.indexOf(this.props.inputType) > -1) &&
+                    <Input type={this.props.inputType} name={this.props.item.text} id={this.props.linkId} ariaLabel={this.props.item.text} value={this.state.value} onChange={this.onInputChange} />
                 }
+                
+
                 {this.props.inputType === "date" &&
                     <DatePicker
                     name={this.props.item.text}

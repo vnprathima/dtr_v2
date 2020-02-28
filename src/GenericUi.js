@@ -5,6 +5,8 @@ import QuestionnaireForm from "./components/QuestionnaireForm/QuestionnaireForm"
 import ChoiceInput from './components/Inputs/ChoiceInput/ChoiceInput';
 import DocumentInput from './components/Inputs/DocumentInput/DocumentInput';
 import Loader from 'react-loader-spinner';
+import BooleanInput from './components/Inputs/BooleanInput/BooleanInput';
+
 
 export default class GenericUi {
     constructor(props) {
@@ -31,12 +33,12 @@ export default class GenericUi {
             claimEndpoint={claimEndpoint} />);
 
     }
-    getQuestionnaireTemplate(toggleFilledFields,title,items,renderComponent,showPreview,priorAuthBundle,previewloading,loading) {
+    getQuestionnaireTemplate(inputThis,toggleFilledFields,title,items,renderComponent,showPreview,priorAuthBundle,previewloading,loading) {
         return (
             <div>
             <div className="floating-tools">
                 <p className="filter-filled" >Show Prefilled : <input type="checkbox" onClick={() => {
-                    toggleFilledFields();
+                    inputThis.toggleFilledFields();
                 }}></input></p>
             </div>
             <div className="container">
@@ -184,6 +186,29 @@ export default class GenericUi {
                         valueType={valueType}
                     />
     }
+    
+    getOpenChoice(linkId, item, updateQuestionValue, retrieveValue, containedResources, valueType) {
+        return  <OpenChoice
+                    key={linkId}
+                    item={item}
+                    updateCallback={updateQuestionValue}
+                    retrieveCallback={retrieveValue}
+                    inputTypeDisplay="open-choice"
+                    containedResources={this.state.containedResources}
+                    valueType={valueType}
+                />
+    }
+
+    getBooleanInput(linkId, item, updateQuestionValue,
+                        retrieveValue, valueType){
+        return <BooleanInput
+                    key={linkId}
+                    item={item}
+                    updateCallback={updateQuestionValue}
+                    retrieveCallback={retrieveValue}
+                    valueType={valueType}
+                />
+    }
     getSection(linkId,renderComponent,updateQuestionValue,item,level){
         return <Section
                         key={linkId}
@@ -193,5 +218,19 @@ export default class GenericUi {
                         level={level}
                     />
     }
+
+     getQuantityInput(linkId, item, updateNestedQuestionValue,
+                        updateQuestionValue,retrieveValue, quantity, valueQuantity){
+        return <QuantityInput
+                key={linkId}
+                item={item}
+                updateCallback={updateNestedQuestionValue}
+                updateQuestionValue={updateQuestionValue}
+                retrieveCallback={retrieveValue}
+                inputTypeDisplay={quantity}
+                valueType={valueQuantity}
+            />
+        }
+
 
 }

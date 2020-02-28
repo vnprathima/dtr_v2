@@ -35,6 +35,7 @@ module.exports = merge(common, {
       {
         context: ["/fetchFhirUri", "/getfile"],
         target: "https://sm.mettles.com/crd",
+        // target: "http://localhost:8090",
         changeOrigin: true,
         secure: false
       }
