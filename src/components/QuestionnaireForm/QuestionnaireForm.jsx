@@ -436,8 +436,6 @@ export default class QuestionnaireForm extends Component {
                 case "string":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "text", "string", "valueString");
-
-
                 case "text":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "textArea", "text", "valueString");
@@ -446,8 +444,8 @@ export default class QuestionnaireForm extends Component {
                     return this.ui.getChoiceInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, this.state.containedResources, "valueCoding");
                 case "boolean":
-                     return this.ui.getBooleanInput(item.linkId, item, this.updateQuestionValue,
-                        this.retrieveValue, "valueBoolean");
+                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "boolean", "boolean", "valueBoolean");
       
                 case "decimal":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,

@@ -7,6 +7,8 @@ import ThemeProvider from 'terra-theme-provider';
 import DatePicker from 'terra-date-picker';
 import Arrange from 'terra-arrange';
 import Heading from 'terra-heading';
+import Radio from 'terra-form-radio';
+import Textarea from 'terra-form-textarea';
 
 export default class CernerTextInput extends Component {
     constructor(props) {
@@ -17,7 +19,7 @@ export default class CernerTextInput extends Component {
         this.handleDateChange = this.handleDateChange.bind(this);
         this.onInputChange = this.onInputChange.bind(this);
         this.myRef = React.createRef();
-        this.inputTypes = ['text','decimal','url','datetime-local','datetime','time','file']
+        this.inputTypes = ['text', 'decimal', 'url', 'datetime-local', 'datetime', 'time', 'file']
     }
 
     componentWillUnmount() {
@@ -35,6 +37,7 @@ export default class CernerTextInput extends Component {
         // setup initial value from qForm
         const value = this.props.retrieveCallback(this.props.item.linkId);
         if (value) {
+            console.log("Initial value---", value, this.props.item.text);
             this.setState({ value: value });
         }
         this.props.updateCallback(this.props.item.linkId,
@@ -73,6 +76,7 @@ export default class CernerTextInput extends Component {
             }
             reader.readAsBinaryString(file);
         } else {
+            console.log("value----", event.target.value);
             // update the parent state
             this.props.updateCallback(this.props.item.linkId, event.target.value, "values")
             // update local state
@@ -80,8 +84,8 @@ export default class CernerTextInput extends Component {
         }
     }
 
-    handleDateChange(event,date) {
-        console.log("date----",date);
+    handleDateChange(event, date) {
+        console.log("date----", date);
         // update the parent state
         this.props.updateCallback(this.props.item.linkId, date, "values")
 
@@ -93,24 +97,31 @@ export default class CernerTextInput extends Component {
         return (
             <div ref={this.myRef}>
                 {this.props.inputType === "textArea" &&
-                    <textarea
-                        className="form-control"
+                    <Textarea
+                        size="small"
+                        id={this.props.linkId}
+                        ariaLabel={this.props.item.text}
                         value={this.state.value}
-                        onChange={this.onInputChange}>
-                    </textarea>
+                        onChange={this.onInputChange}
+                    />
                 }
                 {(this.inputTypes.indexOf(this.props.inputType) > -1) &&
-                    <Input type={this.props.inputType} name={this.props.item.text} id={this.props.linkId} ariaLabel={this.props.item.text} value={this.state.value} onChange={this.onInputChange} />
+                    <Input type={this.props.inputType} name={this.props.item.text} id={this.props.linkId} ariaLabel={this.props.item.text} 
+                    value={this.state.value} onChange={this.onInputChange} multiple={this.props.inputTypeDisplay==="multipleAttachment"}/>
                 }
-                
-
                 {this.props.inputType === "date" &&
                     <DatePicker
-                    name={this.props.item.text}
-                    id={this.props.linkId}
-                    onChange={this.handleDateChange}
-                    value={this.state.value}
-                  />
+                        name={this.props.item.text}
+                        id={this.props.linkId}
+                        onChange={this.handleDateChange}
+                        value={this.state.value}
+                    />
+                }
+                {this.props.inputType === "boolean" &&
+                    <div>
+                        <Radio id={"true_" + this.props.linkId} labelText="True" name={this.props.item.text} value={true} onChange={this.onInputChange} checked={this.state.value} isInline />
+                        <Radio id={"false_" + this.props.linkId} labelText="False" name={this.props.item.text} value={false} onChange={this.onInputChange} checked={!this.state.value} isInline />
+                    </div>
                 }
             </div>
         );

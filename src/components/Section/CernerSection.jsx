@@ -62,7 +62,7 @@ export default class CernerSection extends Component {
             'grid-row-start': 1,
         };
         return (
-            <div className={"section " + (this.state.components.length === 0 ? "disabled" : "")}>
+            <div className={this.state.components.length === 0 ? "disabled" : ""}>
                 <SectionHeader
                     title={this.props.item.text}
                     level={3}
@@ -73,7 +73,7 @@ export default class CernerSection extends Component {
                     return component ? _item.type !== "group" ? (
                         <DynamicGrid defaultTemplate={template}>
                             <DynamicGrid.Region defaultPosition={region1}>
-                                <Field label={_item.text} required={_item.required}></Field>
+                                <Field htmlFor={_item.text} label={_item.text} required={_item.required}></Field>
                             </DynamicGrid.Region>
                             <DynamicGrid.Region defaultPosition={region2}>
                                 {component}

@@ -28,6 +28,7 @@ import { Dropdown } from 'semantic-ui-react';
 import DropdownEncounter from './components/DropdownEncounter';
 import SelectPayer from './components/SelectPayer';
 
+import SectionHeader from 'terra-section-header';
 
 const locale = (navigator.languages && navigator.languages[0])
     || navigator.language
@@ -289,6 +290,16 @@ export default class CernerUi {
             'grid-column-start': 2,
             'grid-row-start': 1,
         };
+        const singleTemplate = {
+            'grid-template-columns': '1fr',
+            'grid-template-rows': 'auto',
+        };
+        const region3 = {
+            'grid-column-start': 1,
+            'grid-column-end': 1,
+            'grid-row-start': 1,
+            'grid-row-end': 1,
+        };
         return (
             <div>
                 <div className="floating-tools">
@@ -315,6 +326,17 @@ export default class CernerUi {
                                 }
                             })
                         }
+                        <DynamicGrid defaultTemplate={singleTemplate}>
+                            <DynamicGrid.Region defaultPosition={region3}>
+                                <SectionHeader
+                                    title="Uplaod Required/Additional Documentation"
+                                    level={3}
+                                />
+                                {this.getTextInput("100", { "text": "Additional Documentation" }, inputThis.updateDocuments,
+                                    inputThis.retrieveValue, "file", "multipleAttachment", "valueAttachment")}
+                            </DynamicGrid.Region>
+                        </DynamicGrid>
+
                     </DynamicGrid.Region>
                     <DynamicGrid.Region defaultPosition={region2}>
                         {
@@ -324,20 +346,18 @@ export default class CernerUi {
                                 }
                             })
                         }
-                        <div style={{ marginBottom: "30px" }}>
-                            <DocumentInput
-                                updateCallback={updateDocuments}
-                            />
-                        </div >
+                        <DynamicGrid defaultTemplate={singleTemplate}>
+                            <DynamicGrid.Region defaultPosition={region3}>
+                                <Button text="Preview" onClick={inputThis.previewBundle} />
+                                <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
+                            </DynamicGrid.Region>
+                        </DynamicGrid>
+
                     </DynamicGrid.Region>
                 </DynamicGrid>
                 {showPreview &&
                     <div><pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
                 }
-                <div className="text-center" style={{ marginBottom: "50px" }}>
-                    <Button text="Preview" onClick={inputThis.previewBundle} variant="emphasis" />
-                    <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
-                </div>
             </div>
         );
     }
@@ -425,16 +445,6 @@ export default class CernerUi {
         />
     }
 
-    getBooleanInput(linkId, item, updateQuestionValue,
-        retrieveValue, valueType) {
-        return <BooleanInput
-            key={linkId}
-            item={item}
-            updateCallback={updateQuestionValue}
-            retrieveCallback={retrieveValue}
-            valueType={valueType}
-        />
-    }
     getSection(linkId, renderComponent, updateQuestionValue, item, level) {
         return <CernerSection
             key={linkId}
