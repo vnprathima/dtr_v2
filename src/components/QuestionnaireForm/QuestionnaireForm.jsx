@@ -453,7 +453,6 @@ export default class QuestionnaireForm extends Component {
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "number", "decimal", "valueDecimal");
                    
-
                 case "url":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "url", "url", "valueUri");
@@ -1133,7 +1132,7 @@ export default class QuestionnaireForm extends Component {
         return (
             <div>
                 {this.state.displayQuestionnaire &&
-                    this.ui.getQuestionnaireTemplate(this,this.toggleFilledFields,this.props.qform.title, this.state.items,this.renderComponent, this.updateDocuments, this.state.showPreview, this.state.priorAuthBundle, this.state.previewloading, this.state.loading)
+                    this.ui.getQuestionnaireTemplate(this, this.props.qform.title, this.state.items, this.updateDocuments, this.state.showPreview, this.state.priorAuthBundle, this.state.previewloading, this.state.loading)
                 }
                 {!this.state.displayQuestionnaire &&
 

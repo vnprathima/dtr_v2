@@ -13,7 +13,10 @@ import CernerSection from './components/Section/CernerSection';
 import ThemeProvider from "terra-theme-provider";
 import BooleanInput from './components/Inputs/BooleanInput/BooleanInput';
 import QuantityInput from './components/Inputs/QuantityInput/QuantityInput';
-
+import ApplicationBase from 'terra-application/lib/application-base';
+import ContentContainer from 'terra-content-container';
+import DynamicGrid from 'terra-dynamic-grid';
+import Button from 'terra-button/lib/Button';
 
 const locale = (navigator.languages && navigator.languages[0])
     || navigator.language
@@ -33,15 +36,32 @@ export default class CernerUi {
         );
     }
     getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
-        console.log("Out global true----",ThemeProvider.Opts.Themes.MOCK);
+        console.log("Out global true----", ThemeProvider.Opts.Themes.CONSUMER);
         return (
-            <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.MOCK}>
-                <Base locale={locale}>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
-                serviceRequest, bundle, claimEndpoint)}</Base>
+            <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
+                <Base locale={locale}>
+                    <ContentContainer>
+                        {this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
+                            serviceRequest, bundle, claimEndpoint)}
+                    </ContentContainer>
+                </Base>
             </ThemeProvider>
         );
     }
-    getQuestionnaireTemplate(inputThis, toggleFilledFields, title, items, renderComponent, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
+    getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
+        const template = {
+            'grid-template-columns': '1fr 1fr',
+            'grid-template-rows': 'auto',
+            'grid-gap': '10px',
+        };
+        const region1 = {
+            'grid-column-start': 1,
+            'grid-row-start': 1,
+        };
+        const region2 = {
+            'grid-column-start': 2,
+            'grid-row-start': 1,
+        };
         return (
             <div>
                 <div className="floating-tools">
@@ -59,42 +79,37 @@ export default class CernerUi {
                         </div>
                     )}
                 />
-                <div className="wrapper1">
-                    {
-                        items.map((item) => {
-                            return renderComponent(item, 0);
-                        })
-                    }
-                    <div style={{ marginBottom: "30px" }}>
-                        <DocumentInput
-                            updateCallback={updateDocuments}
-                        />
-                    </div >
-                    {showPreview &&
-                        <div><pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
-                    }
-                    <div className="text-center" style={{ marginBottom: "50px" }}>
-                        <button type="button" style={{ background: "grey" }} onClick={this.previewBundle}>Preview
-                                <div id="fse" className={"spinner " + (previewloading ? "visible" : "invisible")}>
-                                <Loader
-                                    type="Oval"
-                                    color="#fff"
-                                    height={15}
-                                    width={15}
-                                />
-                            </div>
-                        </button>
-                        <button type="button" onClick={this.outputResponse}>Submit Prior Authorization
-                                <div id="fse" className={"spinner " + (loading ? "visible" : "invisible")}>
-                                <Loader
-                                    type="Oval"
-                                    color="#fff"
-                                    height={15}
-                                    width={15}
-                                />
-                            </div>
-                        </button>
-                    </div>
+                <DynamicGrid defaultTemplate={template}>
+                    <DynamicGrid.Region defaultPosition={region1}>
+                        {
+                            items.map((item) => {
+                                if (item.linkId <= (items.length / 2 + 1)) {
+                                    return inputThis.renderComponent(item, 0);
+                                }
+                            })
+                        }
+                    </DynamicGrid.Region>
+                    <DynamicGrid.Region defaultPosition={region2}>
+                        {
+                            items.map((item) => {
+                                if (item.linkId > (items.length / 2 + 1)) {
+                                    return inputThis.renderComponent(item, 0);
+                                }
+                            })
+                        }
+                        <div style={{ marginBottom: "30px" }}>
+                            <DocumentInput
+                                updateCallback={updateDocuments}
+                            />
+                        </div >
+                    </DynamicGrid.Region>
+                </DynamicGrid>
+                {showPreview &&
+                    <div><pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
+                }
+                <div className="text-center" style={{ marginBottom: "50px" }}>
+                    <Button text="Preview" onClick={inputThis.previewBundle} variant="emphasis" />
+                    <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
                 </div>
             </div>
         );
@@ -172,49 +187,49 @@ export default class CernerUi {
     }
 
     getOpenChoice(linkId, item, updateQuestionValue, retrieveValue, containedResources, valueType) {
-        return  <OpenChoice
-                    key={linkId}
-                    item={item}
-                    updateCallback={updateQuestionValue}
-                    retrieveCallback={retrieveValue}
-                    inputTypeDisplay="open-choice"
-                    containedResources={this.state.containedResources}
-                    valueType={valueType}
-                />
+        return <OpenChoice
+            key={linkId}
+            item={item}
+            updateCallback={updateQuestionValue}
+            retrieveCallback={retrieveValue}
+            inputTypeDisplay="open-choice"
+            containedResources={containedResources}
+            valueType={valueType}
+        />
     }
 
     getBooleanInput(linkId, item, updateQuestionValue,
-                        retrieveValue, valueType){
+        retrieveValue, valueType) {
         return <BooleanInput
-                    key={linkId}
-                    item={item}
-                    updateCallback={updateQuestionValue}
-                    retrieveCallback={retrieveValue}
-                    valueType={valueType}
-                />
+            key={linkId}
+            item={item}
+            updateCallback={updateQuestionValue}
+            retrieveCallback={retrieveValue}
+            valueType={valueType}
+        />
     }
-    getSection(linkId,renderComponent,updateQuestionValue,item,level){
+    getSection(linkId, renderComponent, updateQuestionValue, item, level) {
         return <CernerSection
-                        key={linkId}
-                        componentRenderer={renderComponent}
-                        updateCallback={updateQuestionValue}
-                        item={item}
-                        level={level}
-                    />
+            key={linkId}
+            componentRenderer={renderComponent}
+            updateCallback={updateQuestionValue}
+            item={item}
+            level={level}
+        />
     }
 
     getQuantityInput(linkId, item, updateNestedQuestionValue,
-                        updateQuestionValue,retrieveValue, quantity, valueQuantity){
+        updateQuestionValue, retrieveValue, quantity, valueQuantity) {
         return <QuantityInput
-                key={linkId}
-                item={item}
-                updateCallback={updateNestedQuestionValue}
-                updateQuestionValue={updateQuestionValue}
-                retrieveCallback={retrieveValue}
-                inputTypeDisplay={quantity}
-                valueType={valueQuantity}
-            />
-        }
+            key={linkId}
+            item={item}
+            updateCallback={updateNestedQuestionValue}
+            updateQuestionValue={updateQuestionValue}
+            retrieveCallback={retrieveValue}
+            inputTypeDisplay={quantity}
+            valueType={valueQuantity}
+        />
+    }
 
 
 

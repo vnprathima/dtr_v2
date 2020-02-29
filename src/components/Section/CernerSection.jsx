@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import SectionHeader from 'terra-section-header';
 import Field from 'terra-form-field';
+import DynamicGrid from 'terra-dynamic-grid';
 
 export default class CernerSection extends Component {
     constructor(props) {
@@ -47,41 +48,61 @@ export default class CernerSection extends Component {
     }
 
     render() {
+        const template = {
+            'grid-template-columns': '1fr 1fr',
+            'grid-template-rows': 'auto',
+            'grid-gap': '10px',
+        };
+        const region1 = {
+            'grid-column-start': 1,
+            'grid-row-start': 1,
+        };
+        const region2 = {
+            'grid-column-start': 2,
+            'grid-row-start': 1,
+        };
         return (
             <div className={"section " + (this.state.components.length === 0 ? "disabled" : "")}>
                 <SectionHeader
                     title={this.props.item.text}
                     level={3}
-                    isOpen={true}
                 />
                 {this.state.components.map((obj) => {
                     const component = obj.component;
                     const _item = obj._item;
                     return component ? _item.type !== "group" ? (
-                        <div className="row" key={_item.linkId}>
-                            <div className={"entry-block col-5 " + (_item.readOnly ? "read-only" : "")}>
-                                <p className="header-input">
-                                    <span
-                                        className="info-block"
-                                        style={
-                                            // Moves the label off to the side so its aligned on the right
-                                            { marginLeft: -_item.linkId.length * 7 - 9 }
-                                        }
-                                    >
-                                        {_item.linkId}&nbsp;
-                            </span>
-                                    {_item.text}
-                                    {_item.required ? <span className="required-asterisk">&nbsp;*</span> : null}
-                                    {_item.repeats ? <span className="glyph">&#8634;</span> : null}
-                                </p>
-
-                            </div>
-                            <div className="col-7">
+                        <DynamicGrid defaultTemplate={template}>
+                            <DynamicGrid.Region defaultPosition={region1}>
+                                <Field label={_item.text} required={_item.required}></Field>
+                            </DynamicGrid.Region>
+                            <DynamicGrid.Region defaultPosition={region2}>
                                 {component}
-                            </div>
+                            </DynamicGrid.Region>
+                        </DynamicGrid>
+                        // <div className="row" key={_item.linkId}>
+                        //     <div className={"entry-block col-5 " + (_item.readOnly ? "read-only" : "")}>
+                        //         <p className="header-input">
+                        //             <span
+                        //                 className="info-block"
+                        //                 style={
+                        //                     // Moves the label off to the side so its aligned on the right
+                        //                     { marginLeft: -_item.linkId.length * 7 - 9 }
+                        //                 }
+                        //             >
+                        //                 {_item.linkId}&nbsp;
+                        //     </span>
+                        //             {_item.text}
+                        //             {_item.required ? <span className="required-asterisk">&nbsp;*</span> : null}
+                        //             {_item.repeats ? <span className="glyph">&#8634;</span> : null}
+                        //         </p>
+
+                        //     </div>
+                        //     <div className="col-7">
+                        //         {component}
+                        //     </div>
 
 
-                        </div>
+                        // </div>
 
                     ) : <div key={_item.linkId}>{component}</div> : null
                 })}
