@@ -67,7 +67,7 @@ export default class CernerDropdownEncounter extends Component {
           <Field htmlFor="encounter" label="Encounter"></Field>
         </DynamicGrid.Region>
         <DynamicGrid.Region defaultPosition={region2}>
-          <Select id="encounter" placeholder="Choose encounter" value={this.state.currentValue} onSelect={this.handleChange}  >
+          <Select variant="search" id="encounter" placeholder="Choose encounter" value={this.state.currentValue} onSelect={this.handleChange}  >
             {
 
               this.state.encounterOptions.map((option) => {

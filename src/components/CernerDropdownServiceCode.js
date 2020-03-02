@@ -209,7 +209,7 @@ class CernerDropdownServiceCode extends Component {
             <Field htmlFor="codes" label="Codes"></Field>
           </DynamicGrid.Region>
           <DynamicGrid.Region defaultPosition={region2}>
-            <Select id="category" placeholder="Choose category" onSelect={this.handleCategoryChange}>
+            <Select variant="search" id="category" placeholder="Choose category" onSelect={this.handleCategoryChange}>
               {
 
                 this.state.service_category.map((category) => {
@@ -219,7 +219,7 @@ class CernerDropdownServiceCode extends Component {
                 })
               }
             </Select>
-            <Select id="codes" placeholder="Choose code(s)" variant="multiple" value={this.state.selected_codes} onDeselect={this.handleDeselect} onSelect={this.handleSelect}  >
+            <Select variant="search" id="codes" placeholder="Choose code(s)" variant="multiple" value={this.state.selected_codes} onDeselect={this.handleDeselect} onSelect={this.handleSelect}  >
               {
 
                 this.state.codes.map((code) => {

@@ -65,7 +65,7 @@ export default class CernerDropdownCoverage extends Component {
           <Field htmlFor="coverage" label="Coverage"></Field>
         </DynamicGrid.Region>
         <DynamicGrid.Region defaultPosition={region2}>
-          <Select id="coverage" placeholder="Choose coverage" value={this.state.currentValue} onSelect={this.handleChange}  >
+          <Select variant="search" id="coverage" placeholder="Choose coverage" value={this.state.currentValue} onSelect={this.handleChange}  >
             {
               this.state.coverageOptions.map((option) => {
                 return (
