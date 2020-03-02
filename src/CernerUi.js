@@ -111,9 +111,7 @@ export default class CernerUi {
                     align="center"
                     fill={(
                         <div>
-                            <Heading level={1}>
-                                Beryllium
-                            </Heading>
+                           
                             <Heading level={2}>
                                 Prior Authorization
                             </Heading>
