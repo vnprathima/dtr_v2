@@ -91,6 +91,7 @@
     "terra-form-textarea": "^3.37.0",
     "terra-grid": "^6.17.0",
     "terra-heading": "^4.25.0",
+    "terra-hookshot": "^5.25.0",
     "terra-html-table": "^1.2.0",
     "terra-icon": "^3.27.0",
     "terra-overlay": "^3.41.0",

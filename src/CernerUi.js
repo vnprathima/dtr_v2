@@ -100,7 +100,10 @@ export default class CernerUi {
             'grid-column-start': 3,
             'grid-row-start': 1,
         };
-        let records = inputThis.state.records_by_type;
+        let records = {"completed":[],"submitted":[],"draft":[]}
+        inputThis.state.records_by_type.map((rec)=>{
+            records[rec.type].push(rec)
+        })
         return (
         <div>
            <Arrange
@@ -138,7 +141,7 @@ export default class CernerUi {
                    
                 </DynamicGrid.Region>
             </DynamicGrid>
-
+           
             <Heading level={2}>
                 Requests History
             </Heading>
