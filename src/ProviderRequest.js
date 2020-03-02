@@ -786,6 +786,9 @@ class ProviderRequest extends Component {
               "reference": "Coverage/" + coverage.id
             }
           ],
+          "encounter":{
+            "reference": "Encounter/" + this.state.encounterId
+          },
           "performer": {
             "reference": "PractitionerRole/practitioner1"
           },
@@ -825,6 +828,9 @@ class ProviderRequest extends Component {
               "reference": "Coverage/" + coverage.id
             }
           ],
+          "encounter":{
+            "reference": "Encounter/" + this.state.encounterId
+          },
           "performer": {
             "reference": "PractitionerRole/practitioner1"
           },

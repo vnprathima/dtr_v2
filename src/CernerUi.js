@@ -125,7 +125,7 @@ export default class CernerUi {
                 />
                 <DynamicGrid defaultTemplate={template}>
                     <DynamicGrid.Region defaultPosition={region1}>
-                        <DynamicGrid defaultTemplate={template}>
+                        {/* <DynamicGrid defaultTemplate={template}>
                             <DynamicGrid.Region defaultPosition={region1}>
                                 <Field htmlFor="npi" label="Practitioner NPI"></Field>
                             </DynamicGrid.Region>
@@ -133,7 +133,7 @@ export default class CernerUi {
                                 <Input type="text" placeholder="Practitioner NPI" name="practitioner" id="npi" ariaLabel="NPI"
                                     value={inputThis.state.practitionerId} onChange={inputThis.onPractitionerChange} />
                             </DynamicGrid.Region>
-                        </DynamicGrid>
+                        </DynamicGrid> */}
                         {inputThis.state.encounters.length > 0 &&
                             <CernerDropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
                         }

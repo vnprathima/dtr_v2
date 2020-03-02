@@ -37,10 +37,9 @@ export default class CernerTextInput extends Component {
         // setup initial value from qForm
         const value = this.props.retrieveCallback(this.props.item.linkId);
         if (this.props.inputType === "date" && value) {
-            console.log("Initial date value---", value.toString(), this.props.item.text);
             this.setState({ value: value.toString() });
         } else if (this.props.inputType === "boolean" && value !== undefined && value !== null) {
-            console.log("Initial boolean value---", value, this.props.item.text);
+            // console.log("Initial boolean value---", value, this.props.item.text);
             if (value === "true") {
                 this.setState({ value: true });
             }
@@ -88,7 +87,7 @@ export default class CernerTextInput extends Component {
             reader.readAsBinaryString(file);
         } else if (this.props.valueType === "multipleAttachment"){
             this.setState({ value: event.target.value })
-            console.log("files change", event.target.files);
+            // console.log("files change", event.target.files);
                 // update the parent state
                 this.props.updateCallback("files", event.target.files, "values")
  
@@ -106,7 +105,7 @@ export default class CernerTextInput extends Component {
                 this.setState({ value: false })
             }
         } else {
-            console.log("value----", event.target.value);
+            // console.log("value----", event.target.value);
             // update the parent state
             this.props.updateCallback(this.props.item.linkId, event.target.value, "values")
             // update local state

@@ -110,7 +110,7 @@ export default class QuestionnaireForm extends Component {
         } else {
             this.setState({ turnOffValues: [] });
         }
-        console.log(this.state.turnOffValues);
+        // console.log(this.state.turnOffValues);
         this.getProviderQueries(items);
     }
 
@@ -123,7 +123,7 @@ export default class QuestionnaireForm extends Component {
         if (values.length > 0) {
             this.setState({ "providerSource": values[0].value });
             sessionStorage["providerSource"] = values[0].value;
-            console.log("options---", providerOptions)
+            // console.log("options---", providerOptions)
             providerOptions.forEach((p) => {
                 if (p.value === values[0].value) {
                     this.setState({ "otherProviderName": p.label });
@@ -183,14 +183,14 @@ export default class QuestionnaireForm extends Component {
     }
 
     onChangeOtherProvider(event) {
-        console.log("other provider----", event.target.value);
+        // console.log("other provider----", event.target.value);
         let otherProvider = this.state.otherProvider;
         otherProvider = !otherProvider;
         this.setState({ otherProvider: otherProvider });
     }
 
     onChangeProviderQuery(event) {
-        console.log("event --", event.target.value, event.target.name);
+        // console.log("event --", event.target.value, event.target.name);
         let queries = this.state.providerQueries;
         queries.forEach((q) => {
             if (q.id === event.target.name) {
@@ -259,7 +259,7 @@ export default class QuestionnaireForm extends Component {
     }
 
     retrieveValue(elementName) {
-        console.log("elementname--", elementName, this.state.values[elementName]);
+        // console.log("elementname--", elementName, this.state.values[elementName]);
         return this.state.values[elementName];
     }
 

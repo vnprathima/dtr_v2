@@ -34,7 +34,7 @@ function doSearch(smart, type, q, callback) {
       //nothing
     }
   }
-  if (type === "SupplyRequest") {
+  if (type === "Encounter") {
     smart.api
       .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
@@ -88,7 +88,73 @@ function randomString() {
   return randomstring
 }
 
-function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
+function getInfoFromPatient(pt, neededResources, entryResources) {
+  try {
+    if (pt.hasOwnProperty("managingOrganization")) {
+      console.log("organization----------", pt.managingOrganization, neededResources);
+      sessionStorage.setItem("managingOrganization", pt.managingOrganization.reference);
+      var org_id = pt.managingOrganization.reference.split("/");
+      neededResources.push({
+        "query": {
+          "_id": org_id[1]
+        },
+        "type": "Organization"
+      })
+    }
+    if (pt.hasOwnProperty("generalPractitioner")) {
+      console.log("Practitioner---------", pt.generalPractitioner, neededResources);
+      sessionStorage.setItem("generalPractitioner", pt.generalPractitioner[0].reference);
+      var prac_id = pt.generalPractitioner[0].reference.split("/");
+      neededResources.push({
+        "query": {
+          "_id": prac_id[1]
+        },
+        "type": "Practitioner"
+      })
+    } else {
+      let practitioner = [{
+        "resourceType": "Practitioner",
+        "id": "1912007",
+        "meta": {
+          "versionId": "1",
+          "lastUpdated": "2019-06-24T15:22:23.000Z"
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Practitioner</b></p><p><b>Name</b>: McCurdy, Michael</p><p><b>Status</b>: Active</p></div>"
+        },
+        "identifier": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+                "valueCode": "unknown"
+              }
+            ]
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "usual",
+            "text": "McCurdy, Michael",
+            "family": "McCurdy",
+            "given": [
+              "Michael"
+            ],
+            "period": {
+              "start": "2013-09-27T04:25:59.000Z"
+            }
+          }
+        ]
+      }]
+      entryResources.push(...practitioner);
+    }
+  } catch (err) {
+    console.log("Unable to fetch Organization / Practitioner from patient");
+  }
+}
+function buildPopulatedResourceBundle(smart, neededResources, consoleLog, request) {
   return new Promise(function (resolve, reject) {
     console.log("waiting for patient");
     consoleLog("waiting for patient", "infoClass");
@@ -99,71 +165,17 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
         consoleLog("got pt:" + pt, "infoClass");
         sessionStorage['patientObject'] = JSON.stringify(pt)
         const entryResources = [pt];
-        try {
-          if (pt.hasOwnProperty("managingOrganization")) {
-            console.log("organization----------", pt.managingOrganization, neededResources);
-            sessionStorage.setItem("managingOrganization", pt.managingOrganization.reference);
-            var org_id = pt.managingOrganization.reference.split("/");
+        // entryResources = getInfoFromPatient(pt, neededResources, entryResources);
+        if (request.hasOwnProperty("encounter")) {
+          if (request.encounter.hasOwnProperty("reference")) {
             neededResources.push({
               "query": {
-                "_id": org_id[1]
+                "_id": request.encounter.reference.split("/")[1]
               },
-              "type": "Organization"
+              "type": "Encounter"
             })
           }
-          if (pt.hasOwnProperty("generalPractitioner")) {
-            console.log("Practitioner---------", pt.generalPractitioner, neededResources);
-            sessionStorage.setItem("generalPractitioner", pt.generalPractitioner[0].reference);
-            var prac_id = pt.generalPractitioner[0].reference.split("/");
-            neededResources.push({
-              "query": {
-                "_id": prac_id[1]
-              },
-              "type": "Practitioner"
-            })
-          } else{
-            let practitioner = [{
-              "resourceType": "Practitioner",
-              "id": "1912007",
-              "meta": {
-                "versionId": "1",
-                "lastUpdated": "2019-06-24T15:22:23.000Z"
-              },
-              "text": {
-                "status": "generated",
-                "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Practitioner</b></p><p><b>Name</b>: McCurdy, Michael</p><p><b>Status</b>: Active</p></div>"
-              },
-              "identifier": [
-                {
-                  "extension": [
-                    {
-                      "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
-                      "valueCode": "unknown"
-                    }
-                  ]
-                }
-              ],
-              "active": true,
-              "name": [
-                {
-                  "use": "usual",
-                  "text": "McCurdy, Michael",
-                  "family": "McCurdy",
-                  "given": [
-                    "Michael"
-                  ],
-                  "period": {
-                    "start": "2013-09-27T04:25:59.000Z"
-                  }
-                }
-              ]
-            }]
-            entryResources.push(...practitioner);
-          }
-        } catch (err) {
-          console.log("Unable to fetch Organization / Practitioner from patient");
         }
-        
         const readResources = (neededResources, callback) => {
           const rq = neededResources.pop();
           let r = "";
@@ -178,7 +190,18 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
             readResources(neededResources, callback);
           } else {
             if (r === "Coverage") {
-              q = { "patient": sessionStorage.getItem("patientId") }
+              // if (request.hasOwnProperty("insurance")) {
+              //   if (request.insurance.length > 0) {
+              //     try {
+              //       let coverageRef = request.insurance[0].reference;
+              //       q = { "_id": coverageRef.split("/")[1] }
+              //     } catch{
+              //       q = { "patient": sessionStorage.getItem("patientId") }
+              //     }
+              //   }
+              // } else {
+                q = { "patient": sessionStorage.getItem("patientId") }
+              // }
             }
             doSearch(smart, r, q, (results, error) => {
               if (results) {
@@ -189,13 +212,13 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog) {
                   consoleLog("got " + r, "infoClass");
                 }
                 if (r === "Coverage" && results.length > 0 && results[0].hasOwnProperty("payor") && results[0].payor[0].hasOwnProperty("reference")) {
-                  sessionStorage.setItem("coverage",JSON.stringify(results[0]));
+                  sessionStorage.setItem("coverage", JSON.stringify(results[0]));
                   let payor = results[0].payor[0].reference;
                   let org_id = payor.split("/")[1]
                   //Search Payor Organization if exists
                   doSearch(smart, "Organization", { "_id": org_id }, (results, error) => {
                     if (results) {
-                      sessionStorage.setItem("coverage",JSON.stringify(results[0]));
+                      sessionStorage.setItem("coverage", JSON.stringify(results[0]));
                       entryResources.push(...results);
                       if (q["code"] !== undefined) {
                         consoleLog("got Organization?_id=" + org_id, "infoClass");
