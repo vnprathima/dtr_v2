@@ -24,11 +24,11 @@ import CernerDropdownServiceCode from './components/CernerDropdownServiceCode';
 import CernerDropdownCoverage from './components/CernerDropdownCoverage';
 import SectionHeaderExampleTemplate from 'terra-section-header/lib/terra-dev-site/doc/example/SectionHeaderExampleTemplate';
 import Table, {
-  Header,
-  HeaderCell,
-  Body,
-  Cell,
-  Row,
+    Header,
+    HeaderCell,
+    Body,
+    Cell,
+    Row,
 } from 'terra-html-table';
 import CernerDropdownEncounter from './components/CernerDropdownEncounter';
 import SelectPayer from './components/SelectPayer';
@@ -43,6 +43,8 @@ import DetailView from 'terra-clinical-detail-view';
 import LoadingOverlay from 'terra-overlay/lib/LoadingOverlay';
 import RecursiveProperty from './components/RecursiveProperty.tsx';
 import BrandFooter from 'terra-brand-footer';
+import Tabs from 'terra-tabs';
+import Divider from 'terra-divider';
 
 const locale = (navigator.languages && navigator.languages[0])
     || navigator.language
@@ -62,10 +64,9 @@ export default class CernerUi {
         );
     }
 
-    getProviderRequestUI(){
-
-        return(
-             <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
+    getProviderRequestUI() {
+        return (
+            <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
                 <Base locale={locale}>
                     <ContentContainer>
                         <ProviderRequest />
@@ -77,7 +78,7 @@ export default class CernerUi {
 
 
 
-    getProviderRequestForm(inputThis){
+    getProviderRequestForm(inputThis) {
         const template = {
             'grid-template-columns': '1fr 1fr',
             'grid-template-rows': 'auto',
@@ -102,142 +103,152 @@ export default class CernerUi {
         };
         let records = inputThis.state.records_by_type;
         return (
-        <div>
-           <Arrange
+            <Spacer marginTop="medium" marginLeft="medium" marginRight="medium" marginBottom="medium">
+                <LoadingOverlay isOpen={inputThis.state.loading} isAnimated isRelativeToContainer={false} zIndex="6000" />
+                <Arrange
                     align="center"
                     fill={(
                         <div>
-                           
+
                             <Heading level={2}>
-                                Prior Authorization
-                            </Heading>
-                            <Heading level={3}>
-                                Submit your request to check for prior authorization
+                                Prior Authorization Request
                             </Heading>
                         </div>
                     )}
                 />
-
-            <DynamicGrid defaultTemplate={template}>
-                <DynamicGrid.Region defaultPosition={region1}>
-                    <Field label="NPI">
-                     <Input type="text" placeholder="Practitioner NPI" name="practitioner" id="name" ariaLabel="NPI"
-                    value={inputThis.state.practitionerId} onChange={inputThis.onPractitionerChange} />
-                    </Field>
-                    {inputThis.state.encounters.length > 0 &&
-                          <CernerDropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
-                    }
-                    { inputThis.state.coverageResources.length > 0 &&
-                         <CernerDropdownCoverage elementName="coverageId" coverages={inputThis.state.coverageResources} updateCB={inputThis.updateStateElement} />
-                    }
-
-                </DynamicGrid.Region>
-                <DynamicGrid.Region defaultPosition={region2}>
-                     <CernerDropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
-
-                   
-                </DynamicGrid.Region>
-            </DynamicGrid>
-
-            <Heading level={2}>
-                Requests History
+                <SectionHeader
+                    title="Submit your request to check for prior authorization"
+                    level={3}
+                />
+                <DynamicGrid defaultTemplate={template}>
+                    <DynamicGrid.Region defaultPosition={region1}>
+                        <DynamicGrid defaultTemplate={template}>
+                            <DynamicGrid.Region defaultPosition={region1}>
+                                <Field htmlFor="npi" label="Practitioner NPI"></Field>
+                            </DynamicGrid.Region>
+                            <DynamicGrid.Region defaultPosition={region2}>
+                                <Input type="text" placeholder="Practitioner NPI" name="practitioner" id="npi" ariaLabel="NPI"
+                                    value={inputThis.state.practitionerId} onChange={inputThis.onPractitionerChange} />
+                            </DynamicGrid.Region>
+                        </DynamicGrid>
+                        {inputThis.state.encounters.length > 0 &&
+                            <CernerDropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
+                        }
+                        {inputThis.state.coverageResources.length > 0 &&
+                            <CernerDropdownCoverage elementName="coverageId" coverages={inputThis.state.coverageResources} updateCB={inputThis.updateStateElement} />
+                        }
+                        <Spacer marginTop="large" marginBottom="large">
+                            <Button text="Submit" onClick={inputThis.startLoading} variant="emphasis" />
+                            {inputThis.state.crd_error_msg &&
+                            <ContentContainer style={{color:"rgb(220, 20, 60)"}}>{inputThis.state.crd_error_msg}</ContentContainer>
+                        }
+                        </Spacer>
+                    </DynamicGrid.Region>
+                    <DynamicGrid.Region defaultPosition={region2}>
+                        <CernerDropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
+                        
+                    </DynamicGrid.Region>
+                </DynamicGrid>
+                <Spacer marginTop="large" marginBottom="large"><Divider /></Spacer>
+                <Heading level={2}>
+                    Requests History
             </Heading>
-            {
-            <DynamicGrid defaultTemplate={template_3_col}>
-                <DynamicGrid.Region defaultPosition={region1}>
-                    <Heading level={3}>
-                        Draft
+                {
+                    <DynamicGrid defaultTemplate={template_3_col}>
+                        <DynamicGrid.Region defaultPosition={region1}>
+                            <Heading level={3}>
+                                Draft
                     </Heading>
-                    <Table>
-                        <Header>
-                          <HeaderCell key="Date">Date</HeaderCell>
-                          <HeaderCell key="Codes">Codes</HeaderCell>
-                          <HeaderCell key="Action">Action to be taken</HeaderCell>
-                        </Header>
-                        <Body>
-                          {
-                              records["draft"].map((rec,i)=>{
-                                return(
-                                  <Row key={i}>
-                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
-                                    <Cell key="Codes">
-                                      {rec.codes}
-                                    </Cell>
-                                     <Cell key="Action">
-                                       <Button  text="Submit"  />
-                                     </Cell>
-                                  </Row>
-                                )
-                              })
+                            <Table>
+                                <Header>
+                                    <HeaderCell key="Date">Date</HeaderCell>
+                                    <HeaderCell key="Codes">Codes</HeaderCell>
+                                    <HeaderCell key="Action">Action to be taken</HeaderCell>
+                                </Header>
+                                <Body>
+                                    {
+                                        records["draft"].map((rec, i) => {
+                                            return (
+                                                <Row key={i}>
+                                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                                    <Cell key="Codes">
+                                                        {rec.codes}
+                                                    </Cell>
+                                                    <Cell key="Action">
+                                                        <Button text="Submit" />
+                                                    </Cell>
+                                                </Row>
+                                            )
+                                        })
 
-                            }
-                        </Body>
-                    </Table>
-                </DynamicGrid.Region>
-                <DynamicGrid.Region defaultPosition={region2}>
-                    <Heading level={3}>
-                        Submitted
+                                    }
+                                </Body>
+                            </Table>
+                        </DynamicGrid.Region>
+                        <DynamicGrid.Region defaultPosition={region2}>
+                            <Heading level={3}>
+                                Submitted
                     </Heading>
-                     <Table>
-                        <Header>
-                          <HeaderCell key="Date">Date</HeaderCell>
-                          <HeaderCell key="Codes">Codes</HeaderCell>
-                          <HeaderCell key="Action">Action to be taken</HeaderCell>
-                        </Header>
-                        <Body>
-                          {
-                              records["submitted"].map((rec,i)=>{
-                                return(
-                                  <Row key={i}>
-                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
-                                    <Cell key="Codes">
-                                      {rec.codes}
-                                    </Cell>
-                                     <Cell key="Action">
-                                       <Button  text="Check Status"  />
-                                     </Cell>
-                                  </Row>
-                                )
-                              })
+                            <Table>
+                                <Header>
+                                    <HeaderCell key="Date">Date</HeaderCell>
+                                    <HeaderCell key="Codes">Codes</HeaderCell>
+                                    <HeaderCell key="Action">Action to be taken</HeaderCell>
+                                </Header>
+                                <Body>
+                                    {
+                                        records["submitted"].map((rec, i) => {
+                                            return (
+                                                <Row key={i}>
+                                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                                    <Cell key="Codes">
+                                                        {rec.codes}
+                                                    </Cell>
+                                                    <Cell key="Action">
+                                                        <Button text="Check Status" />
+                                                    </Cell>
+                                                </Row>
+                                            )
+                                        })
 
-                            }
-                        </Body>
-                    </Table>
-                </DynamicGrid.Region>
-                <DynamicGrid.Region defaultPosition={region3}>
-                    <Heading level={3}>
-                        Completed
+                                    }
+                                </Body>
+                            </Table>
+                        </DynamicGrid.Region>
+                        <DynamicGrid.Region defaultPosition={region3}>
+                            <Heading level={3}>
+                                Completed
                     </Heading>
-                     <Table>
-                        <Header>
-                          <HeaderCell key="Date">Date</HeaderCell>
-                          <HeaderCell key="Codes">Codes</HeaderCell>
-                        </Header>
-                        <Body>
-                          {
-                              records["completed"].map((rec,i)=>{
-                                return(
-                                  <Row key={i}>
-                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
-                                    <Cell key="Codes">
-                                      {rec.codes}
-                                    </Cell>
-                                    
-                                  </Row>
-                                )
-                              })
+                            <Table>
+                                <Header>
+                                    <HeaderCell key="Date">Date</HeaderCell>
+                                    <HeaderCell key="Codes">Codes</HeaderCell>
+                                </Header>
+                                <Body>
+                                    {
+                                        records["completed"].map((rec, i) => {
+                                            return (
+                                                <Row key={i}>
+                                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                                    <Cell key="Codes">
+                                                        {rec.codes}
+                                                    </Cell>
 
-                            }
-                        </Body>
-                    </Table>
-                </DynamicGrid.Region>
-            </DynamicGrid>
-        }
-            
-       </div>)
+                                                </Row>
+                                            )
+                                        })
+
+                                    }
+                                </Body>
+                            </Table>
+                        </DynamicGrid.Region>
+                    </DynamicGrid>
+                }
+
+            </Spacer>)
     }
 
-    formatDate(dateString){
+    formatDate(dateString) {
         var date = new Date(dateString)
         return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
     }
@@ -312,6 +323,10 @@ export default class CernerUi {
             'grid-row-start': 1,
             'grid-row-end': 1,
         };
+        let claim = {}
+        if (priorAuthBundle !== undefined && priorAuthBundle.hasOwnProperty("entry")) {
+            claim = priorAuthBundle.entry[0].resource;
+        }
         return (
             <div>
                 <Spacer marginTop="medium" marginLeft="medium" marginRight="medium" marginBottom="medium">
@@ -337,17 +352,6 @@ export default class CernerUi {
                                     }
                                 })
                             }
-                            <DynamicGrid defaultTemplate={singleTemplate}>
-                                <DynamicGrid.Region defaultPosition={region3}>
-                                    <SectionHeader
-                                        title="Uplaod Required/Additional Documentation"
-                                        level={3}
-                                    />
-                                    {this.getTextInput("100", { "text": "Additional Documentation" }, inputThis.updateDocuments,
-                                        inputThis.retrieveValue, "file", "multipleAttachment", "multipleAttachment")}
-                                </DynamicGrid.Region>
-                            </DynamicGrid>
-
                         </DynamicGrid.Region>
                         <DynamicGrid.Region defaultPosition={region2}>
                             {
@@ -359,19 +363,48 @@ export default class CernerUi {
                             }
                             <DynamicGrid defaultTemplate={singleTemplate}>
                                 <DynamicGrid.Region defaultPosition={region3}>
-                                    <Button text="Preview" onClick={inputThis.previewBundle} />
-                                    <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
-                                    {showPreview &&
-                                        <Spacer marginTop="small" marginLeft="small" marginRight="small" marginBottom="small">
-                                            <RecursiveProperty property={priorAuthBundle.entry} propertyName="Preview Resource List" excludeBottomBorder={false} rootProperty={false} />
-                                        </Spacer>
-                                    }
+                                    <SectionHeader
+                                        title="Upload Required/Additional Documentation"
+                                        level={3}
+                                    />
+                                    {this.getTextInput("100", { "text": "Additional Documentation" }, inputThis.updateDocuments,
+                                        inputThis.retrieveValue, "file", "multipleAttachment", "multipleAttachment")}
                                 </DynamicGrid.Region>
                             </DynamicGrid>
-
+                            <DynamicGrid defaultTemplate={singleTemplate}>
+                                <DynamicGrid.Region defaultPosition={region3}>
+                                    <Spacer marginTop="large" marginBottom="large">
+                                        <Button style={{ float: "right" }} text="Preview" onClick={inputThis.previewBundle} />
+                                        <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
+                                    </Spacer>
+                                </DynamicGrid.Region>
+                            </DynamicGrid>
                         </DynamicGrid.Region>
                     </DynamicGrid>
+                    {showPreview &&
+                        <Spacer marginTop="small" marginLeft="small" marginRight="small" marginBottom="small">
+                            <Tabs defaultActiveKey="PriorAuth" style={{ border: "1px dashed grey" }}>
+                                <Tabs.Pane label="Prior Auth Request" key="PriorAuth">
+                                    <DetailView
+                                        title="Prior Auth Request"
+                                        details={[
+                                            (
+                                                <DetailView.DetailList key="auth-status">
+                                                    <DetailView.DetailListItem item={(<LabelValueView label="Use" textValue={claim.use} />)} />
+                                                    <DetailView.DetailListItem item={(<LabelValueView label="Status" textValue={claim.status} />)} />
+                                                </DetailView.DetailList>
+                                            ),
+                                        ]}
+                                        isDivided={false}
+                                    />
+                                </Tabs.Pane>
+                                <Tabs.Pane label="Other Resources" key="Other">
+                                    <RecursiveProperty property={priorAuthBundle.entry} propertyName="Preview Resource List" excludeBottomBorder={false} rootProperty={false} />
+                                </Tabs.Pane>
+                            </Tabs>
 
+                        </Spacer>
+                    }
                 </Spacer>
             </div>
         );

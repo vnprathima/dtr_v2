@@ -286,6 +286,14 @@ class ProviderRequest extends Component {
     if (this.state.firstName === '' || this.state.lastName === '') {
       formValidate = false;
     }
+    if(this.state.coverageId === ""){
+      formValidate = false;
+      this.setState({ loading: false, crd_error_msg: "Unable to Submit Request. No Coverage Information Found !!" });
+    }
+    if(this.state.encounterId === ""){
+      formValidate = false;
+      this.setState({ loading: false, crd_error_msg: "Unable to Submit Request. No Encounter Information Found !!" });
+    }
     // if (this.state.patientId === '') {
     //   formValidate = false;
     //   this.setState({ validatePatient: true });

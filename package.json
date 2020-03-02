@@ -81,6 +81,7 @@
     "terra-core": "0.0.1",
     "terra-date-input": "^1.10.0",
     "terra-date-picker": "^4.29.0",
+    "terra-divider": "^3.24.0",
     "terra-doc-template": "^2.24.0",
     "terra-dynamic-grid": "^3.22.0",
     "terra-form-checkbox": "^3.33.0",
@@ -97,6 +98,7 @@
     "terra-section-header": "^2.31.0",
     "terra-spacer": "^3.31.0",
     "terra-status-view": "^4.18.0",
+    "terra-tabs": "^6.28.0",
     "terra-theme-provider": "^3.19.0",
     "terra-ui": "0.0.0",
     "whatwg-fetch": "^3.0.0"

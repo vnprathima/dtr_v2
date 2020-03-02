@@ -11,9 +11,7 @@ import Table, {
 } from 'terra-html-table';
 import Input from 'terra-form-input';
 import Field from 'terra-form-field';
-
-
-let blackBorder = "blackBorder";
+import DynamicGrid from 'terra-dynamic-grid';
 
 class CernerDropdownServiceCode extends Component {
   constructor(props) {
@@ -24,7 +22,7 @@ class CernerDropdownServiceCode extends Component {
       codes: [],
       codesList: [],
       selected_codes: [],
-      selected_options:[]
+      selected_options: []
     }
     // this.handleChange = this.handleChange.bind(this);
     this.handleDeselect = this.handleDeselect.bind(this);
@@ -40,13 +38,13 @@ class CernerDropdownServiceCode extends Component {
       let codes = this.state.codes;
       let service_category = this.state.service_category;
       service_category = [];
-      this.setState({service_category});
+      this.setState({ service_category });
       codesList.map((item) => {
         /**Update code type options */
         let type = item.service_category;
         let service_category_obj = { key: type, value: type, text: item.service_category };
         var exists = false;
-        
+
         for (var i in service_category) {
           if (service_category[i].key === type) {
             exists = true;
@@ -70,22 +68,22 @@ class CernerDropdownServiceCode extends Component {
   }
 
 
-  async onChangeAmount(code , event){
+  async onChangeAmount(code, event) {
     var selected_options = this.state.selected_options;
-    selected_options.map((option)=>{
-      if(option.value == code){
+    selected_options.map((option) => {
+      if (option.value == code) {
         option.quantity = event.target.value;
       }
     })
-    this.setState({selected_options});
+    this.setState({ selected_options });
     console.log(this.state.selected_options)
-    this.props.updateCB(this.props.elementName, {codes:this.state.selected_codes,codeObjects:selected_options})
-  } 
+    this.props.updateCB(this.props.elementName, { codes: this.state.selected_codes, codeObjects: selected_options })
+  }
 
   async getResources() {
-    console.log("Props in  codes----",this.props.config);
-      //    var url = this.props.config.cds_service.get_codes;
-      var url = "http://cdex.mettles.com/cds/getCodes";
+    console.log("Props in  codes----", this.props.config);
+    //    var url = this.props.config.cds_service.get_codes;
+    var url = "http://cdex.mettles.com/cds/getCodes";
     // let token;
     // token = await createToken(this.props.config.provider.grant_type, 'provider', sessionStorage.getItem('username'), sessionStorage.getItem('password'))
     let headers = {
@@ -106,16 +104,16 @@ class CernerDropdownServiceCode extends Component {
     return codesList;
   }
 
-  handleCategoryChange = (value ) => {
-    console.log("handle Category",value)
-    this.setState({selected_codes:[]});
-    this.setState({selected_options:[]});
+  handleCategoryChange = (value) => {
+    console.log("handle Category", value)
+    this.setState({ selected_codes: [] });
+    this.setState({ selected_options: [] });
     this.props.updateCB(this.props.elementName, []);
     let codes = this.state.codes;
     codes = [];
     this.setState({ codes });
     this.state.codesList.map((item) => {
-      if (item.service_category=== value) {
+      if (item.service_category === value) {
         let obj = { key: item.id, value: item.code, text: item.code };
         codes.push(obj);
       }
@@ -124,109 +122,119 @@ class CernerDropdownServiceCode extends Component {
     console.log(this.props);
   }
 
-  handleDeselect=(value)=>{
-    console.log("onDeselect",value)
+  handleDeselect = (value) => {
+    console.log("onDeselect", value)
     var selected_codes = this.state.selected_codes;
     let index = selected_codes.indexOf(value);
-    selected_codes.splice(index,1);
-    this.setState({selected_codes})
+    selected_codes.splice(index, 1);
+    this.setState({ selected_codes })
     var selected_options = [];
-    this.state.selected_options.map((option)=>{
-      if(selected_codes.indexOf(option.value) > -1){
+    this.state.selected_options.map((option) => {
+      if (selected_codes.indexOf(option.value) > -1) {
         selected_options.push(option);
       }
     })
-    selected_codes.map((val,key)=>{
+    selected_codes.map((val, key) => {
       let found = false;
-      selected_options.map((option)=>{
-        if(val == option.value){
+      selected_options.map((option) => {
+        if (val == option.value) {
           found = true;
         }
       })
-      if(!found){
-        selected_options.push({value:val,quantity:1})
+      if (!found) {
+        selected_options.push({ value: val, quantity: 1 })
 
       }
 
     });
-    this.setState({selected_options:selected_options});
-    this.props.updateCB(this.props.elementName, {codes:selected_codes,codeObjects:selected_options})
+    this.setState({ selected_options: selected_options });
+    this.props.updateCB(this.props.elementName, { codes: selected_codes, codeObjects: selected_options })
   }
 
-  handleSelect = ( value ) => {
-        console.log("handleSelect",value)
+  handleSelect = (value) => {
+    console.log("handleSelect", value)
 
     this.setState({ currentValue: value })
-    this.setState({selected_codes:value});
+    this.setState({ selected_codes: value });
     var selected_codes = this.state.selected_codes;
     selected_codes.push(value);
-    this.setState({selected_codes});
+    this.setState({ selected_codes });
     console.log(value);
     var selected_options = [];
-    this.state.selected_options.map((option)=>{
-      if(selected_codes.indexOf(option.value) > -1){
+    this.state.selected_options.map((option) => {
+      if (selected_codes.indexOf(option.value) > -1) {
         selected_options.push(option);
       }
     })
-    selected_codes.map((val,key)=>{
+    selected_codes.map((val, key) => {
       let found = false;
-      selected_options.map((option)=>{
-        if(val == option.value){
+      selected_options.map((option) => {
+        if (val == option.value) {
           found = true;
         }
       })
-      if(!found){
-        selected_options.push({value:val,quantity:1})
+      if (!found) {
+        selected_options.push({ value: val, quantity: 1 })
 
       }
 
     });
-    this.setState({selected_options:selected_options});
-    this.props.updateCB(this.props.elementName, {codes:selected_codes,codeObjects:selected_options})
-    
-   
+    this.setState({ selected_options: selected_options });
+    this.props.updateCB(this.props.elementName, { codes: selected_codes, codeObjects: selected_options })
+
+
     // var option = {value:value,quantity:quantity}
-    console.log("Valllue",selected_options);
+    console.log("Valllue", selected_options);
   }
 
   render() {
-    const { currentValue } = this.state
-    if (currentValue) {
-      blackBorder = "blackBorder";
-    } else {
-      blackBorder = "";
-    }
+    const template = {
+      'grid-template-columns': '1fr 1fr',
+      'grid-template-rows': 'auto',
+      'grid-gap': '10px',
+    };
+    const region1 = {
+      'grid-column-start': 1,
+      'grid-row-start': 1,
+    };
+    const region2 = {
+      'grid-column-start': 2,
+      'grid-row-start': 1,
+    };
     return (
       <div>
+        <DynamicGrid defaultTemplate={template}>
+          <DynamicGrid.Region defaultPosition={region1}>
+            <Field htmlFor="category" label="Service Category"></Field>
+            <Field htmlFor="codes" label="Codes"></Field>
+          </DynamicGrid.Region>
+          <DynamicGrid.Region defaultPosition={region2}>
+            <Select id="category" placeholder="Choose category" onSelect={this.handleCategoryChange}>
+              {
 
-            <Field label="Category">
-              <Select placeholder="select a category" onSelect={this.handleCategoryChange}>
-                  {
+                this.state.service_category.map((category) => {
+                  return (
+                    <Select.Option value={category.value} key={category.key} display={category.text} />
+                  )
+                })
+              }
+            </Select>
+            <Select id="codes" placeholder="Choose code(s)" variant="multiple" value={this.state.selected_codes} onDeselect={this.handleDeselect} onSelect={this.handleSelect}  >
+              {
 
-                    this.state.service_category.map((category)=>{
-                      return(
-                       <Select.Option value={category.value} key={category.key} display={category.text} />
-                      )
-                    })
-                  }
-              </Select>
-            </Field>
-            <Field label="Codes">
-         
-             <Select placeholder="Choose code(s)" variant="multiple"  value={this.state.selected_codes} onDeselect={this.handleDeselect}  onSelect={this.handleSelect}  >
-                  {
+                this.state.codes.map((code) => {
+                  return (
+                    <Select.Option value={code.value} key={code.key} display={code.text} />
+                  )
+                })
+              }
+            </Select>
 
-                    this.state.codes.map((code)=>{
-                      return(
-                       <Select.Option value={code.value} key={code.key} display={code.text} />
-                      )
-                    })
-                  }
-              </Select>
-            </Field>
-     
-        { this.state.selected_codes.length > 0 &&
-          
+          </DynamicGrid.Region>
+
+        </DynamicGrid>
+        {this.state.selected_codes.length > 0 &&
+
           <Table>
             <Header>
               <HeaderCell key="Code">Code</HeaderCell>
@@ -234,23 +242,22 @@ class CernerDropdownServiceCode extends Component {
             </Header>
             <Body>
               {
-                  this.state.selected_options.map((item)=>{
-                    return(
-                      <Row key={item.value}>
-                        <Cell key="Code">{item.value}</Cell>
-                        <Cell key="Quantity">
-                          <Input type="text"  name="quantity" id="quantity" ariaLabel="Quantity"
-                    value={item.quantity} onChange={(event)=>this.onChangeAmount(item.value,event)} />
-                        </Cell>
-                      </Row>
-                    )
-                  })
+                this.state.selected_options.map((item) => {
+                  return (
+                    <Row key={item.value}>
+                      <Cell key="Code">{item.value}</Cell>
+                      <Cell key="Quantity">
+                        <Input type="text" name="quantity" id="quantity" ariaLabel="Quantity"
+                          value={item.quantity} onChange={(event) => this.onChangeAmount(item.value, event)} />
+                      </Cell>
+                    </Row>
+                  )
+                })
 
-                }
+              }
             </Body>
           </Table>
-       
-          }
+        }
       </div>
     )
   }
