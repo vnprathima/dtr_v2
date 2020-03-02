@@ -101,7 +101,10 @@ export default class CernerUi {
             'grid-column-start': 3,
             'grid-row-start': 1,
         };
-        let records = inputThis.state.records_by_type;
+        let records = {"completed":[],"submitted":[],"draft":[]}
+        inputThis.state.records_by_type.map((rec)=>{
+            records[rec.type].push(rec)
+        })
         return (
             <Spacer marginTop="medium" marginLeft="medium" marginRight="medium" marginBottom="medium">
                 <LoadingOverlay isOpen={inputThis.state.loading} isAnimated isRelativeToContainer={false} zIndex="6000" />
@@ -146,7 +149,6 @@ export default class CernerUi {
                     </DynamicGrid.Region>
                     <DynamicGrid.Region defaultPosition={region2}>
                         <CernerDropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
-                        
                     </DynamicGrid.Region>
                 </DynamicGrid>
                 <Spacer marginTop="large" marginBottom="large"><Divider /></Spacer>

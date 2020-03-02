@@ -100,59 +100,66 @@ class ProviderRequest extends Component {
       stateOptions: stateOptions,
       encounters: [],
       provider_fhir_url: sessionStorage.getItem("serviceUri"),
-      records_by_type:{
-        "draft":[{
+      records_by_type:[
+        {
           "date":"2015/02/19",
           "codes":"8888,882,ACD-12",
-          "AppContextID":"ALSKKSJDSSFF"
+          "appContext":{},
+          "type":"draft"
         },
         {
           "date":"2012/07/11",
           "codes":"992,882,ACD3",
-          "AppContextID":"OEPKKSJDSSFF"
+          "appContext":{},
+          "type":"submitted"
         },
         {
           "date":"2019/09/18",
           "codes":"727,82,92-12",
-          "AppContextID":"LSSKKSJDSSFF"
-        }],
-        "submitted":[{
+          "appContext":{},
+          "type":"completed"
+        },{
            "date":"2015/02/19",
           "codes":"8888,882,ACD-12",
           "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333"
-        },
-        {
-           "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333"
+          "priorAuthId":"22223333",
+           "type":"draft"
         },
         {
            "date":"2015/02/19",
           "codes":"8888,882,ACD-12",
           "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333"
-        }],
-        "completed":[{
+          "priorAuthId":"22223333",
+          "type":"submitted"
+        },
+        {
+           "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333",
+          "type":"completed"
+        },{
           "date":"2015/02/19",
           "codes":"8888,882,ACD-12",
           "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333"
+          "priorAuthId":"22223333",
+           "type":"draft"
         },
         {
           "date":"2015/02/19",
           "codes":"8888,882,ACD-12",
           "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333"
+          "priorAuthId":"22223333",
+          "type":"submitted"
         },
         {
           "date":"2015/02/19",
           "codes":"8888,882,ACD-12",
           "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333"
+          "priorAuthId":"22223333",
+          "type":"completed"
         }]
-      }
+      
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
