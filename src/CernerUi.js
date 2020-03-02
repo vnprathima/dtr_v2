@@ -30,12 +30,6 @@ import Table, {
   Cell,
   Row,
 } from 'terra-html-table';
-
-import { DateInput } from 'semantic-ui-calendar-react';
-
-import { Dropdown } from 'semantic-ui-react';
-
-import DropdownEncounter from './components/DropdownEncounter';
 import CernerDropdownEncounter from './components/CernerDropdownEncounter';
 import SelectPayer from './components/SelectPayer';
 import Checkbox from 'terra-form-checkbox';
@@ -80,6 +74,8 @@ export default class CernerUi {
             </ThemeProvider>
         );
     }
+
+
 
     getProviderRequestForm(inputThis){
         const template = {
@@ -126,16 +122,13 @@ export default class CernerUi {
                 <DynamicGrid.Region defaultPosition={region1}>
                     <Field label="NPI">
                      <Input type="text" placeholder="Practitioner NPI" name="practitioner" id="name" ariaLabel="NPI"
-                    value={inputThis.state.practitionerId} onChange={this.onPractitionerChange} />
+                    value={inputThis.state.practitionerId} onChange={inputThis.onPractitionerChange} />
                     </Field>
                     {inputThis.state.encounters.length > 0 &&
-                        
                           <CernerDropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
-                       
                     }
                     { inputThis.state.coverageResources.length > 0 &&
                          <CernerDropdownCoverage elementName="coverageId" coverages={inputThis.state.coverageResources} updateCB={inputThis.updateStateElement} />
-
                     }
 
                 </DynamicGrid.Region>
@@ -145,43 +138,108 @@ export default class CernerUi {
                    
                 </DynamicGrid.Region>
             </DynamicGrid>
-            {
-            // <DynamicGrid defaultTemplate={template_3_col}>
-            //     <DynamicGrid.Region defaultPosition={region1}>
-            //         <Table>
-            //             <Header>
-            //               <HeaderCell key="Date">Date</HeaderCell>
-            //               <HeaderCell key="Codes">Codes</HeaderCell>
-            //               <HeaderCell key="Action">Action to be taken</HeaderCell>
-            //             </Header>
-            //             <Body>
-            //               {
-            //                   records["draft"].map((rec)=>{
-            //                     return(
-            //                       <Row key={rec.codes}>
-            //                         <Cell key="Date">{rec.date}</Cell>
-            //                         <Cell key="Codes">
-            //                           {rec.codes}
-            //                         </Cell>
-            //                          <Cell key="Action">
-            //                            <Button text="Submit"  />
-            //                          </Cell>
-            //                       </Row>
-            //                     )
-            //                   })
 
-            //                 }
-            //             </Body>
-            //         </Table>
-            //     </DynamicGrid.Region>
-            //     <DynamicGrid.Region defaultPosition={region2}>
-            //     </DynamicGrid.Region>
-            //     <DynamicGrid.Region defaultPosition={region3}>
-            //     </DynamicGrid.Region>
-            // </DynamicGrid>
+            <Heading level={2}>
+                Requests History
+            </Heading>
+            {
+            <DynamicGrid defaultTemplate={template_3_col}>
+                <DynamicGrid.Region defaultPosition={region1}>
+                    <Heading level={3}>
+                        Draft
+                    </Heading>
+                    <Table>
+                        <Header>
+                          <HeaderCell key="Date">Date</HeaderCell>
+                          <HeaderCell key="Codes">Codes</HeaderCell>
+                          <HeaderCell key="Action">Action to be taken</HeaderCell>
+                        </Header>
+                        <Body>
+                          {
+                              records["draft"].map((rec,i)=>{
+                                return(
+                                  <Row key={i}>
+                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                    <Cell key="Codes">
+                                      {rec.codes}
+                                    </Cell>
+                                     <Cell key="Action">
+                                       <Button  text="Submit"  />
+                                     </Cell>
+                                  </Row>
+                                )
+                              })
+
+                            }
+                        </Body>
+                    </Table>
+                </DynamicGrid.Region>
+                <DynamicGrid.Region defaultPosition={region2}>
+                    <Heading level={3}>
+                        Submitted
+                    </Heading>
+                     <Table>
+                        <Header>
+                          <HeaderCell key="Date">Date</HeaderCell>
+                          <HeaderCell key="Codes">Codes</HeaderCell>
+                          <HeaderCell key="Action">Action to be taken</HeaderCell>
+                        </Header>
+                        <Body>
+                          {
+                              records["submitted"].map((rec,i)=>{
+                                return(
+                                  <Row key={i}>
+                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                    <Cell key="Codes">
+                                      {rec.codes}
+                                    </Cell>
+                                     <Cell key="Action">
+                                       <Button  text="Check Status"  />
+                                     </Cell>
+                                  </Row>
+                                )
+                              })
+
+                            }
+                        </Body>
+                    </Table>
+                </DynamicGrid.Region>
+                <DynamicGrid.Region defaultPosition={region3}>
+                    <Heading level={3}>
+                        Completed
+                    </Heading>
+                     <Table>
+                        <Header>
+                          <HeaderCell key="Date">Date</HeaderCell>
+                          <HeaderCell key="Codes">Codes</HeaderCell>
+                        </Header>
+                        <Body>
+                          {
+                              records["completed"].map((rec,i)=>{
+                                return(
+                                  <Row key={i}>
+                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                    <Cell key="Codes">
+                                      {rec.codes}
+                                    </Cell>
+                                    
+                                  </Row>
+                                )
+                              })
+
+                            }
+                        </Body>
+                    </Table>
+                </DynamicGrid.Region>
+            </DynamicGrid>
         }
             
        </div>)
+    }
+
+    formatDate(dateString){
+        var date = new Date(dateString)
+        return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
     }
 
     getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
