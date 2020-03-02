@@ -7,6 +7,7 @@ import ReactDOM from "react-dom";
 import App from "./App.js";
 import { stat } from "fs";
 import ProviderRequest from "./ProviderRequest";
+import UiFactory from "./UiFactory.js";
 
 //alert("Loaded imports");
 
@@ -14,7 +15,7 @@ import ProviderRequest from "./ProviderRequest";
 var state = urlUtils.getUrlParameter("state"); // session key
 const code = urlUtils.getUrlParameter("code"); // authorization code
 var appContextId = urlUtils.getUrlParameter("appContextId") // when internal provider request
-
+let ui = new UiFactory().getUi();
 //alert("Got url params - "+state);
 if (appContextId !== undefined) {
   state = sessionStorage.getItem("state");
@@ -433,7 +434,7 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
           loadDTRApp(auth_response);
         } else {
           ReactDOM.render(
-            <ProviderRequest />,
+            ui.getProviderRequestUI(),
             document.getElementById("root")
           );
         }
@@ -462,7 +463,7 @@ if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("
     loadDTRApp(auth_response);
   } else {
     ReactDOM.render(
-      <ProviderRequest />,
+      ui.getProviderRequestUI(),
       document.getElementById("root")
     );
   }

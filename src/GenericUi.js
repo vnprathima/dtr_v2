@@ -16,7 +16,7 @@ import { Dropdown } from 'semantic-ui-react';
 
 import DropdownEncounter from './components/DropdownEncounter';
 import SelectPayer from './components/SelectPayer';
-
+import ProviderRequest from "./ProviderRequest";
 
 export default class GenericUi {
     constructor(props) {
@@ -30,7 +30,12 @@ export default class GenericUi {
             </div>
          );
     }
-    getProviderRequestUI(inputThis){
+    
+    getProviderRequestUI(){
+        return(<ProviderRequest />);
+    }
+
+    getProviderRequestForm(inputThis){
         return (
       <React.Fragment>
         <div>
@@ -240,6 +245,8 @@ export default class GenericUi {
         </div>
       </React.Fragment >)
     }
+
+
     getQuestionnaireFormApp(smart,questionnaire,cqlPrepoulationResults,serviceRequest,bundle,claimEndpoint) {
         return (
             <div className="App">{this.getQuestionnaireForm(smart,questionnaire,cqlPrepoulationResults,

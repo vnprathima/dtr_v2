@@ -99,13 +99,56 @@ class ProviderRequest extends Component {
       ],
       stateOptions: stateOptions,
       encounters: [],
-      provider_fhir_url: sessionStorage.getItem("serviceUri")
+      provider_fhir_url: sessionStorage.getItem("serviceUri"),
+      records_by_type:{
+        "draft":[{
+          "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "AppContextID":"ALSKKSJDSSFF"
+        }],
+        "submitted":[{
+           "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333"
+        },
+        {
+           "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333"
+        },
+        {
+           "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333"
+        }],
+        "completed":[{
+          "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333"
+        },
+        {
+          "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333"
+        },
+        {
+          "date":"2015/02/19",
+          "codes":"8888,882,ACD-12",
+          "claimResponse":{"resourceType":"claimResponse"},
+          "priorAuthId":"22223333"
+        }]
+      }
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
       code: (foo => { return !foo.match(/^[a-z0-9]+$/i) })
     };
-    
+    console.log("uiii");
     this.medication_prescribe = false;
     this.startLoading = this.startLoading.bind(this);
     this.submit_info = this.submit_info.bind(this);
@@ -154,8 +197,8 @@ class ProviderRequest extends Component {
       console.log(this.state.prefetch, 'here kya')
       this.setState({ prefetch: true });
       this.setState({ prefetchloading: true });
-      this.getResourceData(sessionStorage.getItem("token"),
-        "Patient", "/" + this.state.patientId).then((patientResource) => {
+      await this.getResourceData(sessionStorage.getItem("token"),
+        "Patient", "/" + this.state.patientId).then(async(patientResource) => {
           console.log("Patient get response", patientResource);
           this.setState({ prefetchloading: false });
           if (patientResource.hasOwnProperty("resourceType") && patientResource.resourceType === 'Patient') {
@@ -184,16 +227,16 @@ class ProviderRequest extends Component {
           this.setState({ firstName: '' })
           this.setState({ lastName: '' })
         });
-      this.getResourceData(sessionStorage.getItem("token"),
-        "Encounter", "?patient=" + this.state.patientId).then((encounterRes) => {
+      await this.getResourceData(sessionStorage.getItem("token"),
+        "Encounter", "?patient=" + this.state.patientId).then(async(encounterRes) => {
           if (encounterRes.resourceType === "Bundle" && encounterRes.total > 0) {
             this.setState({ encounters: encounterRes.entry })
           }
         }).catch((reason) => {
           console.log("No response recieved from the server", reason)
         });
-      this.getResourceData(sessionStorage.getItem("token"),
-        "Coverage", "?patient=" + this.state.patientId).then((coverageRes) => {
+      await this.getResourceData(sessionStorage.getItem("token"),
+        "Coverage", "?patient=" + this.state.patientId).then(async(coverageRes) => {
           console.log("Coverage resource", coverageRes.total);
           if (coverageRes.total > 0) {
             console.log("if total>0", coverageRes.entry);
@@ -450,7 +493,7 @@ class ProviderRequest extends Component {
   }
   renderClaimSubmit() {
     console.log(this.ui);
-    return this.ui.getProviderRequestUI(this);
+    return this.ui.getProviderRequestForm(this);
   };
 
   async getRequestID(token) {
