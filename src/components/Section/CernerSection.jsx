@@ -71,9 +71,9 @@ export default class CernerSection extends Component {
                     const component = obj.component;
                     const _item = obj._item;
                     return component ? _item.type !== "group" ? (
-                        <DynamicGrid defaultTemplate={template}>
+                        <DynamicGrid defaultTemplate={template} key={_item.linkId}>
                             <DynamicGrid.Region defaultPosition={region1}>
-                                <Field htmlFor={_item.text} label={_item.text} required={_item.required}></Field>
+                                <Field htmlFor={_item.linkId} label={_item.text} required={_item.required}></Field>
                             </DynamicGrid.Region>
                             <DynamicGrid.Region defaultPosition={region2}>
                                 {component}

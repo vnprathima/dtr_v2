@@ -36,8 +36,19 @@ export default class CernerTextInput extends Component {
     componentDidMount() {
         // setup initial value from qForm
         const value = this.props.retrieveCallback(this.props.item.linkId);
-        if (value) {
-            console.log("Initial value---", value, this.props.item.text);
+        if (this.props.inputType === "date" && value) {
+            console.log("Initial date value---", value.toString(), this.props.item.text);
+            this.setState({ value: value.toString() });
+        } else if (this.props.inputType === "boolean" && value !== undefined && value !== null) {
+            console.log("Initial boolean value---", value, this.props.item.text);
+            if (value === "true") {
+                this.setState({ value: true });
+            }
+            if (value === "false") {
+                this.setState({ value: false });
+            }
+        }
+        else if (value) {
             this.setState({ value: value });
         }
         this.props.updateCallback(this.props.item.linkId,
@@ -75,6 +86,25 @@ export default class CernerTextInput extends Component {
                 self.props.updateCallback(self.props.item.linkId, fileValue, "values")
             }
             reader.readAsBinaryString(file);
+        } else if (this.props.valueType === "multipleAttachment"){
+            this.setState({ value: event.target.value })
+            console.log("files change", event.target.files);
+                // update the parent state
+                this.props.updateCallback("files", event.target.files, "values")
+ 
+        } else if (this.props.inputType === 'boolean') {
+            if (event.target.value === "true") {
+                // update the parent state
+                this.props.updateCallback(this.props.item.linkId, true, "values")
+                // update local state
+                this.setState({ value: true })
+            }
+            if (event.target.value === "false") {
+                // update the parent state
+                this.props.updateCallback(this.props.item.linkId, false, "values")
+                // update local state
+                this.setState({ value: false })
+            }
         } else {
             console.log("value----", event.target.value);
             // update the parent state
@@ -106,8 +136,8 @@ export default class CernerTextInput extends Component {
                     />
                 }
                 {(this.inputTypes.indexOf(this.props.inputType) > -1) &&
-                    <Input type={this.props.inputType} name={this.props.item.text} id={this.props.linkId} ariaLabel={this.props.item.text} 
-                    value={this.state.value} onChange={this.onInputChange} multiple={this.props.inputTypeDisplay==="multipleAttachment"}/>
+                    <Input type={this.props.inputType} name={this.props.item.text} id={this.props.linkId} ariaLabel={this.props.item.text}
+                        value={this.state.value} onChange={this.onInputChange} multiple={this.props.inputTypeDisplay === "multipleAttachment"} />
                 }
                 {this.props.inputType === "date" &&
                     <DatePicker
@@ -119,8 +149,8 @@ export default class CernerTextInput extends Component {
                 }
                 {this.props.inputType === "boolean" &&
                     <div>
-                        <Radio id={"true_" + this.props.linkId} labelText="True" name={this.props.item.text} value={true} onChange={this.onInputChange} checked={this.state.value} isInline />
-                        <Radio id={"false_" + this.props.linkId} labelText="False" name={this.props.item.text} value={false} onChange={this.onInputChange} checked={!this.state.value} isInline />
+                        <Radio id={"true_" + this.props.linkId} labelText="True" name={this.props.item.text} value="true" onChange={this.onInputChange} checked={this.state.value} isInline />
+                        <Radio id={"false_" + this.props.linkId} labelText="False" name={this.props.item.text} value="false" onChange={this.onInputChange} checked={!this.state.value} isInline />
                     </div>
                 }
             </div>

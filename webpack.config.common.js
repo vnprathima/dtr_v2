@@ -25,7 +25,7 @@ module.exports = {
     publicPath: "/"
   },
   resolve: {
-    extensions: ["*", ".js", ".jsx"],
+    extensions: ["*", ".js", ".jsx",".tsx"],
     modules: [path.resolve(__dirname, 'aggregated-translations'), 'node_modules'],
   },
   module: {
@@ -35,6 +35,11 @@ module.exports = {
         test: /\.js.map$/,
         include: [path.resolve(__dirname, "node_modules/cql-execution/lib")],
         use: { loader: "ignore-loader" }
+      },
+      {
+        test: /\.tsx$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       },
       {
         test: /\.(mjs|js|jsx)$/,

@@ -259,13 +259,14 @@ export default class QuestionnaireForm extends Component {
     }
 
     retrieveValue(elementName) {
+        console.log("elementname--", elementName, this.state.values[elementName]);
         return this.state.values[elementName];
     }
 
     updateQuestionValue(elementName, object, type) {
         // callback function for children to update
         // parent state containing the linkIds
-        console.log("Update question --", elementName, object, type);
+        // console.log("Update question --", elementName, object, type);
         this.setState(prevState => ({
             [type]: {
                 ...prevState[type],
@@ -289,13 +290,14 @@ export default class QuestionnaireForm extends Component {
     updateDocuments(elementName, object) {
         console.log(elementName, object, 'is it workinggg document')
         this.setState({ [elementName]: object })
-        var fileInputData = {
-            "resourceType": "DocumentReference",
-            "id": this.randomString,
-            "status": "current",
-            "content": [],
-        }
+
         if (this.state.files != null) {
+            var fileInputData = {
+                "resourceType": "DocumentReference",
+                "id": this.randomString,
+                "status": "current",
+                "content": [],
+            }
             for (var i = 0; i < this.state.files.length; i++) {
                 (function (file) {
                     let content_type = file.type;
@@ -315,11 +317,11 @@ export default class QuestionnaireForm extends Component {
                     reader.readAsBinaryString(file);
                 })(this.state.files[i])
             }
+            console.log("Document JSon--", fileInputData);
+            // this.props.saveDocuments(this.props.files,fileInputData)
+            this.setState({ documentReference: fileInputData })
         }
-        console.log("Document JSon--", fileInputData);
-        // this.props.saveDocuments(this.props.files,fileInputData)
-        this.setState({ documentReference: fileInputData })
-        // return fileInputData
+
     }
 
     distributeContained(contained) {
@@ -366,7 +368,6 @@ export default class QuestionnaireForm extends Component {
             return true;
         }
     }
-
 
     prepopulate(items, links) {
         items.map((item) => {
@@ -431,7 +432,7 @@ export default class QuestionnaireForm extends Component {
             // item.type="open-choice"
             switch (item.type) {
                 case "group":
-                    return this.ui.getSection(item.linkId, this.renderComponent,this.updateQuestionValue,
+                    return this.ui.getSection(item.linkId, this.renderComponent, this.updateQuestionValue,
                         item, level)
                 case "string":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
@@ -444,17 +445,17 @@ export default class QuestionnaireForm extends Component {
                     return this.ui.getChoiceInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, this.state.containedResources, "valueCoding");
                 case "boolean":
-                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "boolean", "boolean", "valueBoolean");
-      
+
                 case "decimal":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "number", "decimal", "valueDecimal");
-                   
+
                 case "url":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "url", "url", "valueUri");
-                   
+
                 case "date":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "date", "date", "valueDate");
@@ -462,11 +463,11 @@ export default class QuestionnaireForm extends Component {
                 case "time":
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "time", "time", "valueTime");
-                  
+
                 case "dateTime":
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "datetime-local", "datetime", "valueDateTime");
-                    
+
 
                 case "attachment":
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
@@ -476,13 +477,13 @@ export default class QuestionnaireForm extends Component {
                 case "integer":
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "number", "valueInteger", "integer");
-       
+
 
                 case "quantity":
 
                     return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,
-                        this.updateQuestionValue,this.retrieveValue, "quantity", "valueQuantity");
-        
+                        this.updateQuestionValue, this.retrieveValue, "quantity", "valueQuantity");
+
 
                 case "open-choice":
                     return this.ui.getOpenChoice(item.linkId, item, this.updateQuestionValue,
@@ -976,9 +977,10 @@ export default class QuestionnaireForm extends Component {
 
             // Add documents in claim
             if (Object.keys(self.state.documentReference).length > 0) {
-                priorAuthBundle.entry.unshift({ resource: self.state.documentReference })
+                if (self.state.documentReference.hasOwnProperty("content") && self.state.documentReference.content.length > 0) {
+                    priorAuthBundle.entry.push({ resource: self.state.documentReference })
+                }
             }
-
             resolve(priorAuthBundle);
         });
 
@@ -1134,7 +1136,7 @@ export default class QuestionnaireForm extends Component {
                 }
                 {!this.state.displayQuestionnaire &&
 
-                    this.ui.getClaimResponseTemplate(this.state.claimMessage, this.state.claimResponse, this.state.resloading, this.state.showBundle, this.state.claimResponseBundle)
+                    this.ui.getClaimResponseTemplate(this, this.state.claimMessage, this.state.claimResponse, this.state.resloading, this.state.showBundle, this.state.claimResponseBundle)
                 }
             </div>
 
