@@ -23,8 +23,13 @@ import Button from 'terra-button/lib/Button';
 import CernerDropdownServiceCode from './components/CernerDropdownServiceCode';
 import CernerDropdownCoverage from './components/CernerDropdownCoverage';
 import SectionHeaderExampleTemplate from 'terra-section-header/lib/terra-dev-site/doc/example/SectionHeaderExampleTemplate';
-
-
+import Table, {
+  Header,
+  HeaderCell,
+  Body,
+  Cell,
+  Row,
+} from 'terra-html-table';
 
 import { DateInput } from 'semantic-ui-calendar-react';
 
@@ -99,6 +104,7 @@ export default class CernerUi {
             'grid-column-start': 3,
             'grid-row-start': 1,
         };
+        let records = inputThis.state.records_by_type;
         return (
         <div>
            <Arrange
@@ -141,19 +147,41 @@ export default class CernerUi {
                    
                 </DynamicGrid.Region>
             </DynamicGrid>
+            {
+            // <DynamicGrid defaultTemplate={template_3_col}>
+            //     <DynamicGrid.Region defaultPosition={region1}>
+            //         <Table>
+            //             <Header>
+            //               <HeaderCell key="Date">Date</HeaderCell>
+            //               <HeaderCell key="Codes">Codes</HeaderCell>
+            //               <HeaderCell key="Action">Action to be taken</HeaderCell>
+            //             </Header>
+            //             <Body>
+            //               {
+            //                   records["draft"].map((rec)=>{
+            //                     return(
+            //                       <Row key={rec.codes}>
+            //                         <Cell key="Date">{rec.date}</Cell>
+            //                         <Cell key="Codes">
+            //                           {rec.codes}
+            //                         </Cell>
+            //                          <Cell key="Action">
+            //                            <Button text="Submit"  />
+            //                          </Cell>
+            //                       </Row>
+            //                     )
+            //                   })
 
-            <DynamicGrid defaultTemplate={template_3_col}>
-                <DynamicGrid.Region defaultPosition={region1}>
-                    <SectionHeaderExampleTemplate  exampleProps={{ title: 'Draft' }} />
-
-                </DynamicGrid.Region>
-                <DynamicGrid.Region defaultPosition={region2}>
-                     <SectionHeaderExampleTemplate  exampleProps={{ title: 'Submitted' }} />
-                </DynamicGrid.Region>
-                <DynamicGrid.Region defaultPosition={region3}>
-                     <SectionHeaderExampleTemplate  exampleProps={{ title: 'Completed' }} />
-                </DynamicGrid.Region>
-            </DynamicGrid>
+            //                 }
+            //             </Body>
+            //         </Table>
+            //     </DynamicGrid.Region>
+            //     <DynamicGrid.Region defaultPosition={region2}>
+            //     </DynamicGrid.Region>
+            //     <DynamicGrid.Region defaultPosition={region3}>
+            //     </DynamicGrid.Region>
+            // </DynamicGrid>
+        }
             
        </div>)
     }
