@@ -112,7 +112,6 @@ export default class CernerUi {
                     align="center"
                     fill={(
                         <div>
-
                             <Heading level={2}>
                                 Prior Authorization Request
                             </Heading>
@@ -325,9 +324,17 @@ export default class CernerUi {
             'grid-row-start': 1,
             'grid-row-end': 1,
         };
+        let bundleResources = []
+       
+
         let claim = {}
         if (priorAuthBundle !== undefined && priorAuthBundle.hasOwnProperty("entry")) {
             claim = priorAuthBundle.entry[0].resource;
+            priorAuthBundle.entry.map((entry)=>{
+                if(entry.resource.resourceType != "Claim"){
+                        bundleResources.push(entry.resource)
+                    }
+            })
         }
         return (
             <div>
@@ -394,6 +401,7 @@ export default class CernerUi {
                                                 <DetailView.DetailList key="auth-status">
                                                     <DetailView.DetailListItem item={(<LabelValueView label="Use" textValue={claim.use} />)} />
                                                     <DetailView.DetailListItem item={(<LabelValueView label="Status" textValue={claim.status} />)} />
+                                                    <DetailView.DetailListItem item={(<LabelValueView label="Provider" textValue={claim.provider.reference} />)} />
                                                 </DetailView.DetailList>
                                             ),
                                         ]}
@@ -401,7 +409,7 @@ export default class CernerUi {
                                     />
                                 </Tabs.Pane>
                                 <Tabs.Pane label="Other Resources" key="Other">
-                                    <RecursiveProperty property={priorAuthBundle.entry} propertyName="Preview Resource List" excludeBottomBorder={false} rootProperty={false} />
+                                    <RecursiveProperty property={bundleResources} propertyName="Preview Resource List" excludeBottomBorder={false} rootProperty={false} />
                                 </Tabs.Pane>
                             </Tabs>
 
