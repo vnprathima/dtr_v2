@@ -623,7 +623,7 @@ export default class QuestionnaireForm extends Component {
             console.log(response);
             const priorAuthBundle = JSON.parse(JSON.stringify(self.props.bundle));
             priorAuthBundle.entry.unshift({ resource: response })
-            priorAuthBundle.entry.unshift({ resource: self.props.serviceRequest });
+            // priorAuthBundle.entry.unshift({ resource: self.props.serviceRequest });
 
             let orgRes = {
                 "resourceType": "Organization"

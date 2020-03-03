@@ -200,7 +200,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
               //     }
               //   }
               // } else {
-                q = { "patient": sessionStorage.getItem("patientId") }
+              q = { "patient": sessionStorage.getItem("patientId") }
               // }
             }
             doSearch(smart, r, q, (results, error) => {
@@ -211,6 +211,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                 } else {
                   consoleLog("got " + r, "infoClass");
                 }
+                //Retrieve Organization Info from  Coverage.Payor
                 if (r === "Coverage" && results.length > 0 && results[0].hasOwnProperty("payor") && results[0].payor[0].hasOwnProperty("reference")) {
                   sessionStorage.setItem("coverage", JSON.stringify(results[0]));
                   let payor = results[0].payor[0].reference;
@@ -218,7 +219,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                   //Search Payor Organization if exists
                   doSearch(smart, "Organization", { "_id": org_id }, (results, error) => {
                     if (results) {
-                      sessionStorage.setItem("coverage", JSON.stringify(results[0]));
                       entryResources.push(...results);
                       if (q["code"] !== undefined) {
                         consoleLog("got Organization?_id=" + org_id, "infoClass");
@@ -236,6 +236,33 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                     }
                     readResources(neededResources, callback);
                   });
+                }
+                if (r === "Encounter" && results.length > 0 && results[0].hasOwnProperty("participant") && results[0].participant.length > 0) {
+                  let participant = results[0].participant;
+                  participant.map((p) => {
+                    let practitioner_id = p.individual.reference.split("/")[1]
+                    //Search Practitioner if exists
+                    doSearch(smart, "Practitioner", { "_id": practitioner_id }, (results, error) => {
+                      if (results) {
+                        entryResources.push(...results);
+                        if (q["code"] !== undefined) {
+                          consoleLog("got Practitioner?_id=" + practitioner_id, "infoClass");
+                        } else {
+                          consoleLog("got Practitioner", "infoClass");
+                        }
+                      }
+                      if (error) {
+                        console.error(error);
+                        if (q["code"] !== undefined) {
+                          consoleLog(error.data.statusText + " for " + r + "?code=" + q["code"], "errorClass");
+                        } else {
+                          consoleLog(error.data.statusText + " for " + r, "errorClass");
+                        }
+                      }
+                      readResources(neededResources, callback);
+                    });
+                  })
+
                 }
               }
               if (error) {
