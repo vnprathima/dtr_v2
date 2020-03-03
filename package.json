@@ -16,6 +16,7 @@
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.6",
     "babel-minify-webpack-plugin": "^0.3.1",
+    "browserslist-config-terra": "^2.0.0",
     "compression-webpack-plugin": "^2.0.0",
     "css-loader": "^2.1.1",
     "eslint-config-prettier": "^3.3.0",
@@ -104,10 +105,7 @@
     "terra-ui": "0.0.0",
     "whatwg-fetch": "^3.0.0"
   },
-  "browsersList": [
-    "last 4 firefox versions",
-    "last 4 chrome versions",
-    "ie >= 10",
-    "last 2 edge versions"
+  "browserslist": [
+    "extends browserslist-config-terra"
   ]
 }
