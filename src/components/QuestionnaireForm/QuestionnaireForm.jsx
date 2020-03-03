@@ -437,6 +437,7 @@ export default class QuestionnaireForm extends Component {
                 case "string":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "text", "string", "valueString");
+                        
                 case "text":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "textArea", "text", "valueString");
@@ -444,6 +445,7 @@ export default class QuestionnaireForm extends Component {
                 case "choice":
                     return this.ui.getChoiceInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, this.state.containedResources, "valueCoding");
+
                 case "boolean":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "boolean", "boolean", "valueBoolean");
@@ -468,19 +470,15 @@ export default class QuestionnaireForm extends Component {
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "datetime-local", "datetime", "valueDateTime");
 
-
                 case "attachment":
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "file", "attachment", "valueAttachment");
-
 
                 case "integer":
                     this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "number", "valueInteger", "integer");
 
-
                 case "quantity":
-
                     return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,
                         this.updateQuestionValue, this.retrieveValue, "quantity", "valueQuantity");
 
@@ -490,7 +488,6 @@ export default class QuestionnaireForm extends Component {
                         this.retrieveValue, this.state.containedResources, ["valueCoding", "valueString"]);
 
                 default:
-
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "text", "string", "valueString");
 

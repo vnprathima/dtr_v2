@@ -216,53 +216,55 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                   sessionStorage.setItem("coverage", JSON.stringify(results[0]));
                   let payor = results[0].payor[0].reference;
                   let org_id = payor.split("/")[1]
-                  //Search Payor Organization if exists
+                  //Search for Payor Organization
                   doSearch(smart, "Organization", { "_id": org_id }, (results, error) => {
                     if (results) {
                       entryResources.push(...results);
-                      if (q["code"] !== undefined) {
-                        consoleLog("got Organization?_id=" + org_id, "infoClass");
-                      } else {
-                        consoleLog("got Organization", "infoClass");
-                      }
+                      consoleLog("got Organization?_id=" + org_id, "infoClass");
                     }
                     if (error) {
                       console.error(error);
-                      if (q["code"] !== undefined) {
-                        consoleLog(error.data.statusText + " for " + r + "?code=" + q["code"], "errorClass");
-                      } else {
-                        consoleLog(error.data.statusText + " for " + r, "errorClass");
-                      }
+                      consoleLog(error.data.statusText + " for " + r, "errorClass");
                     }
                     readResources(neededResources, callback);
                   });
                 }
-                if (r === "Encounter" && results.length > 0 && results[0].hasOwnProperty("participant") && results[0].participant.length > 0) {
-                  let participant = results[0].participant;
-                  participant.map((p) => {
-                    let practitioner_id = p.individual.reference.split("/")[1]
-                    //Search Practitioner if exists
-                    doSearch(smart, "Practitioner", { "_id": practitioner_id }, (results, error) => {
+                if (r === "Encounter" && results.length > 0) {
+                  //Retrieve Practitioner Info from  Encounter.participant
+                  if (results[0].hasOwnProperty("participant") && results[0].participant.length > 0) {
+                    let participant = results[0].participant;
+                    participant.map((p) => {
+                      let practitioner_id = p.individual.reference.split("/")[1]
+                      //Search Practitioner if exists
+                      doSearch(smart, "Practitioner", { "_id": practitioner_id }, (results, error) => {
+                        if (results) {
+                          entryResources.push(...results);
+                          consoleLog("got Practitioner?_id=" + practitioner_id, "infoClass");
+                        }
+                        if (error) {
+                          console.error(error);
+                          consoleLog(error.data.statusText + " for " + r, "errorClass");
+                        }
+                        readResources(neededResources, callback);
+                      });
+                    })
+                  }
+                  //Retrieve Provider Organization Info from  Encounter.serviceProvider
+                  if (results[0].hasOwnProperty("serviceProvider") && results[0].serviceProvider.hasOwnProperty("reference")) {
+                    // Search for Provider Organization
+                    let org_id = results[0].serviceProvider.reference.split("/")[1];
+                    doSearch(smart, "Organization", { "_id": org_id }, (results, error) => {
                       if (results) {
                         entryResources.push(...results);
-                        if (q["code"] !== undefined) {
-                          consoleLog("got Practitioner?_id=" + practitioner_id, "infoClass");
-                        } else {
-                          consoleLog("got Practitioner", "infoClass");
-                        }
+                        consoleLog("got Provider Organization?_id=" + org_id, "infoClass");
                       }
                       if (error) {
                         console.error(error);
-                        if (q["code"] !== undefined) {
-                          consoleLog(error.data.statusText + " for " + r + "?code=" + q["code"], "errorClass");
-                        } else {
-                          consoleLog(error.data.statusText + " for " + r, "errorClass");
-                        }
+                        consoleLog(error.data.statusText + " for Provider Organization", "errorClass");
                       }
                       readResources(neededResources, callback);
                     });
-                  })
-
+                  }
                 }
               }
               if (error) {

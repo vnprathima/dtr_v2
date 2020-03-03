@@ -123,6 +123,7 @@ export default class CernerTextInput extends Component {
     }
 
     render() {
+        console.log("Linkd Id", this.props.linkId, this.props.inputType);
         return (
             <div ref={this.myRef}>
                 {this.props.inputType === "textArea" &&
