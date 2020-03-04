@@ -1,4 +1,4 @@
-import "isomorphic-fetch";
+// import "isomorphic-fetch";
 
 function fetchArtifacts(fhirUriPrefix, questionnaireUri, smart, filepath, consoleLog) {
   return new Promise(function(resolve, reject) {

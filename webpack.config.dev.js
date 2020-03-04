@@ -11,7 +11,6 @@ const appWebpackConfig = () => ({
   entry: {
     launch: path.resolve(__dirname, "src/launch.js"),
     index: path.resolve(__dirname, "src/index.js"),
-    login: path.resolve(__dirname, "src/login.js"),
     register: path.resolve(__dirname, "src/register.js"),
     priorauth: path.resolve(__dirname, "src/priorauth.js")
   },
@@ -54,26 +53,6 @@ const appWebpackConfig = () => ({
             ]
           }
         }
-      },
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      },
-      {
-        test: /\.scss$/,
-        use: [{
-          loader: "style-loader"
-        },
-        {
-          loader: "css-loader",
-          options: {
-            modules: true,
-            sourceMap: true
-          }
-        },
-        {
-          loader: "sass-loader",
-        }]
       }
     ]
   },
@@ -86,14 +65,12 @@ const appWebpackConfig = () => ({
     https: false,
     host: "0.0.0.0",
     public: "0.0.0.0",
-    hotOnly: true,
     historyApiFallback: {
       rewrites: [
         { from: /index/, to: "/index.html" },
         { from: /launch/, to: "/launch.html" },
         { from: /register/, to: "/register.html" },
-        { from: /priorauth/, to: "/priorauth.html" },
-        { from: /login/, to: '/login.html' }
+        { from: /priorauth/, to: "/priorauth.html" }
       ]
     },
     disableHostCheck: true,

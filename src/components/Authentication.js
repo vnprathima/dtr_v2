@@ -1,6 +1,6 @@
 //import KJUR, {KEYUTIL} from 'jsrsasign';
 import config from '../globalConfiguration.json';
-import "isomorphic-fetch";
+// import "isomorphic-fetch";
 
 export async function createToken(grantType, user, username, password, login = false) {
     //alert("In createToken--"+ login + "---"+username + "---"+ password);

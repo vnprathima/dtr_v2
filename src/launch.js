@@ -1,17 +1,18 @@
 import urlUtils from "./util/url";
 
 var serviceUri = urlUtils.getUrlParameter("iss");
+console.log("service---",serviceUri);
 var clientId = urlUtils.getUrlParameter("client_id");
 if (serviceUri.indexOf("epic") !== -1 && clientId === undefined) {
   clientId = "7c47a01b-b7d8-41cf-a290-8ed607108e70"; // epic
 } else if (serviceUri.indexOf("cerner") !== -1  && clientId === undefined) {
-  sessionStorage['UI_TYPE'] = "cerner_ui";
+  
   clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
   // clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
 } else if (serviceUri.indexOf("mettles")!== -1 && clientId === undefined) {
   clientId = "app-login";
 }
-
+sessionStorage['UI_TYPE'] = "cerner_ui";
 var secret = null; // set me, if confidential
 
 var launchContextId = urlUtils.getUrlParameter("launch");
