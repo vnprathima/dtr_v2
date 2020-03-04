@@ -102,12 +102,14 @@ export default class CernerUi {
             'grid-column-start': 3,
             'grid-row-start': 1,
         };
-        let records = {"completed":[],"submitted":[],"draft":[]}
-        inputThis.state.prior_auth_records.map((rec,i)=>{
-            console.log(JSON.stringify(rec))
-            rec["index"] = i
-            records[rec.type].push(rec)
-        })
+        let records = { "completed": [], "submitted": [], "draft": [] }
+        if (inputThis.state.prior_auth_records !== undefined && inputThis.state.prior_auth_records.length > 0) {
+            inputThis.state.prior_auth_records.map((rec, i) => {
+                console.log(JSON.stringify(rec))
+                rec["index"] = i
+                records[rec.type].push(rec)
+            })
+        }
         return (
             <Spacer marginTop="medium" marginLeft="medium" marginRight="medium" marginBottom="medium">
                 <LoadingOverlay isOpen={inputThis.state.loading} isAnimated isRelativeToContainer={false} zIndex="6000" />
@@ -145,8 +147,8 @@ export default class CernerUi {
                         <Spacer marginTop="large" marginBottom="large">
                             <Button text="Submit" onClick={inputThis.startLoading} variant="emphasis" />
                             {inputThis.state.crd_error_msg &&
-                            <ContentContainer style={{color:"rgb(220, 20, 60)"}}>{inputThis.state.crd_error_msg}</ContentContainer>
-                        }
+                                <ContentContainer style={{ color: "rgb(220, 20, 60)" }}>{inputThis.state.crd_error_msg}</ContentContainer>
+                            }
                         </Spacer>
                     </DynamicGrid.Region>
                     <DynamicGrid.Region defaultPosition={region2}>
@@ -179,7 +181,7 @@ export default class CernerUi {
                                                         {rec.codes}
                                                     </Cell>
                                                     <Cell key="Action">
-                                                        <Button onClick={()=>{sessionStorage.setItem("showCDSHook", false);window.location.href="/index?appContextId="+rec.app_context}}  text="Edit & Submit"/>
+                                                        <Button onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }} text="Edit & Submit" />
                                                     </Cell>
                                                 </Row>
                                             )
@@ -209,8 +211,8 @@ export default class CernerUi {
                                                         {rec.codes}
                                                     </Cell>
                                                     <Cell key="Action">
-                                                        <Button onClick={()=>{inputThis.checkRequestStatus(rec)}} variant="document" text="Check Status" />
-                                                        {rec.checking &&  <Spacer style={{color:"blue"}}>checking...</Spacer>}
+                                                        <Button onClick={() => { inputThis.checkRequestStatus(rec) }} variant="document" text="Check Status" />
+                                                        {rec.checking && <Spacer style={{ color: "blue" }}>checking...</Spacer>}
                                                     </Cell>
                                                 </Row>
                                             )
@@ -329,15 +331,15 @@ export default class CernerUi {
             'grid-row-end': 1,
         };
         let bundleResources = []
-       
+
 
         let claim = {}
         if (priorAuthBundle !== undefined && priorAuthBundle.hasOwnProperty("entry")) {
             claim = priorAuthBundle.entry[0].resource;
-            priorAuthBundle.entry.map((entry)=>{
-                if(entry.resource.resourceType != "Claim"){
-                        bundleResources.push(entry.resource)
-                    }
+            priorAuthBundle.entry.map((entry) => {
+                if (entry.resource.resourceType != "Claim") {
+                    bundleResources.push(entry.resource)
+                }
             })
         }
         return (
@@ -390,10 +392,10 @@ export default class CernerUi {
                                         <Button style={{ float: "right" }} text="Preview" onClick={inputThis.previewBundle} />
 
                                         <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
-                                      (or) 
-                                        <Button  text="Save for Later" onClick={()=>inputThis.saveQuestionnaireData()} />
+                                        (or)
+                                        <Button text="Save for Later" onClick={() => inputThis.saveQuestionnaireData()} />
                                     </Spacer>
-                                    {inputThis.state.saved && <Spacer style={{color:"green"}}>Saved Successfully.</Spacer>}
+                                    {inputThis.state.saved && <Spacer style={{ color: "green" }}>Saved Successfully.</Spacer>}
                                 </DynamicGrid.Region>
                             </DynamicGrid>
                         </DynamicGrid.Region>

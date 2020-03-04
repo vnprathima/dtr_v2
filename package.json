@@ -53,6 +53,7 @@
     "fhirclient": "^0.1.15",
     "intl": "^1.2.5",
     "intl-locales-supported": "^1.8.4",
+    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.15",
     "node-fetch": "^2.5.0",
     "node-sass": "^4.13.1",

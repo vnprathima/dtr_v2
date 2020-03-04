@@ -13,7 +13,7 @@ import Loader from 'react-loader-spinner';
 // import { createToken } from './components/Authentication';
 import { Dropdown } from 'semantic-ui-react';
 import stateOptions from './stateOptions'
-//import "isomorphic-fetch";
+import "isomorphic-fetch";
 // var dateFormat = require('dateformat');
 import DropdownEncounter from './components/DropdownEncounter';
 import UiFactory from "./UiFactory.js";
