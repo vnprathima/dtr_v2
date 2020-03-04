@@ -19,6 +19,7 @@ var launchContextId = urlUtils.getUrlParameter("launch");
 if (serviceUri.indexOf("epic") !== -1 && launchContextId === undefined) {
   launchContextId = "" // epic
 } else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
+  sessionStorage['UI_TYPE'] = "cerner_ui"
   launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
   sessionStorage.setItem("currentEHR","Cerner");
 }

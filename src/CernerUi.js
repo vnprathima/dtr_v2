@@ -30,6 +30,7 @@ import Table, {
     Cell,
     Row,
 } from 'terra-html-table';
+import Hyperlink from 'terra-hyperlink';
 import CernerDropdownEncounter from './components/CernerDropdownEncounter';
 import SelectPayer from './components/SelectPayer';
 import Checkbox from 'terra-form-checkbox';
@@ -102,7 +103,9 @@ export default class CernerUi {
             'grid-row-start': 1,
         };
         let records = {"completed":[],"submitted":[],"draft":[]}
-        inputThis.state.records_by_type.map((rec)=>{
+        inputThis.state.prior_auth_records.map((rec,i)=>{
+            console.log(JSON.stringify(rec))
+            rec["index"] = i
             records[rec.type].push(rec)
         })
         return (
@@ -164,7 +167,7 @@ export default class CernerUi {
                                 <Header>
                                     <HeaderCell key="Date">Date</HeaderCell>
                                     <HeaderCell key="Codes">Codes</HeaderCell>
-                                    <HeaderCell key="Action">Action to be taken</HeaderCell>
+                                    <HeaderCell key="Action">Action</HeaderCell>
                                 </Header>
                                 <Body>
                                     {
@@ -176,7 +179,7 @@ export default class CernerUi {
                                                         {rec.codes}
                                                     </Cell>
                                                     <Cell key="Action">
-                                                        <Button text="Submit" />
+                                                        <Button onClick={()=>{sessionStorage.setItem("showCDSHook", false);window.location.href="/index?appContextId="+rec.app_context}}  text="Edit & Submit"/>
                                                     </Cell>
                                                 </Row>
                                             )
@@ -194,7 +197,7 @@ export default class CernerUi {
                                 <Header>
                                     <HeaderCell key="Date">Date</HeaderCell>
                                     <HeaderCell key="Codes">Codes</HeaderCell>
-                                    <HeaderCell key="Action">Action to be taken</HeaderCell>
+                                    <HeaderCell key="Action">Action</HeaderCell>
                                 </Header>
                                 <Body>
                                     {
@@ -206,7 +209,8 @@ export default class CernerUi {
                                                         {rec.codes}
                                                     </Cell>
                                                     <Cell key="Action">
-                                                        <Button text="Check Status" />
+                                                        <Button onClick={()=>{inputThis.checkRequestStatus(rec)}} variant="document" text="Check Status" />
+                                                        {rec.checking &&  <Spacer style={{color:"blue"}}>checking...</Spacer>}
                                                     </Cell>
                                                 </Row>
                                             )
@@ -384,8 +388,12 @@ export default class CernerUi {
                                 <DynamicGrid.Region defaultPosition={region3}>
                                     <Spacer marginTop="large" marginBottom="large">
                                         <Button style={{ float: "right" }} text="Preview" onClick={inputThis.previewBundle} />
+
                                         <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
+                                      (or) 
+                                        <Button  text="Save for Later" onClick={()=>inputThis.saveQuestionnaireData()} />
                                     </Spacer>
+                                    {inputThis.state.saved && <Spacer style={{color:"green"}}>Saved Successfully.</Spacer>}
                                 </DynamicGrid.Region>
                             </DynamicGrid>
                         </DynamicGrid.Region>
