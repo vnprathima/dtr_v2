@@ -15,6 +15,8 @@ import Select from "react-dropdown-select";
 import providerOptions from "../../providerOptions.json";
 import prior_auth_working from '../../prior_auth_working.json';
 import UiFactory from "../../UiFactory.js";
+import globalConfig from '../../globalConfiguration.json';
+
 
 // const state = urlUtils.getUrlParameter("state"); // session key
 // const code = urlUtils.getUrlParameter("code"); // authorization code
@@ -34,6 +36,7 @@ export default class QuestionnaireForm extends Component {
         this.ui = new UiFactory().getUi();
         this.state = {
             containedResources: null,
+            patientId: sessionStorage.getItem('auth_patient_id') !== undefined ? sessionStorage.getItem('auth_patient_id') : '',
             items: null,
             itemTypes: {},
             values: {},
@@ -58,7 +61,8 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle: {},
             showPreview: false,
             previewloading: false,
-            documentReference: {}
+            documentReference: {},
+            saved:false
         };
 
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
@@ -78,6 +82,10 @@ export default class QuestionnaireForm extends Component {
         this.submitCommunicationRequest = this.submitCommunicationRequest.bind(this);
         this.relaunch = this.relaunch.bind(this);
         this.handleShowBundle = this.handleShowBundle.bind(this);
+        this.saveQuestionnaireData = this.saveQuestionnaireData.bind(this);
+        this.createSubmittedRequest = this.createSubmittedRequest.bind(this);
+        // console.log("ServReqqqqq",this.props.serviceRequest)
+
     }
 
     relaunch() {
@@ -179,7 +187,7 @@ export default class QuestionnaireForm extends Component {
     }
     componentDidMount() {
 
-
+        this.getCodesString();
     }
 
     onChangeOtherProvider(event) {
@@ -1054,6 +1062,7 @@ export default class QuestionnaireForm extends Component {
                                 self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
                                 message = "Prior Authorization " + claimResponse.disposition + "\n";
                                 message += "Prior Authorization Number: " + claimResponse.preAuthRef;
+                                self.createSubmittedRequest(claimResponse);
                             } else {
                                 self.setState({ "claimMessage": "Prior Authorization Request Failed." })
                                 message = "Prior Authorization Request Failed."
@@ -1074,6 +1083,142 @@ export default class QuestionnaireForm extends Component {
         }).catch((error) => {
             console.log("unable to generate bundle", error);
         })
+    }
+
+    getCodesString()
+    {
+        let codesString = ""
+        console.log(this.props.serviceRequest);
+        if (this.props.serviceRequest.hasOwnProperty("resourceType") &&
+             this.props.serviceRequest.resourceType === "ServiceRequest" &&
+             this.props.serviceRequest.hasOwnProperty("code")) {
+            if(this.props.serviceRequest.code.hasOwnProperty("coding")){
+                this.props.serviceRequest.code.coding.map((coding)=>{
+                    if(codesString==""){
+                        codesString = coding.code
+                    }
+                    else{
+                        codesString = codesString+","+coding.code
+                    }
+                })
+            }
+           
+        }
+      else if (self.props.serviceRequest.hasOwnProperty("resourceType") && 
+       self.props.serviceRequest.resourceType === "DeviceRequest" &&
+       self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+            if(this.props.serviceRequest.codeCodeableConcept.hasOwnProperty("coding")){
+                this.props.serviceRequest.codeCodeableConcept.coding.map((coding)=>{
+                    if(codesString==""){
+                        codesString = coding.code
+                    }
+                    else{
+                        codesString = codesString+","+coding.code
+                    }
+                })
+            }
+      
+      }
+      return codesString
+    }
+
+    async createSubmittedRequest(claimResponse){
+        await this.deleteReqByAppContext()
+        let today = new Date();
+        let appContext = sessionStorage.getItem("appContext")
+
+        let body = {
+            "type":"submitted",
+            "date":today.getFullYear()+"-"+today.getMonth()+"-"+today.getDate(),
+            "patient_id":this.state.patientId,
+            "app_context":appContext,
+            "claim_response_id":claimResponse.id,
+            "claim_response":claimResponse,
+            "codes":this.getCodesString(),
+            "prior_auth_ref":claimResponse.preAuthRef
+        }
+        await this.createRequest(body)
+
+    }
+
+    async createRequest(body){
+        this.setState({saved:false})
+        let headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          "Access-Control-Allow-Origin":"*",
+          'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+        }
+        let url = globalConfig.restURL+"/api/pa_info"
+        let today = new Date();
+ //        if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+ //                self.props.serviceRequest.resourceType === "ServiceRequest" &&
+ //                self.props.serviceRequest.hasOwnProperty("code")) {
+ //                service["productOrService"] = self.props.serviceRequest.code;
+ // if (self.props.serviceRequest.hasOwnProperty("resourceType") && 
+ //                self.props.serviceRequest.resourceType === "DeviceRequest" &&
+ //                self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+ //                service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
+       
+        let res = await fetch(url, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(body)
+        }).then((response) => {
+          return response.json();
+        }).then((response) => {
+          console.log("Questionnaires Saved: ",response);
+          this.setState({saved:true})
+          return response
+        })
+        return res;
+    }
+
+    async deleteReqByAppContext(){
+        console.log("Save questionnaire",sessionStorage.getItem("appContext"));
+        let appContext = sessionStorage.getItem("appContext")
+        let headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          "Access-Control-Allow-Origin":"*",
+          'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+        }
+        let url = globalConfig.restURL+"/api/pa_info/"+this.state.patientId+"/"+appContext;
+        try{
+            let deleteReq = await fetch(url, {
+              method: "DELETE",
+              headers: headers,
+            }).then((response) => {
+              return response.json();
+            }).then((response) => {
+              console.log("!!Questionnaire deleted",response);
+              return response
+            })
+        }
+        catch(e){
+            console.log(e)
+        }
+    }
+
+    async saveQuestionnaireData(){
+
+        await this.deleteReqByAppContext();
+        let appContext = sessionStorage.getItem("appContext")
+        try{
+            let today = new Date();
+            let body = {
+            "type":"draft",
+            "date":today.getFullYear()+"-"+today.getMonth()+"-"+today.getDate(),
+            "patient_id":this.state.patientId,
+            "codes":this.getCodesString(),
+            "app_context":appContext
+            }
+            await this.createRequest(body)
+        }
+        catch(e){
+             console.log(e)
+        }
+        
     }
 
     isEmptyAnswer(answer) {

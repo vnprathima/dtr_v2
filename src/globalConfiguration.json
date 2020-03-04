@@ -1,5 +1,8 @@
 {
   "token_url": "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token",
     "clientId":"",
-    "npi":"1932102951"
+    "npi":"1932102951",
+  "odoo_username":"admin",
+  "odoo_password":"admin",
+  "restURL":"http://54.167.241.64:5000"
 }

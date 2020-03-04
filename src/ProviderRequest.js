@@ -18,6 +18,8 @@ import "isomorphic-fetch";
 import DropdownEncounter from './components/DropdownEncounter';
 import UiFactory from "./UiFactory.js";
 import Grid from 'terra-grid';
+import globalConfig from './globalConfiguration.json';
+
 
 
 const types = {
@@ -100,72 +102,14 @@ class ProviderRequest extends Component {
       stateOptions: stateOptions,
       encounters: [],
       provider_fhir_url: sessionStorage.getItem("serviceUri"),
-      records_by_type:[
-        {
-          "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "appContext":{},
-          "type":"draft"
-        },
-        {
-          "date":"2012/07/11",
-          "codes":"992,882,ACD3",
-          "appContext":{},
-          "type":"submitted"
-        },
-        {
-          "date":"2019/09/18",
-          "codes":"727,82,92-12",
-          "appContext":{},
-          "type":"completed"
-        },{
-           "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333",
-           "type":"draft"
-        },
-        {
-           "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333",
-          "type":"submitted"
-        },
-        {
-           "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333",
-          "type":"completed"
-        },{
-          "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333",
-           "type":"draft"
-        },
-        {
-          "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333",
-          "type":"submitted"
-        },
-        {
-          "date":"2015/02/19",
-          "codes":"8888,882,ACD-12",
-          "claimResponse":{"resourceType":"claimResponse"},
-          "priorAuthId":"22223333",
-          "type":"completed"
-        }]
+      prior_auth_records:[
+        ]
       
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
       code: (foo => { return !foo.match(/^[a-z0-9]+$/i) })
     };
-    console.log("uiii");
     this.medication_prescribe = false;
     this.startLoading = this.startLoading.bind(this);
     this.submit_info = this.submit_info.bind(this);
@@ -186,12 +130,178 @@ class ProviderRequest extends Component {
     this.changebirthDate = this.changebirthDate.bind(this);
     this.onPatientPostalChange = this.onPatientPostalChange.bind(this);
     this.getResourceData = this.getResourceData.bind(this);
+    this.checkRequestStatus = this.checkRequestStatus.bind(this);
   }
 
-  componentDidMount() {
-    console.log("Fhir url--" + this.state.provider_fhir_url, "----" + sessionStorage.getItem("serviceUri"));
-    this.handlePrefetch()
+  async componentDidMount() {
+    await this.handlePrefetch()
+    await this.getRequests()
+
   }
+
+
+  async getRequests() {
+    let headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      // 'Accept-Encoding': 'gzip, deflate, sdch, br',
+      // 'Accept-Language': 'en-US,en;q=0.8',
+      "Access-Control-Allow-Origin":"*",
+      'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+    }
+    const url = globalConfig.restURL+"/api/pa_info/"+this.state.patientId;
+    let res = fetch(url, {
+      method: "GET",
+      headers: headers,
+    }).then((response) => {
+      return response.json();
+    }).then((response) => {
+      console.log("requests recccss",response);
+      this.setState({prior_auth_records:response.result})
+      return response
+    })
+    return res;
+  }
+
+ 
+  async checkRequestStatus(rec){
+    console.log("check stattt records",rec.index)
+    let prior_auth_records = this.state.prior_auth_records
+    prior_auth_records[rec.index].checking = true
+    this.setState({prior_auth_records})
+    if(rec.claim_response_id != undefined){
+
+      const priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
+      let fhirHeaders = {
+        'Content-Type': 'application/fhir+json'
+
+      }
+      let claimRes = await fetch(priorAuthUrl, {
+        method: "GET",
+        headers: fhirHeaders
+
+      }).then((response) => {
+        return response.json();
+      }).then(async(response) => {
+        console.log("claim Resppsps",response);
+        if(response.hasOwnProperty("outcome")){
+           // response.outcome = "complete"
+          if(response.outcome == "complete"){
+
+            let headers = {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              "Access-Control-Allow-Origin":"*",
+              'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+            }
+            let url = globalConfig.restURL+"/api/pa_info_cri/"+this.state.patientId+"/"+rec.claim_response_id;
+            let codesString = ""
+            try{
+                let getReq = await fetch(url, {
+                  method: "GET",
+                  headers: headers,
+                }).then((response) => {
+                  return response.json();
+                }).then((response) => {
+                  console.log("!!Record found",response);
+                  if(response.hasOwnProperty("result")){
+                    response.result.map((rec)=>{
+                      if(codesString != ""){
+                        codesString = codesString+","+rec.codes
+                      }
+                      else{
+                        codesString = rec.codes
+                      }
+                    })
+                  }
+                  return response
+                })
+            }
+            catch(e){
+                console.log(e)
+
+            }
+            try{
+                let deleteReq = await fetch(url, {
+                  method: "DELETE",
+                  headers: headers,
+                }).then((response) => {
+                  return response.json();
+                }).then((response) => {
+                  console.log("!!Record deleted",response);
+                  return response
+                })
+            }
+            catch(e){
+                console.log(e)
+            }
+            try{
+              let date = new Date(response.created)
+              let body = {
+                  "type":"completed",
+                  "date":date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate(),
+                  "patient_id":this.state.patientId,
+                  "claim_response_id":response.id,
+                  "claim_response":response,
+                  "prior_auth_ref":response.preAuthRef,
+                  "codes":codesString
+                }
+
+              await this.createRequest(body)
+              await this.getRequests();
+            }
+            catch(e){
+              console.log("Error!!",e)
+            }
+          }
+          else{
+            // console.log("in else 1",prior_auth_records[rec.index])
+            prior_auth_records[rec.index].checking = false
+            this.setState({prior_auth_records})
+          }
+        }
+        else{
+          // console.log("in else 2",prior_auth_records[rec.index])
+          prior_auth_records[rec.index].checking = false
+          this.setState({prior_auth_records})
+        }
+        //this.setState({prior_auth_records:response.result})
+        return response
+      })
+      return true
+    }
+
+    prior_auth_records[rec.index].checking = false
+    this.setState({prior_auth_records})
+    return false;
+  }
+
+
+  async createRequest(body){
+    this.setState({saved:false})
+    let headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      "Access-Control-Allow-Origin":"*",
+      'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+    }
+    let url = globalConfig.restURL+"/api/pa_info"
+    let today = new Date();
+    
+   
+    let res = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(body)
+    }).then((response) => {
+      return response.json();
+    }).then((response) => {
+      console.log("Questionnaires Saved: ",response);
+      this.setState({saved:true})
+      return response
+    })
+    return res;
+    }
 
   consoleLog(content, type) {
     let jsonContent = {
