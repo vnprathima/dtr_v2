@@ -164,7 +164,8 @@ export default class CernerUi {
                         <DynamicGrid.Region defaultPosition={region1}>
                             <Heading level={3}>
                                 Draft
-                    </Heading>
+                            </Heading>
+                            {records["draft"].length > 0 &&
                             <Table>
                                 <Header>
                                     <HeaderCell key="Date">Date</HeaderCell>
@@ -172,7 +173,7 @@ export default class CernerUi {
                                     <HeaderCell key="Action">Action</HeaderCell>
                                 </Header>
                                 <Body>
-                                    {
+                                    { 
                                         records["draft"].map((rec, i) => {
                                             return (
                                                 <Row key={i}>
@@ -190,42 +191,57 @@ export default class CernerUi {
                                     }
                                 </Body>
                             </Table>
+                        }
+                        {records["draft"].length == 0 &&
+                            <Spacer>No Draft Requests!!</Spacer>
+                        }
                         </DynamicGrid.Region>
                         <DynamicGrid.Region defaultPosition={region2}>
                             <Heading level={3}>
                                 Submitted
                     </Heading>
-                            <Table>
-                                <Header>
-                                    <HeaderCell key="Date">Date</HeaderCell>
-                                    <HeaderCell key="Codes">Codes</HeaderCell>
-                                    <HeaderCell key="Action">Action</HeaderCell>
-                                </Header>
-                                <Body>
-                                    {
-                                        records["submitted"].map((rec, i) => {
-                                            return (
-                                                <Row key={i}>
-                                                    <Cell key="Date">{this.formatDate(rec.date)}</Cell>
-                                                    <Cell key="Codes">
-                                                        {rec.codes}
-                                                    </Cell>
-                                                    <Cell key="Action">
-                                                        <Button onClick={() => { inputThis.checkRequestStatus(rec) }} variant="document" text="Check Status" />
-                                                        {rec.checking && <Spacer style={{ color: "blue" }}>checking...</Spacer>}
-                                                    </Cell>
-                                                </Row>
-                                            )
-                                        })
+                            {records["submitted"].length > 0 &&
+                                <Table>
+                                    <Header>
+                                        <HeaderCell key="Date">Date</HeaderCell>
+                                        <HeaderCell key="Codes">Codes</HeaderCell>
+                                        <HeaderCell key="Action">Action</HeaderCell>
+                                    </Header>
+                                    <Body>
+                                        {
+                                            records["submitted"].length > 0 && 
+                                            records["submitted"].map((rec, i) => {
+                                                return (
+                                                    <Row key={i}>
+                                                        <Cell key="Date">{this.formatDate(rec.date)}</Cell>
+                                                        <Cell key="Codes">
+                                                            {rec.codes}
+                                                        </Cell>
+                                                        <Cell key="Action">
+                                                            <Button onClick={() => { inputThis.checkRequestStatus(rec) }} variant="document" text="Check Status" />
+                                                            {rec.checking && <Spacer style={{ color: "blue" }}>checking...</Spacer>}
+                                                        </Cell>
+                                                    </Row>
+                                                )
+                                            })
+                                            
 
+                                            
+
+                                        }
+                                        
+                                    </Body>
+                                </Table>
+                            }
+                            {records["submitted"].length == 0 &&
+                                            <Spacer>No Submitted Requests!!</Spacer>
                                     }
-                                </Body>
-                            </Table>
                         </DynamicGrid.Region>
                         <DynamicGrid.Region defaultPosition={region3}>
                             <Heading level={3}>
                                 Completed
                     </Heading>
+                            { records["completed"].length > 0 &&
                             <Table>
                                 <Header>
                                     <HeaderCell key="Date">Date</HeaderCell>
@@ -246,8 +262,13 @@ export default class CernerUi {
                                         })
 
                                     }
+                                    
                                 </Body>
                             </Table>
+                            }
+                            {records["completed"].length == 0 &&
+                                            <Spacer>No Completed Requests!!</Spacer>
+                                    }
                         </DynamicGrid.Region>
                     </DynamicGrid>
                 }

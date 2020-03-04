@@ -144,6 +144,7 @@ class ProviderRequest extends Component {
     let headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+       "Cache-Control": "no-cache,no-store",
       // 'Accept-Encoding': 'gzip, deflate, sdch, br',
       // 'Accept-Language': 'en-US,en;q=0.8',
       "Access-Control-Allow-Origin":"*",
@@ -173,7 +174,8 @@ class ProviderRequest extends Component {
 
       const priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
       let fhirHeaders = {
-        'Content-Type': 'application/fhir+json'
+        'Content-Type': 'application/fhir+json',
+        "Cache-Control": "no-cache,no-store"
 
       }
       let claimRes = await fetch(priorAuthUrl, {
@@ -191,6 +193,7 @@ class ProviderRequest extends Component {
             let headers = {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
+              "Cache-Control": "no-store",
               "Access-Control-Allow-Origin":"*",
               'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
             }
