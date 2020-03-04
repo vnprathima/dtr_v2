@@ -1,17 +1,11 @@
 const path = require("path");
+const merge = require("webpack-merge");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+// Import the terra-toolkit configuration.
+const defaultWebpackConfig = require('terra-toolkit/config/webpack/webpack.config');
 
-const aggregateTranslations = require('terra-aggregate-translations');
-
-const aggregateOptions = {
-    baseDir: __dirname,
-    // excludes: ['./node_modules/packageToExclude'],
-    locales: ['en', 'en-US'],
-    format: 'es6',
-};
-
-aggregateTranslations(aggregateOptions);
-
-module.exports = {
+// Create the app-level configuration
+const appWebpackConfig = () => ({
   entry: {
     launch: path.resolve(__dirname, "src/launch.js"),
     index: path.resolve(__dirname, "src/index.js"),
@@ -26,7 +20,6 @@ module.exports = {
   },
   resolve: {
     extensions: ["*", ".js", ".jsx",".tsx"],
-    modules: [path.resolve(__dirname, 'aggregated-translations'), 'node_modules'],
   },
   module: {
     rules: [
@@ -83,5 +76,19 @@ module.exports = {
   },
   node: {
     fs: "empty"
-  }
-};
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'Smart App',
+      template: path.join(__dirname, 'public', 'index.html'),
+
+    }),
+  ],
+});
+
+// combine the configurations using webpack-merge
+const mergedConfig = (env, argv) => (
+  merge(defaultWebpackConfig(env, argv), appWebpackConfig(env, argv))
+);
+
+module.exports = mergedConfig;

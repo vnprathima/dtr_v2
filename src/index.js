@@ -1,5 +1,6 @@
 //window.//alert("In index.js");
 import "@babel/polyfill";
+import 'core-js';
 import "fhirclient"; // sets window.FHIR
 import urlUtils from "./util/url";
 import React from "react";

@@ -30,8 +30,8 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
     consoleLog("need to fetch resources", "infoClass");
     console.log("We need to fetch these resources:", neededResources);
     sessionStorage['fhir_queries'] = JSON.stringify(neededResources);
-    console.log("device request--",executionInputs.parameters.device_request);
-    buildPopulatedResourceBundle(smart, neededResources, consoleLog, executionInputs.parameters.device_request )
+    console.log("device request--", executionInputs.parameters.device_request);
+    buildPopulatedResourceBundle(smart, neededResources, consoleLog, executionInputs.parameters.device_request)
       .then(function (resourceBundle) {
         console.log("Fetched resources are in this bundle:", resourceBundle);
         console.log(JSON.stringify(resourceBundle));
@@ -62,23 +62,23 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
               }
             }, err => reject(err))
         } else {
-	console.log("executionInputs.parameters.device_request",executionInputs.parameters.device_request);
-	let device_request= executionInputs.parameters.device_request;
-	if (device_request.hasOwnProperty('performer')){
-		if (device_request.performer.hasOwnProperty('reference')){
-			device_request.performer.reference= sessionStorage['generalPractitioner'];
-}	
-}
-	resourceBundle.entry.push({'resource':executionInputs.parameters.device_request});
-	console.log("resource bundle...........",resourceBundle);
+          console.log("executionInputs.parameters.device_request", executionInputs.parameters.device_request);
+          let device_request = executionInputs.parameters.device_request;
+          if (device_request.hasOwnProperty('performer')) {
+            if (device_request.performer.hasOwnProperty('reference')) {
+              device_request.performer.reference = sessionStorage['generalPractitioner'];
+            }
+          }
+          resourceBundle.entry.push({ 'resource': executionInputs.parameters.device_request });
+          console.log("resource bundle...........", resourceBundle);
           patientSource.loadBundles([resourceBundle]);
           const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
-          console.log("elm results---",elmResults);
+          console.log("elm results---", elmResults);
           const results = {
             bundle: resourceBundle,
             elmResults: elmResults
           }
-          console.log("elm results---",results);
+          console.log("elm results---", results);
           resolve(results);
         }
       })
@@ -158,7 +158,7 @@ function executeElmAgainstPatientSource(executionInputs, patientSource) {
     console.log("exec error---", err);
     // alert("Error in CQl execution");
     return {}
-  } 
+  }
 }
 
 function getPatientSource(fhirVersion) {
