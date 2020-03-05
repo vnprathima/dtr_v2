@@ -87,7 +87,7 @@ const appWebpackConfig = () => ({
 
 // combine the configurations using webpack-merge
 const mergedConfig = (env, argv) => (
-  merge(defaultWebpackConfig(env, argv), appWebpackConfig(env, argv))
+  merge(defaultWebpackConfig({disableHotReloading:true}, argv), appWebpackConfig(env, argv))
 );
 
 module.exports = mergedConfig;
