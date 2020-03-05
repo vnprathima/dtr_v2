@@ -66,6 +66,7 @@ export default class CernerSection extends Component {
                 <SectionHeader
                     title={this.props.item.text}
                     level={3}
+                     style={{backgroundColor:"#08256b",color:"#fff",fontSize:"1.25rem",marginBottom:"10px"}}
                 />
                 {this.state.components.map((obj) => {
                     const component = obj.component;
@@ -73,7 +74,7 @@ export default class CernerSection extends Component {
                     return component ? _item.type !== "group" ? (
                         <DynamicGrid defaultTemplate={template} key={_item.linkId}>
                             <DynamicGrid.Region defaultPosition={region1}>
-                                <Field htmlFor={_item.linkId} label={_item.text} required={_item.required}></Field>
+                                <Field htmlFor={_item.linkId} label={_item.text} required={_item.required} style={{background: "rgb(206, 223, 239)",padding: "3px"}} ></Field>
                             </DynamicGrid.Region>
                             <DynamicGrid.Region defaultPosition={region2}>
                                 {component}
