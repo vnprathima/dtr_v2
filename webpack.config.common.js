@@ -1,25 +1,19 @@
 const path = require("path");
-const merge = require("webpack-merge");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-// Import the terra-toolkit configuration.
-const defaultWebpackConfig = require('terra-toolkit/config/webpack/webpack.config');
 
-// Create the app-level configuration
-const appWebpackConfig = () => ({
+module.exports = {
   entry: {
-    launch: path.resolve(__dirname, "src/launch.js"),
+    // launch: path.resolve(__dirname, "src/launch.js"),
     index: path.resolve(__dirname, "src/index.js"),
-    register: path.resolve(__dirname, "src/register.js"),
-    priorauth: path.resolve(__dirname, "src/priorauth.js")
+    // login: path.resolve(__dirname, "src/login.js"),
+    // register: path.resolve(__dirname, "src/register.js"),
+    // priorauth: path.resolve(__dirname, "src/priorauth.js")
   },
   output: {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "public"),
     publicPath: "/"
   },
-  resolve: {
-    extensions: ["*", ".js", ".jsx",".tsx"],
-  },
+  resolve: { extensions: ["*", ".js", ".jsx"] },
   module: {
     rules: [
       {
@@ -54,40 +48,10 @@ const appWebpackConfig = () => ({
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
-      },
-      {
-        test: /\.scss$/,
-        use: [{
-          loader: "style-loader"
-        },
-        {
-          loader: "css-loader",
-          options: {
-            modules: true,
-            sourceMap: true
-          }
-        },
-        {
-          loader: "sass-loader",
-        }]
       }
     ]
   },
   node: {
     fs: "empty"
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Smart App',
-      template: path.join(__dirname, 'public', 'index.html'),
-
-    }),
-  ],
-});
-
-// combine the configurations using webpack-merge
-const mergedConfig = (env, argv) => (
-  merge(defaultWebpackConfig({disableHotReloading:true}, argv), appWebpackConfig(env, argv))
-);
-
-module.exports = mergedConfig;
+  }
+};
