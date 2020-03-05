@@ -110,6 +110,9 @@
     "whatwg-fetch": "^3.0.0"
   },
   "browserslist": [
-    "extends browserslist-config-terra"
+    "last 4 firefox versions",
+    "last 4 chrome versions",
+    "ie 11",
+    "last 2 edge versions"
   ]
 }
