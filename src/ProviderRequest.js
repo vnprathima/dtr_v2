@@ -371,11 +371,13 @@ class ProviderRequest extends Component {
           if (coverageRes.total > 0) {
             console.log("if total>0", coverageRes.entry);
             let coverageResources = this.state.coverageResources
+            let coverageId = false;
             for (var r in coverageRes.entry) {
               console.log("in loop,", r)
+              coverageId = coverageRes.entry[r].resource.id
               coverageResources.push(coverageRes.entry[r].resource);
             }
-            this.setState({ coverageResources });
+            this.setState({ coverageResources:coverageResources,coverageId:coverageId });
             console.log("Coversge reso", this.state.coverageResources)
           }
         }).catch((reason) => {
