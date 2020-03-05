@@ -205,8 +205,8 @@ class CernerDropdownServiceCode extends Component {
       <div>
         <DynamicGrid defaultTemplate={template}>
           <DynamicGrid.Region defaultPosition={region1}>
-            <Field htmlFor="category" label="Service Category"></Field>
-            <Field htmlFor="codes" label="Codes"></Field>
+            <Field htmlFor="category" style={{background: "rgb(206, 223, 239)",padding: "3px", marginBottom: "12px"}} label="Service Category"></Field>
+            <Field htmlFor="codes"  style={{background: "rgb(206, 223, 239)",padding: "3px", marginBottom: "12px"}} label="Codes"></Field>
           </DynamicGrid.Region>
           <DynamicGrid.Region defaultPosition={region2}>
             <Select  variant="search" id="category" placeholder="Choose category" onSelect={this.handleCategoryChange}>

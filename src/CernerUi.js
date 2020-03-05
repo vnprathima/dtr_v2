@@ -69,7 +69,7 @@ export default class CernerUi {
         return (
             <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
                 <Base locale={locale}>
-                    <ContentContainer>
+                    <ContentContainer style={{marginBottom:"100px"}}>
                         <ProviderRequest />
                         
                     </ContentContainer>
@@ -136,6 +136,7 @@ export default class CernerUi {
                 <SectionHeader
                     title="Submit your request to check for prior authorization"
                     level={3}
+                    style={{backgroundColor:"#08256b",color:"#fff",fontSize:"1.25rem"}}
                 />
                 <DynamicGrid defaultTemplate={template} style={{height:"350px",paddingTop:"50px",overflowY:"auto"}}>
                     <DynamicGrid.Region defaultPosition={region1}>
@@ -161,9 +162,13 @@ export default class CernerUi {
                             <CernerDropdownCoverage elementName="coverageId" coverages={inputThis.state.coverageResources} updateCB={inputThis.updateStateElement} />
                         */
                         }
-                        <Button text="Submit" style={{ float: "right",width: "20%",marginTop: "50px"}} onClick={inputThis.startLoading} variant="emphasis" />
-                        <Spacer marginTop="large" marginBottom="large">
-                           
+                        
+                        <Spacer marginTop="large" style={{marginTop: "50px"}} marginBottom="large">
+                            {
+                                 (inputThis.state.coverageId!=""  && inputThis.state.coverageId!=undefined && inputThis.state.coverageId!=null ) &&
+                            <Button text="Submit" style={{ float: "right",width: "20%"}} onClick={inputThis.startLoading} variant="emphasis" />
+
+                            }
                             {inputThis.state.crd_error_msg &&
                                 <ContentContainer style={{ color: "rgb(220, 20, 60)" }}>{inputThis.state.crd_error_msg}</ContentContainer>
                             }
@@ -179,9 +184,13 @@ export default class CernerUi {
                 {
                     <DynamicGrid defaultTemplate={template_3_col}>
                         <DynamicGrid.Region defaultPosition={region1}>
-                            <Heading level={3}>
-                                Draft
-                            </Heading>
+                            <SectionHeader
+                                title="Draft"
+                                level={3}
+                                style={{backgroundColor:"#08256b",color:"#fff",fontSize:"1.25rem"}}
+                            />
+                                
+                           
                             {records["draft"].length > 0 &&
                             <Table>
                                 <Header>
@@ -214,9 +223,12 @@ export default class CernerUi {
                         }
                         </DynamicGrid.Region>
                         <DynamicGrid.Region defaultPosition={region2}>
-                            <Heading level={3}>
-                                Submitted
-                    </Heading>
+                            
+                            <SectionHeader
+                                title="Submitted"
+                                level={3}
+                                style={{backgroundColor:"#08256b",color:"#fff",fontSize:"1.25rem"}}
+                            />
                             {records["submitted"].length > 0 &&
                                 <Table>
                                     <Header>
@@ -255,9 +267,12 @@ export default class CernerUi {
                                     }
                         </DynamicGrid.Region>
                         <DynamicGrid.Region defaultPosition={region3}>
-                            <Heading level={3}>
-                                Completed
-                    </Heading>
+                           
+                            <SectionHeader
+                                title="Completed"
+                                level={3}
+                                style={{backgroundColor:"#08256b",color:"#fff",fontSize:"1.25rem"}}
+                            />
                             { records["completed"].length > 0 &&
                             <Table>
                                 <Header>
@@ -302,7 +317,7 @@ export default class CernerUi {
         return (
             <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
                 <Base locale={locale}>
-                    <ContentContainer>
+                    <ContentContainer style={{marginBottom:"100px"}}>
                         {this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
                             serviceRequest, bundle, claimEndpoint)}
                         
@@ -395,6 +410,7 @@ export default class CernerUi {
                                     <SectionHeader
                                         title="Upload Required/Additional Documentation"
                                         level={3}
+                                         style={{backgroundColor:"#08256b",color:"#fff",fontSize:"1.25rem"}}
                                     />
                                     {this.getTextInput("100", { "text": "Additional Documentation" }, inputThis.updateDocuments,
                                         inputThis.retrieveValue, "file", "multipleAttachment", "multipleAttachment")}
@@ -550,6 +566,7 @@ export default class CernerUi {
             updateCallback={updateQuestionValue}
             item={item}
             level={level}
+
         />
     }
 

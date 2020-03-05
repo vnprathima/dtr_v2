@@ -908,3 +908,8 @@ ol.progtrckr li.progtrckr-done:hover:before {
   position: absolute;
     top: 0;
 }
+
+input{
+  border-color: #797979 !important;
+  border-radius: 0 !important;
+}

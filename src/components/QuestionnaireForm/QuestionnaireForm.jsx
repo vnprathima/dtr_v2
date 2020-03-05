@@ -438,6 +438,7 @@ export default class QuestionnaireForm extends Component {
         const enable = this.checkEnable(item);
         if (enable && (this.state.turnOffValues.indexOf(item.linkId) < 0)) {
             // item.type="open-choice"
+            console.log("--------------------",item.type,item)
             switch (item.type) {
                 case "group":
                     return this.ui.getSection(item.linkId, this.renderComponent, this.updateQuestionValue,
@@ -471,22 +472,24 @@ export default class QuestionnaireForm extends Component {
                         this.retrieveValue, "date", "date", "valueDate");
 
                 case "time":
-                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "time", "time", "valueTime");
 
                 case "dateTime":
-                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "datetime-local", "datetime", "valueDateTime");
 
                 case "attachment":
-                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                    console.log("is attachment",item)
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "file", "attachment", "valueAttachment");
 
                 case "integer":
-                    this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
+                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "number", "valueInteger", "integer");
 
                 case "quantity":
+                    console.log("in quantity",item)
                     return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,
                         this.updateQuestionValue, this.retrieveValue, "quantity", "valueQuantity");
 
