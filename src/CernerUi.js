@@ -137,10 +137,10 @@ export default class CernerUi {
                     title="Submit your request to check for prior authorization"
                     level={3}
                 />
-                <DynamicGrid defaultTemplate={template} style={{height:"400px",paddingTop:"50px"}}>
+                <DynamicGrid defaultTemplate={template} style={{height:"350px",paddingTop:"50px",overflowY:"auto"}}>
                     <DynamicGrid.Region defaultPosition={region1}>
                         <CernerDropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
-                         <Button text="Submit" onClick={inputThis.startLoading} variant="emphasis" />
+                         
                     </DynamicGrid.Region>
                     <DynamicGrid.Region defaultPosition={region2}>
                         {/* <DynamicGrid defaultTemplate={template}>
@@ -161,12 +161,14 @@ export default class CernerUi {
                             <CernerDropdownCoverage elementName="coverageId" coverages={inputThis.state.coverageResources} updateCB={inputThis.updateStateElement} />
                         */
                         }
+                        <Button text="Submit" style={{ float: "right",width: "20%",marginTop: "50px"}} onClick={inputThis.startLoading} variant="emphasis" />
                         <Spacer marginTop="large" marginBottom="large">
                            
                             {inputThis.state.crd_error_msg &&
                                 <ContentContainer style={{ color: "rgb(220, 20, 60)" }}>{inputThis.state.crd_error_msg}</ContentContainer>
                             }
                         </Spacer>
+
                     </DynamicGrid.Region>
                     
                 </DynamicGrid>
