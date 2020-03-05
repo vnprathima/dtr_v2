@@ -17,7 +17,6 @@ import "isomorphic-fetch";
 // var dateFormat = require('dateformat');
 import DropdownEncounter from './components/DropdownEncounter';
 import UiFactory from "./UiFactory.js";
-import Grid from 'terra-grid';
 import globalConfig from './globalConfiguration.json';
 
 

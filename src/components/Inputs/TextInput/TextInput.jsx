@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import './TextInput.css';
 import '../../ComponentStyles.css';
-import ThemeProvider from 'terra-theme-provider';
-import Field from 'terra-form-field';
-import Input from 'terra-form-input';
 
 export default class TextInput extends Component {
     constructor(props) {

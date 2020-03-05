@@ -1,3 +1,4 @@
+import "@babel/polyfill";
 import "fhirclient"; // sets window.FHIR
 import urlUtils from "./util/url";
 import React from "react";
@@ -22,7 +23,7 @@ if (serviceUri.indexOf("epic") !== -1 && clientId === undefined) {
 } else if (serviceUri.indexOf("mettles")!== -1 && clientId === undefined) {
   clientId = "app-login";
 }
-sessionStorage['UI_TYPE'] = "cerner_ui";
+sessionStorage['UI_TYPE'] = "generic_ui";
 var secret = null; // set me, if confidential
 
 var launchContextId = urlUtils.getUrlParameter("launch");
