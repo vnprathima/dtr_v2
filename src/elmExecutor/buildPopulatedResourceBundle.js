@@ -190,18 +190,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
             readResources(neededResources, callback);
           } else {
             if (r === "Coverage") {
-              // if (request.hasOwnProperty("insurance")) {
-              //   if (request.insurance.length > 0) {
-              //     try {
-              //       let coverageRef = request.insurance[0].reference;
-              //       q = { "_id": coverageRef.split("/")[1] }
-              //     } catch{
-              //       q = { "patient": sessionStorage.getItem("patientId") }
-              //     }
-              //   }
-              // } else {
               q = { "patient": sessionStorage.getItem("patientId") }
-              // }
             }
             doSearch(smart, r, q, (results, error) => {
               if (results) {
@@ -226,7 +215,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                       console.error(error);
                       consoleLog(error.data.statusText + " for " + r, "errorClass");
                     }
-                    readResources(neededResources, callback);
                   });
                 }
                 if (r === "Encounter" && results.length > 0) {
@@ -245,7 +233,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                           console.error(error);
                           consoleLog(error.data.statusText + " for " + r, "errorClass");
                         }
-                        readResources(neededResources, callback);
                       });
                     })
                   }
@@ -262,7 +249,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                         console.error(error);
                         consoleLog(error.data.statusText + " for Provider Organization", "errorClass");
                       }
-                      readResources(neededResources, callback);
                     });
                   }
                 }

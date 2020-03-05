@@ -90,7 +90,7 @@ class App extends Component {
 
   render() {
     //window.alert("before render");	
-    console.log("93 App.js",this.state.questionnaire, this.state.bundle , this.state.cqlPrepoulationResults,this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults)
+    // console.log("93 App.js",this.state.questionnaire, this.state.bundle , this.state.cqlPrepoulationResults,this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults)
     if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
       return (this.ui.getQuestionnaireFormApp(this.smart,this.state.questionnaire,this.state.cqlPrepoulationResults,
                                                 this.state.serviceRequest,this.state.bundle,this.state.claimEndpoint)
