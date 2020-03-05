@@ -11,8 +11,8 @@ const appWebpackConfig = () => ({
   entry: {
     launch: path.resolve(__dirname, "src/launch.js"),
     index: path.resolve(__dirname, "src/index.js"),
-    register: path.resolve(__dirname, "src/register.js"),
-    priorauth: path.resolve(__dirname, "src/priorauth.js")
+    // register: path.resolve(__dirname, "src/register.js"),
+    // priorauth: path.resolve(__dirname, "src/priorauth.js")
   },
   output: {
     filename: "[name].bundle.js",
@@ -69,8 +69,8 @@ const appWebpackConfig = () => ({
       rewrites: [
         { from: /index/, to: "/index.html" },
         { from: /launch/, to: "/launch.html" },
-        { from: /register/, to: "/register.html" },
-        { from: /priorauth/, to: "/priorauth.html" }
+        // { from: /register/, to: "/register.html" },
+        // { from: /priorauth/, to: "/priorauth.html" }
       ]
     },
     disableHostCheck: true,
@@ -87,7 +87,6 @@ const appWebpackConfig = () => ({
   plugins: [new webpack.HotModuleReplacementPlugin(), new HtmlWebpackPlugin({
     title: 'Smart App',
     template: path.join(__dirname, 'public', 'index.html'),
-
   })]
 });
 
