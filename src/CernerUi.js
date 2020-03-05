@@ -71,8 +71,18 @@ export default class CernerUi {
                 <Base locale={locale}>
                     <ContentContainer>
                         <ProviderRequest />
+                        
                     </ContentContainer>
                 </Base>
+                <BrandFooter style={{position: "fixed", bottom: 0,width: "100%"}}
+                            isVertical
+                            
+                            contentBottom={(
+                                <span>
+                                    <small>Copyright 2018 - 2020 Mettles Solutions, Inc.  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;).</small>
+                                </span>
+                            )}
+                        />
             </ThemeProvider>
         );
     }
@@ -127,8 +137,12 @@ export default class CernerUi {
                     title="Submit your request to check for prior authorization"
                     level={3}
                 />
-                <DynamicGrid defaultTemplate={template}>
+                <DynamicGrid defaultTemplate={template} style={{height:"350px",paddingTop:"50px",overflowY:"auto"}}>
                     <DynamicGrid.Region defaultPosition={region1}>
+                        <CernerDropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
+                         
+                    </DynamicGrid.Region>
+                    <DynamicGrid.Region defaultPosition={region2}>
                         {/* <DynamicGrid defaultTemplate={template}>
                             <DynamicGrid.Region defaultPosition={region1}>
                                 <Field htmlFor="npi" label="Practitioner NPI"></Field>
@@ -141,19 +155,22 @@ export default class CernerUi {
                         {inputThis.state.encounters.length > 0 &&
                             <CernerDropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
                         }
-                        {inputThis.state.coverageResources.length > 0 &&
+                        {
+                            /*
+                            inputThis.state.coverageResources.length > 0 &&
                             <CernerDropdownCoverage elementName="coverageId" coverages={inputThis.state.coverageResources} updateCB={inputThis.updateStateElement} />
+                        */
                         }
+                        <Button text="Submit" style={{ float: "right",width: "20%",marginTop: "50px"}} onClick={inputThis.startLoading} variant="emphasis" />
                         <Spacer marginTop="large" marginBottom="large">
-                            <Button text="Submit" onClick={inputThis.startLoading} variant="emphasis" />
+                           
                             {inputThis.state.crd_error_msg &&
                                 <ContentContainer style={{ color: "rgb(220, 20, 60)" }}>{inputThis.state.crd_error_msg}</ContentContainer>
                             }
                         </Spacer>
+
                     </DynamicGrid.Region>
-                    <DynamicGrid.Region defaultPosition={region2}>
-                        <CernerDropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
-                    </DynamicGrid.Region>
+                    
                 </DynamicGrid>
                 <Spacer marginTop="large" marginBottom="large"><Divider /></Spacer>
                 <Heading level={2}>
@@ -288,42 +305,18 @@ export default class CernerUi {
                     <ContentContainer>
                         {this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
                             serviceRequest, bundle, claimEndpoint)}
-                        <BrandFooter
+                        
+                    </ContentContainer>
+                </Base>
+                 <BrandFooter style={{position: "fixed", bottom: 0,width: "100%"}}
                             isVertical
-                            sections={[
-                                {
-                                    headerText: 'Smart App Links',
-                                    links: [
-                                        { text: 'Terra UI', href: 'http://terra-ui.com/' },
-                                        { text: 'Terra UI Components', href: 'http://terra-ui.com/static/#/site/components' },
-                                    ],
-                                },
-                                {
-                                    headerText: 'Mettles Links',
-                                    links: [
-                                        { text: 'Cerner Home', href: 'https://www.cerner.com/' },
-                                        { text: 'Cerner Code', href: 'https://code.cerner.com/', target: '_blank' },
-                                    ],
-                                },
-                            ]}
-                            contentLeft={(
-                                <a
-                                    href="http://terra-ui.com/"
-                                    aria-label="Smart App Home"
-                                >
-                                </a>
-                            )}
-                            contentRight={(
-                                <img ></img>
-                            )}
+                            
                             contentBottom={(
                                 <span>
                                     <small>Copyright 2018 - 2020 Mettles Solutions, Inc.  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;).</small>
                                 </span>
                             )}
                         />
-                    </ContentContainer>
-                </Base>
             </ThemeProvider>
         );
     }
