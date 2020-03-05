@@ -2,17 +2,17 @@ const merge = require("webpack-merge");
 const path = require("path");
 const webpack = require("webpack");
 // const common = require("./webpack.config.common.js");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 // Import the terra-toolkit configuration.
-const defaultWebpackConfig = require("terra-toolkit/config/webpack/webpack.config");
+const defaultWebpackConfig = require('terra-toolkit/config/webpack/webpack.config');
 
 // Create the app-level configuration
 const appWebpackConfig = () => ({
   entry: {
     launch: path.resolve(__dirname, "src/launch.js"),
     index: path.resolve(__dirname, "src/index.js"),
-    register: path.resolve(__dirname, "src/register.js"),
-    priorauth: path.resolve(__dirname, "src/priorauth.js")
+    // register: path.resolve(__dirname, "src/register.js"),
+    // priorauth: path.resolve(__dirname, "src/priorauth.js")
   },
   output: {
     filename: "[name].bundle.js",
@@ -26,10 +26,6 @@ const appWebpackConfig = () => ({
   module: {
     rules: [
       {
-        test: /\.js$/,
-        loader: "babel-loader"
-      },
-      {
         // bit of a hack to ignore the *.js.map files included in cql-execution (from coffeescript)
         test: /\.js.map$/,
         include: [path.resolve(__dirname, "node_modules/cql-execution/lib")],
@@ -37,7 +33,7 @@ const appWebpackConfig = () => ({
       },
       {
         test: /\.tsx$/,
-        use: "ts-loader",
+        use: 'ts-loader',
         exclude: /node_modules/,
       },
       {
@@ -50,7 +46,7 @@ const appWebpackConfig = () => ({
               [
                 "@babel/env",
                 {
-                  corejs: 3,
+                  corejs: "2.0.0",
                   useBuiltIns: "entry"
                 }
               ]
@@ -73,8 +69,8 @@ const appWebpackConfig = () => ({
       rewrites: [
         { from: /index/, to: "/index.html" },
         { from: /launch/, to: "/launch.html" },
-        { from: /register/, to: "/register.html" },
-        { from: /priorauth/, to: "/priorauth.html" }
+        // { from: /register/, to: "/register.html" },
+        // { from: /priorauth/, to: "/priorauth.html" }
       ]
     },
     disableHostCheck: true,
@@ -89,7 +85,8 @@ const appWebpackConfig = () => ({
     ]
   },
   plugins: [new webpack.HotModuleReplacementPlugin(), new HtmlWebpackPlugin({
-    title: "Smart App"
+    title: 'Smart App',
+    template: path.join(__dirname, 'public', 'index.html'),
   })]
 });
 
