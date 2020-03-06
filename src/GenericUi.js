@@ -252,12 +252,12 @@ export default class GenericUi {
       <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
         serviceRequest, bundle, claimEndpoint)}
          <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
-            <div className="col-9 text-left">
+            <div className="col-8 text-left">
               <span>
                   Copyright 2018 - 2020 Mettles Solutions, LLC.
               </span>
             </div>
-            <div className="col-2 text-right">
+            <div className="col-3 text-right">
               <span>
                   Powered By Medical EPA.
               </span>
@@ -275,7 +275,7 @@ export default class GenericUi {
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
     return (
-      <div class="main">
+      <div class="main" style={{marginBottom:"100px"}}>
         <div className="container">
           <div className="col-12 cerner-main-header">
             {title}
