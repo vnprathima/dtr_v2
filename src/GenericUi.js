@@ -345,7 +345,7 @@ export default class GenericUi {
       <div className="container">
         <div className="success-msg"> 
         <span className="success-icon">
-          <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white"   qax/></span>&nbsp;&nbsp;{claimMessage}</div>
+          <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white"/></span>&nbsp;&nbsp;{claimMessage}</div>
         <div className="form-row">
           <div className="col-3"><b>Outcome</b></div>
           {claimResponse.outcome === "complete" &&
