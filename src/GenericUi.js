@@ -86,9 +86,9 @@ export default class GenericUi {
 
                 <div className="row" style={{ marginTop: "50px" }}>
                   <div className="col-4">
-                    <h3>Draft Requests</h3>
+                    <div className="col-12 cerner-header">Draft Requests</div>
                     {records["draft"].length > 0 &&
-                      <table className="table table-bordered">
+                      <table className="table table-striped table-condensed table-bordered">
                         <thead>
                           <tr>
                             <td key="Date">Date</td>
@@ -106,7 +106,7 @@ export default class GenericUi {
                                     {rec.codes}
                                   </td>
                                   <td key="Action">
-                                    <button onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
+                                    <button type="button" onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
                                   </td>
                                 </tr>
                               )
@@ -118,9 +118,9 @@ export default class GenericUi {
                     }
                   </div>
                   <div className="col-4">
-                    <h3>Submitted Requests</h3>
+                  <div className="col-12 cerner-header">Submitted Requests</div>
                     {records["submitted"].length > 0 &&
-                      <table className="table table-bordered">
+                      <table className="table table-striped table-condensed table-bordered">
                         <thead>
                           <tr>
                             <td key="Date">Date</td>
@@ -138,7 +138,7 @@ export default class GenericUi {
                                     {rec.codes}
                                   </td>
                                   <td key="Action">
-                                    <button onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
+                                    <button type="button" onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
                                   </td>
                                 </tr>
                               )
@@ -150,9 +150,9 @@ export default class GenericUi {
                     }
                   </div>
                   <div className="col-4">
-                    <h3>Completed Requests</h3>
+                    <div className="col-12 cerner-header">Completed Requests</div>
                     {records["completed"].length > 0 &&
-                      <table className="table table-bordered">
+                      <table className="table table-striped table-condensed table-bordered">
                         <thead>
                           <tr>
                             <td key="Date">Date</td>
