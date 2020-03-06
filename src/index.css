@@ -927,6 +927,7 @@ input{
 
 .module {
   position: relative;
+  background: #f1f1f157;
 }
 .module::before {
   content: "";
