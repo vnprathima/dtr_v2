@@ -43,10 +43,13 @@ class DropdownServiceCode extends Component {
         if (!exists) {
           service_category.push(service_category_obj);
         }
-
+        let text = item.code
+        if(item.code_description != "" && item.code_description != undefined && item.code_description != null){
+          text = item.code + " - "+item.code_description
+        }
 
         /**Update code options */
-        let obj = { key: item.id, value: item.code, text: item.code };
+        let obj = { key: item.id, value: item.code, text: text,code_description:item.code_description  };
         codes.push(obj);
       });
       this.setState({ codes });
@@ -100,9 +103,14 @@ class DropdownServiceCode extends Component {
     let codes = this.state.codes;
     codes = [];
     this.setState({ codes });
+    
     this.state.codesList.map((item) => {
       if (item.service_category === value) {
-        let obj = { key: item.id, value: item.code, text: item.code };
+        let text = item.code
+        if(item.code_description != "" && item.code_description != undefined && item.code_description != null){
+          text = item.code + " - "+item.code_description
+        }
+        let obj = { key: item.id, value: item.code, text: text ,code_description: item.code_description};
         codes.push(obj);
       }
     });
@@ -115,8 +123,16 @@ class DropdownServiceCode extends Component {
     this.setState({ selected_codes: value });
     console.log(value);
     var selected_options = [];
+
     this.state.selected_options.map((option) => {
       if (value.indexOf(option.value) > -1) {
+            let code_description = ""
+          this.state.codes.map((codeObj)=>{
+            if(option.value == codeObj.value){
+              option.code_description = codeObj.code_description
+            }
+            
+          })
         selected_options.push(option);
       }
     })
@@ -128,7 +144,15 @@ class DropdownServiceCode extends Component {
         }
       })
       if (!found) {
-        selected_options.push({ value: val, quantity: 1 })
+       let code_description = ""
+        this.state.codes.map((codeObj)=>{
+          console.log(codeObj,val)
+          if(val == codeObj.value){
+            code_description = codeObj.code_description
+          }
+          
+        })
+        selected_options.push({ value: val, quantity: 1,code_description:code_description })
 
       }
 
@@ -200,7 +224,7 @@ class DropdownServiceCode extends Component {
             <div className="col-md-12">
               <table class="table table-bordered">
                 <thead>
-                  <tr><td>Code</td><td>Quantity</td></tr>
+                  <tr><td>Code</td><td>Quantity</td><td>Description</td></tr>
                 </thead>
                 <tbody>
                   {
@@ -210,6 +234,7 @@ class DropdownServiceCode extends Component {
                           <td>
                             {item.value}
                           </td>
+                          
                           <td>
                             <div className="">
                               <input type="number" step="0.01" name="quantity" className="form-control" id="number" placeholder="NPI"
@@ -217,6 +242,9 @@ class DropdownServiceCode extends Component {
                                 value={item.quantity}
                               />
                             </div>
+                          </td>
+                          <td>
+                            {item.code_description}
                           </td>
                         </tr>
                       )

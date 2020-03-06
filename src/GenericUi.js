@@ -58,41 +58,50 @@ export default class GenericUi {
           <div id="main">
             <div className="form">
               <div className="container">
-                <div className="col-12 cerner-header">CRD Request</div>
-                <div className="row" style={{ height: "350px", overflowY: "auto" }}>
-                  <div className="col-6">
-                    <DropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
-                  </div>
+                <div className="col-12 cerner-header" style={{marginTop:"20px"}}>CRD Request</div>
+                <div className="row" style={{minHeight:"350px",marginTop:"20px"}}>
                   <div className="col-6">
                     {inputThis.state.encounters.length > 0 &&
                       <div className="form-row">
                         <div className="form-group col-md-6">
                           <h4 className="title">Encounter</h4>
-                          <button type="button" onClick={inputThis.startLoading}>Submit
-                    <div id="fse" className={"spinner " + (inputThis.state.loading ? "visible" : "invisible")}>
-                              <Loader
-                                type="Oval"
-                                color="#fff"
-                                height={15}
-                                width={15}
-                              />
-                            </div>
-                          </button>
-                          {inputThis.state.crd_error_msg &&
-                            <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
-                          }
+                          
                         </div>
                         <div className="form-group col-md-6">
                           <DropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
                         </div>
                       </div>
                     }
+                    <DropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
+                    <button type="button" onClick={inputThis.startLoading}>Submit
+                    <div id="fse" className={"spinner " + (inputThis.state.loading ? "visible" : "invisible")}>
+                      <Loader
+                        type="Oval"
+                        color="#fff"
+                        height={15}
+                        width={15}
+                      />
+                    </div>
+                  </button>
+                  {inputThis.state.crd_error_msg &&
+                    <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
+                  }
+                  </div>
+                  
+                  <div className="col-6 module">
+                    <div class="module-inside">
+                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in lacus leo. Nulla sed nulla orci. Mauris id hendrerit leo. Maecenas vestibulum velit vitae interdum blandit. Sed porttitor bibendum fermentum. Maecenas eleifend hendrerit interdum. Phasellus euismod leo ex, ac fermentum massa fringilla sed. Vivamus tempor eget urna in sodales. Suspendisse sit amet nibh vel quam vestibulum porttitor a aliquam metus. Phasellus semper risus sit amet nisi egestas facilisis. Vivamus dapibus, tortor aliquet laoreet venenatis, ligula nibh auctor nisi, id cursus nulla tellus ut mi. Maecenas luctus augue ut bibendum rhoncus. Sed tempus tempus varius. Maecenas a ex eu lorem dignissim consequat sit amet eu nulla. Duis nibh ante, eleifend at odio faucibus, placerat sodales arcu.
+                     </p>
+                      <p>Nunc non nisi nisi. Aenean gravida, nibh id pretium rhoncus, eros enim placerat eros, quis porta risus est at arcu. Quisque feugiat turpis justo. Nunc gravida iaculis justo et bibendum. Vestibulum aliquam est sit amet metus varius, eu rutrum leo feugiat. Aenean dictum turpis non eros vehicula, imperdiet molestie neque sagittis. Etiam blandit eros ut lacus feugiat, vitae pharetra risus rhoncus. Vestibulum cursus sem eget efficitur malesuada. Nunc fringilla, est at bibendum luctus, ex felis efficitur erat, quis finibus lacus ipsum in neque. Maecenas mollis quam erat. Donec euismod pulvinar ligula ut commodo.</p>
+
+                    </div>
+                    
                   </div>
                 </div>
 
                 <div className="row" style={{ marginTop: "50px" }}>
                   <div className="col-4">
-                    <div className="col-12 cerner-header">Draft Requests</div>
+                    <div className="col-12 cerner-header">Draft PA Requests</div>
                     {records["draft"].length > 0 &&
                       <table className="table table-striped  table-sm table-condensed table-bordered">
                         <thead className="thead-light" >
@@ -122,9 +131,15 @@ export default class GenericUi {
                         </tbody>
                       </table>
                     }
+                    {records["draft"].length == 0 && inputThis.state.loadingTabels && 
+                      <span>Loading ...</span>
+                    }
+                    {(records["draft"].length == 0 && !inputThis.state.loadingTabels) && 
+                      <span>No Requests.</span>
+                    }
                   </div>
                   <div className="col-4">
-                    <div className="col-12 cerner-header">Submitted Requests</div>
+                  <div className="col-12 cerner-header">Pending PA Requests</div>
                     {records["submitted"].length > 0 &&
                       <table className="table table-striped table-sm table-bordered">
                         <thead className="thead-light" >
@@ -154,15 +169,23 @@ export default class GenericUi {
                         </tbody>
                       </table>
                     }
+                    {records["submitted"].length == 0 && inputThis.state.loadingTabels && 
+                      <span>Loading ...</span>
+                    }
+                    {(records["submitted"].length == 0 && !inputThis.state.loadingTabels) && 
+                      <span>No Requests.</span>
+                    }
                   </div>
                   <div className="col-4">
-                    <div className="col-12 cerner-header">Completed Requests</div>
+                    <div className="col-12 cerner-header">Recent Prior Authorizations</div>
                     {records["completed"].length > 0 &&
                       <table className="table table-striped  table-sm table-condensed table-bordered">
                         <thead className="thead-light" >
                           <tr>
                             <td key="Date">Date</td>
                             <td key="Codes">Codes</td>
+                            <td key="Status">Status</td>
+                            <td key="RefId">PA Reference ID</td>
                           </tr>
                         </thead>
                         <tbody>
@@ -174,6 +197,12 @@ export default class GenericUi {
                                   <td key="Codes">
                                     {rec.codes}
                                   </td>
+                                  <td key="Status">
+                                    Affirmed
+                                  </td>
+                                  <td key="RefId">
+                                    {rec.prior_auth_ref}
+                                  </td>
 
                                 </tr>
                               )
@@ -183,16 +212,29 @@ export default class GenericUi {
                         </tbody>
                       </table>
                     }
+                    {records["completed"].length == 0 && inputThis.state.loadingTabels && 
+                      <span>Loading ...</span>
+                    }
+                    {(records["completed"].length == 0 && !inputThis.state.loadingTabels) && 
+                      <span>No Requests.</span>
+                    }
                   </div>
                 </div>
 
               </div>
             </div>
           </div>
-          <nav class="navbar navbar-expand-sm  navbar-dark footer fixed-bottom">
-            <span>
-              <small>Copyright 2018 - 2020 Mettles Solutions, Inc.  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;).</small>
-            </span>
+          <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
+            <div className="col-9 text-left">
+              <span>
+                  Copyright 2018 - 2020 Mettles Solutions, LLC.
+              </span>
+            </div>
+            <div className="col-2 text-right">
+              <span>
+                  Powered By Mettles EPA.
+              </span>
+            </div>
           </nav>
         </div>
       </React.Fragment >)

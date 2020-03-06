@@ -39,6 +39,7 @@ class ProviderRequest extends Component {
       accessToken: '',
       scope: '',
       payer: '',
+      loadingTabels:true,
       patientId: sessionStorage.getItem('auth_patient_id') !== undefined ? sessionStorage.getItem('auth_patient_id') : '',
       practitionerId: (localStorage.getItem('npi') !== null) ? localStorage.getItem('npi') : "",
       resourceType: null,
@@ -140,6 +141,7 @@ class ProviderRequest extends Component {
 
 
   async getRequests() {
+    // this.setState({loadingTabels:true})
     let headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -154,10 +156,11 @@ class ProviderRequest extends Component {
       method: "GET",
       headers: headers,
     }).then((response) => {
+      this.setState({loadingTabels:false})
       return response.json();
     }).then((response) => {
       console.log("requests recccss",response);
-      this.setState({prior_auth_records:response.result})
+      this.setState({prior_auth_records:response.result,loadingTabels:false})
       return response
     })
     return res;
