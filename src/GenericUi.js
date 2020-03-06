@@ -90,11 +90,16 @@ export default class GenericUi {
                   
                   <div className="col-6 module" style={{}}>
                     <div class="module-inside">
-                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in lacus leo. Nulla sed nulla orci. Mauris id hendrerit leo. Maecenas vestibulum velit vitae interdum blandit. Sed porttitor bibendum fermentum. Maecenas eleifend hendrerit interdum. Phasellus euismod leo ex, ac fermentum massa fringilla sed. Vivamus tempor eget urna in sodales. Suspendisse sit amet nibh vel quam vestibulum porttitor a aliquam metus. Phasellus semper risus sit amet nisi egestas facilisis. Vivamus dapibus, tortor aliquet laoreet venenatis, ligula nibh auctor nisi, id cursus nulla tellus ut mi. Maecenas luctus augue ut bibendum rhoncus. Sed tempus tempus varius. Maecenas a ex eu lorem dignissim consequat sit amet eu nulla. Duis nibh ante, eleifend at odio faucibus, placerat sodales arcu.
-                     </p>
-                      <p>Nunc non nisi nisi. Aenean gravida, nibh id pretium rhoncus, eros enim placerat eros, quis porta risus est at arcu. Quisque feugiat turpis justo. Nunc gravida iaculis justo et bibendum. Vestibulum aliquam est sit amet metus varius, eu rutrum leo feugiat. Aenean dictum turpis non eros vehicula, imperdiet molestie neque sagittis. Etiam blandit eros ut lacus feugiat, vitae pharetra risus rhoncus. Vestibulum cursus sem eget efficitur malesuada. Nunc fringilla, est at bibendum luctus, ex felis efficitur erat, quis finibus lacus ipsum in neque. Maecenas mollis quam erat. Donec euismod pulvinar ligula ut commodo.</p>
-                      <p>Ut egestas dignissim quam sed convallis. Maecenas at accumsan augue. Morbi faucibus, justo sed laoreet viverra, neque eros tincidunt eros, a tristique augue enim vitae justo. Vestibulum commodo, turpis at vulputate tincidunt, sem massa congue ligula, laoreet luctus turpis massa eu ante. Nullam luctus semper mi, sed elementum tellus volutpat sit amet. Aenean eget metus sem. Aenean sed ex malesuada, mattis justo sed, fringilla massa. Sed eget congue turpis. In sed nunc finibus, convallis purus a, molestie libero. Vestibulum eu tempor odio.</p>
-                    </div>
+                     <p>Prior Authorizations were never so simple. </p>
+                     <p></p>
+                     <p>One app for all Payers. </p>
+                     <p></p>
+                     <p>You are not among the Providers who spend 15% of your time on prior Authorizations </p>
+
+                     <p></p>
+
+                     <p>Medical ePA is here </p>
+                      </div>
                     
                   </div>
                 </div>
