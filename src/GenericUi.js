@@ -58,7 +58,7 @@ export default class GenericUi {
           <div id="main">
             <div className="form">
               <div className="container">
-                <div className="col-12 cerner-header" style={{marginTop:"20px"}}>CRD Request</div>
+                <div className="col-12 cerner-header">CRD Request</div>
                 <div className="row" style={{minHeight:"350px",marginTop:"20px"}}>
                   <div className="col-6">
                     {inputThis.state.encounters.length > 0 &&
