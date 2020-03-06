@@ -40,11 +40,11 @@ export default class GenericUi {
   getProviderRequestForm(inputThis) {
     let records = { "completed": [], "submitted": [], "draft": [] }
     if (inputThis.state.prior_auth_records !== undefined && inputThis.state.prior_auth_records.length > 0) {
-        inputThis.state.prior_auth_records.map((rec, i) => {
-            console.log(JSON.stringify(rec))
-            rec["index"] = i
-            records[rec.type].push(rec)
-        })
+      inputThis.state.prior_auth_records.map((rec, i) => {
+        console.log(JSON.stringify(rec))
+        rec["index"] = i
+        records[rec.type].push(rec)
+      })
     }
     return (
       <React.Fragment>
@@ -52,7 +52,7 @@ export default class GenericUi {
           <div id="main">
             <div className="form">
               <div className="container">
-                <h4>CRD Request</h4>
+                <div className="col-12 cerner-header">CRD Request</div>
                 <div className="row">
                   <div className="col-6">
                     <DropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
@@ -60,10 +60,23 @@ export default class GenericUi {
                   <div className="col-6">
                     {inputThis.state.encounters.length > 0 &&
                       <div className="form-row">
-                        <div className="form-group col-md-3 offset-1">
+                        <div className="form-group col-md-6">
                           <h4 className="title">Encounter</h4>
+                          <button type="button" onClick={inputThis.startLoading}>Submit
+                    <div id="fse" className={"spinner " + (inputThis.state.loading ? "visible" : "invisible")}>
+                              <Loader
+                                type="Oval"
+                                color="#fff"
+                                height={15}
+                                width={15}
+                              />
+                            </div>
+                          </button>
+                          {inputThis.state.crd_error_msg &&
+                            <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
+                          }
                         </div>
-                        <div className="form-group col-md-8">
+                        <div className="form-group col-md-6">
                           <DropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
                         </div>
                       </div>
@@ -71,116 +84,99 @@ export default class GenericUi {
                   </div>
                 </div>
 
-                <div className="text-center">
-                  <button type="button" onClick={inputThis.startLoading}>Submit
-                    <div id="fse" className={"spinner " + (inputThis.state.loading ? "visible" : "invisible")}>
-                      <Loader
-                        type="Oval"
-                        color="#fff"
-                        height={15}
-                        width={15}
-                      />
-                    </div>
-                  </button>
-                </div>
-                <div>
-                  {inputThis.state.crd_error_msg &&
-                    <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
-                  }
-                </div>
-                <div className="row" style={{marginTop:"50px"}}>
+                <div className="row" style={{ marginTop: "50px" }}>
                   <div className="col-4">
-                      <h3>Draft Requests</h3>
-                      {records["draft"].length > 0 &&
-                            <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <td key="Date">Date</td>
-                                    <td key="Codes">Codes</td>
-                                    <td key="Action">Action</td>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                    { 
-                                        records["draft"].map((rec, i) => {
-                                            return (
-                                                <tr key={i}>
-                                                    <td key="Date">{this.formatDate(rec.date)}</td>
-                                                    <td key="Codes">
-                                                        {rec.codes}
-                                                    </td>
-                                                    <td key="Action">
-                                                        <button onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
+                    <h3>Draft Requests</h3>
+                    {records["draft"].length > 0 &&
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <td key="Date">Date</td>
+                            <td key="Codes">Codes</td>
+                            <td key="Action">Action</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            records["draft"].map((rec, i) => {
+                              return (
+                                <tr key={i}>
+                                  <td key="Date">{this.formatDate(rec.date)}</td>
+                                  <td key="Codes">
+                                    {rec.codes}
+                                  </td>
+                                  <td key="Action">
+                                    <button onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
+                                  </td>
+                                </tr>
+                              )
+                            })
 
-                                    }
-                                </tbody>
-                            </table>
-                        }
+                          }
+                        </tbody>
+                      </table>
+                    }
                   </div>
                   <div className="col-4">
-                      <h3>Submitted Requests</h3>
-                      {records["submitted"].length > 0 &&
-                            <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <td key="Date">Date</td>
-                                    <td key="Codes">Codes</td>
-                                    <td key="Action">Action</td>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                    { 
-                                        records["submitted"].map((rec, i) => {
-                                            return (
-                                                <tr key={i}>
-                                                    <td key="Date">{this.formatDate(rec.date)}</td>
-                                                    <td key="Codes">
-                                                        {rec.codes}
-                                                    </td>
-                                                    <td key="Action">
-                                                        <button onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
+                    <h3>Submitted Requests</h3>
+                    {records["submitted"].length > 0 &&
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <td key="Date">Date</td>
+                            <td key="Codes">Codes</td>
+                            <td key="Action">Action</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            records["submitted"].map((rec, i) => {
+                              return (
+                                <tr key={i}>
+                                  <td key="Date">{this.formatDate(rec.date)}</td>
+                                  <td key="Codes">
+                                    {rec.codes}
+                                  </td>
+                                  <td key="Action">
+                                    <button onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
+                                  </td>
+                                </tr>
+                              )
+                            })
 
-                                    }
-                                </tbody>
-                            </table>
-                        }
+                          }
+                        </tbody>
+                      </table>
+                    }
                   </div>
                   <div className="col-4">
-                      <h3>Completed Requests</h3>
-                      {records["completed"].length > 0 &&
-                            <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <td key="Date">Date</td>
-                                    <td key="Codes">Codes</td>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                    { 
-                                        records["completed"].map((rec, i) => {
-                                            return (
-                                                <tr key={i}>
-                                                    <td key="Date">{this.formatDate(rec.date)}</td>
-                                                    <td key="Codes">
-                                                        {rec.codes}
-                                                    </td>
-                                                    
-                                                </tr>
-                                            )
-                                        })
+                    <h3>Completed Requests</h3>
+                    {records["completed"].length > 0 &&
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <td key="Date">Date</td>
+                            <td key="Codes">Codes</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            records["completed"].map((rec, i) => {
+                              return (
+                                <tr key={i}>
+                                  <td key="Date">{this.formatDate(rec.date)}</td>
+                                  <td key="Codes">
+                                    {rec.codes}
+                                  </td>
 
-                                    }
-                                </tbody>
-                            </table>
-                        }
+                                </tr>
+                              )
+                            })
+
+                          }
+                        </tbody>
+                      </table>
+                    }
                   </div>
                 </div>
 
@@ -192,9 +188,9 @@ export default class GenericUi {
   }
 
   formatDate(dateString) {
-        var date = new Date(dateString)
-        return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
-    }
+    var date = new Date(dateString)
+    return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
+  }
 
   getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
     return (
