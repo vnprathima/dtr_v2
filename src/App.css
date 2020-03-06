@@ -1791,14 +1791,16 @@ button[type="button"]{
   margin-bottom: 70px;
 }
 .success-msg{
-  font-size: 14px;
-    background: #e9f5e0;
-    padding: 10px;
-    margin-top: 10px;
-    color: black;
-    padding-left:0px;
+  font-size: 15px;
+  background: #e9f5e0;
+  margin-top: 10px;
+  color: black;
+  padding: 10px;
+  line-height: 1.5;
+  font-weight: bold;
 }
 .success-icon{
   background-color: #78c346;
-  padding:12px 15px;
+  padding: 21px;
+  padding-bottom: 13px;
 }

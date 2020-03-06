@@ -294,7 +294,7 @@ export default class GenericUi {
               }
 
               <div style={{ marginBottom: "20px" }}>
-                <button type="button" style={{ background: "grey", float: "right" }} onClick={inputThis.previewBundle}>Preview
+                <button type="button" style={{ background: "grey", float: "right" }} onClick={inputThis.previewBundle}>Preview FHIR Data
                                 <div id="fse" className={"spinner " + (previewloading ? "visible" : "invisible")}>
                     <Loader
                       type="Oval"
@@ -314,7 +314,7 @@ export default class GenericUi {
                     />
                   </div>
                 </button>
-                (or)
+                /
                 <button type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
               </div>
               {showPreview &&
@@ -344,7 +344,8 @@ export default class GenericUi {
     return (
       <div className="container">
         <div className="success-msg"> 
-        <span className="success-icon"><FontAwesomeIcon icon={faCheckCircle} size="2x"/></span>{claimMessage}</div>
+        <span className="success-icon">
+          <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white"   qax/></span>&nbsp;&nbsp;{claimMessage}</div>
         <div className="form-row">
           <div className="col-3"><b>Status</b></div>
           {claimResponse.status === "active" &&
