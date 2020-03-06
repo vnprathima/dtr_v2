@@ -1717,6 +1717,7 @@ button[type="reset"]:hover{
 #root{
   font-size: 12px;
   font-family: Arial, Helvetica, sans-serif;
+  margin-bottom:60px;
 }
 
 .form-group .title {
@@ -1735,7 +1736,69 @@ button[type="reset"]:hover{
  background-color: #092668;
  font-size:18px;
  font-family: Arial, Helvetica, sans-serif;
+ margin-bottom:5px;
+ margin-top:5px;
 }
+.cerner-main-header{
+  color:white;
+  background-color: #2080be !important;
+  font-size:20px;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-bottom:5px;
+  margin-top:5px;
+ }
 button[type="button"]{
   background-color: #092668;
+}
+.text-input-box {
+  border-radius: 0 !important;
+    width: 100%;
+    border: 1px solid #797979;
+    padding: 5px;
+}
+.file-block{
+    height: auto;
+    border: 1px solid grey;
+    list-style: none;
+    border-radius: 3px;
+    word-wrap: break-word;
+    color: grey;
+    background-color: #F4F9F9;
+    float: left;
+    position: relative;
+    margin: 5px;
+    object-fit: contain;
+    padding-right: 20px;
+    padding-left: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+.drop-box{
+  border: 1px solid #b9b1b1;
+  width: 100%;
+  color: #928d8d;
+  overflow: hidden;
+  border-radius: 3px;
+  overflow: hidden;
+  /* margin-left: 25px; */
+}
+.show-prefilled {
+  float: right;
+  font-size: 14px;
+  padding-top: 5px;
+}
+.App{
+  margin-bottom: 70px;
+}
+.success-msg{
+  font-size: 14px;
+    background: #e9f5e0;
+    padding: 10px;
+    margin-top: 10px;
+    color: black;
+    padding-left:0px;
+}
+.success-icon{
+  background-color: #78c346;
+  padding:12px 15px;
 }

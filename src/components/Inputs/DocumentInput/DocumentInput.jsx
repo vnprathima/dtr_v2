@@ -116,10 +116,8 @@ export default class DocumentInput extends Component {
             </div>
         ))
         return(
-            <div className="section">
-                <h3 className="section-header-new">
-                    Upload Required/Additional Documentation
-                </h3>
+            <div>
+                <div className="col-12 cerner-header">Upload Required/Additional Documentation</div>
                 <div className="drop-box">
                     <section>
                         <Dropzone

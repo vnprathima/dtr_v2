@@ -47,10 +47,10 @@ export default class Testing extends Component {
     return (
         <div>
 
-                <a className={this.state.headerStatus + " consoleHeader"} onClick={this.toggleConsole} >
+                {/* <a className={this.state.headerStatus + " consoleHeader"} onClick={this.toggleConsole} > </a>*/}
 
-                </a>
-            <div id="your_div" className = {this.state.showStatus + " consoleMain resize"}>
+                
+            <div id="your_div" className ="showHeader showConsole consoleMain resize">
 
                 {this.props.logs.map(element => {
                     i++;
