@@ -19,8 +19,11 @@ export default class DropdownEncounter extends Component {
   }
   async getEncounterDetails() {
     let encounters = this.props.encounters;
+    encounters.sort(function(a,b){
+      return new Date(b.resource.period.start) - new Date(a.resource.period.start) 
+    })
     for (var i = 0; i < encounters.length; i++) {
-      console.log(encounters[i].resource.id)
+      // console.log(encounters[i].resource.id)
       encounterOptions.push({
         key: encounters[i].resource.id,
         value: encounters[i].resource.id,
@@ -28,6 +31,15 @@ export default class DropdownEncounter extends Component {
       })
 
     }
+    // console.log("enc1",encounterOptions)
+    if(encounterOptions.length > 0){
+      // console.log("enc opts",encounterOptions)
+      this.props.updateCB(this.props.elementName,encounterOptions[0].value )
+      this.setState({ currentValue: encounterOptions[0].value })
+    }
+    // console.log("enc 2",encounterOptions)
+
+
   }
   handleChange = (e, { value }) => {
     console.log(this.props);
@@ -47,6 +59,7 @@ export default class DropdownEncounter extends Component {
         className={blackBorder}
         options={encounterOptions}
         placeholder='Choose Encounter'
+        value={this.state.currentValue}
         search
         selection
         fluid
