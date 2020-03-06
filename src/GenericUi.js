@@ -91,12 +91,9 @@ export default class GenericUi {
                   <div className="col-6 module" style={{}}>
                     <div class="module-inside">
                      <p>Prior Authorizations were never so simple. </p>
-                     <p></p>
                      <p>One app for all Payers. </p>
-                     <p></p>
                      <p>You are not among the Providers who spend 15% of your time on prior Authorizations </p>
 
-                     <p></p>
 
                      <p>Medical ePA is here </p>
                       </div>
