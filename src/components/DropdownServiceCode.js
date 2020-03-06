@@ -222,9 +222,9 @@ class DropdownServiceCode extends Component {
         {this.state.selected_codes.length > 0 &&
           <div className="form-row">
             <div className="col-md-12">
-              <table class="table table-bordered">
+              <table class="table table-bordered table-sm table-striped">
                 <thead>
-                  <tr><td>Code</td><td>Quantity</td><td>Description</td></tr>
+                  <tr><td style={{width:"20%"}}>Code</td><td style={{width:"10%"}}>Quantity</td><td>Description</td></tr>
                 </thead>
                 <tbody>
                   {
