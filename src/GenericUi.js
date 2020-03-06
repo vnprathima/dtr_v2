@@ -88,8 +88,8 @@ export default class GenericUi {
                   <div className="col-4">
                     <div className="col-12 cerner-header">Draft Requests</div>
                     {records["draft"].length > 0 &&
-                      <table className="table table-striped table-condensed table-bordered">
-                        <thead>
+                      <table className="table table-striped  table-sm table-condensed table-bordered">
+                        <thead className="thead-light" >
                           <tr>
                             <td key="Date">Date</td>
                             <td key="Codes">Codes</td>
@@ -106,7 +106,7 @@ export default class GenericUi {
                                     {rec.codes}
                                   </td>
                                   <td key="Action">
-                                    <button type="button" onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
+                                    <button className="table-btn" type="button" onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
                                   </td>
                                 </tr>
                               )
@@ -120,8 +120,8 @@ export default class GenericUi {
                   <div className="col-4">
                   <div className="col-12 cerner-header">Submitted Requests</div>
                     {records["submitted"].length > 0 &&
-                      <table className="table table-striped table-condensed table-bordered">
-                        <thead>
+                      <table className="table table-striped table-sm table-bordered">
+                        <thead className="thead-light" >
                           <tr>
                             <td key="Date">Date</td>
                             <td key="Codes">Codes</td>
@@ -138,7 +138,7 @@ export default class GenericUi {
                                     {rec.codes}
                                   </td>
                                   <td key="Action">
-                                    <button type="button" onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
+                                    <button className="table-btn" type="button" onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
                                   </td>
                                 </tr>
                               )
@@ -152,8 +152,8 @@ export default class GenericUi {
                   <div className="col-4">
                     <div className="col-12 cerner-header">Completed Requests</div>
                     {records["completed"].length > 0 &&
-                      <table className="table table-striped table-condensed table-bordered">
-                        <thead>
+                      <table className="table table-striped  table-sm table-condensed table-bordered">
+                        <thead className="thead-light" >
                           <tr>
                             <td key="Date">Date</td>
                             <td key="Codes">Codes</td>
@@ -183,6 +183,11 @@ export default class GenericUi {
               </div>
             </div>
           </div>
+          <nav class="navbar navbar-expand-sm  navbar-dark footer fixed-bottom">
+            <span>
+                <small>Copyright 2018 - 2020 Mettles Solutions, Inc.  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;).</small>
+            </span>
+          </nav>
         </div>
       </React.Fragment >)
   }

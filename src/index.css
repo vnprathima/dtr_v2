@@ -913,3 +913,14 @@ input{
   border-color: #797979 !important;
   border-radius: 0 !important;
 }
+.table-sm td, .table-sm th {
+    padding: .3rem;
+}
+.table-btn{
+  padding: 2px 24px !important;
+}
+
+.footer{
+  background: #2080be !important;
+  color:#fff;
+}
