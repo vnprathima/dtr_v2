@@ -924,7 +924,7 @@ input{
   background: #2080be !important;
   color:#fff;
 }
-/*
+
 .module {
   position: relative;
 }
@@ -932,12 +932,16 @@ input{
   content: "";
   position: absolute;
   top: 0; left: 0;
+  background-repeat: no-repeat;
   width: 100%; height: 100%;
   background-image: url(https://static.wixstatic.com/media/093058_cb58f189f3cd46bdba18959c6e11f432~mv2.png/v1/fill/w_302,h_120,al_c,q_85,usm_0.66_1.00_0.01/093058_cb58f189f3cd46bdba18959c6e11f432~mv2.webp);
   filter: grayscale(100%);
+  opacity:0.3;
+   background-position: center; 
+
 }
 .module-inside {
- 
+  color:#272727;
   position: relative;
 }
-*/
+
