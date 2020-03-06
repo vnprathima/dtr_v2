@@ -347,18 +347,18 @@ export default class GenericUi {
         <span className="success-icon">
           <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white"   qax/></span>&nbsp;&nbsp;{claimMessage}</div>
         <div className="form-row">
-          <div className="col-3"><b>Status</b></div>
-          {claimResponse.status === "active" &&
+          <div className="col-3"><b>Outcome</b></div>
+          {claimResponse.outcome === "complete" &&
             <div className="col-6">: Affirmed</div>
           }
-          {claimResponse.status !== "active" &&
-            <div className="col-6">: {claimResponse.status}</div>
+          {claimResponse.outcome !== "complete" &&
+            <div className="col-6">: {claimResponse.outcome}</div>
           }
         </div>
-        <div className="form-row">
+        {/* <div className="form-row">
           <div className="col-3"><b>Outcome</b></div>
           <div className="col-6">: {claimResponse.outcome}</div>
-        </div>
+        </div> */}
         {claimResponse.outcome !== "queued" &&
           <div className="form-row">
             <div className="col-3"><b>Prior Auth Reference No</b></div>
