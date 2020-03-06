@@ -88,7 +88,7 @@ export default class GenericUi {
                   }
                   </div>
                   
-                  <div className="col-6 module">
+                  <div className="col-6 module" style={{}}>
                     <div class="module-inside">
                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in lacus leo. Nulla sed nulla orci. Mauris id hendrerit leo. Maecenas vestibulum velit vitae interdum blandit. Sed porttitor bibendum fermentum. Maecenas eleifend hendrerit interdum. Phasellus euismod leo ex, ac fermentum massa fringilla sed. Vivamus tempor eget urna in sodales. Suspendisse sit amet nibh vel quam vestibulum porttitor a aliquam metus. Phasellus semper risus sit amet nisi egestas facilisis. Vivamus dapibus, tortor aliquet laoreet venenatis, ligula nibh auctor nisi, id cursus nulla tellus ut mi. Maecenas luctus augue ut bibendum rhoncus. Sed tempus tempus varius. Maecenas a ex eu lorem dignissim consequat sit amet eu nulla. Duis nibh ante, eleifend at odio faucibus, placerat sodales arcu.
                      </p>
@@ -232,7 +232,7 @@ export default class GenericUi {
             </div>
             <div className="col-2 text-right">
               <span>
-                  Powered By Mettles EPA.
+                  Powered By Medical EPA.
               </span>
             </div>
           </nav>
@@ -249,11 +249,18 @@ export default class GenericUi {
     return (
       <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
         serviceRequest, bundle, claimEndpoint)}
-        <nav class="navbar navbar-expand-sm  navbar-dark footer fixed-bottom">
-          <span>
-            <small>Copyright 2018 - 2020 Mettles Solutions, Lnc., Version 2.0 (the &quot;License&quot;).</small>
-          </span>
-        </nav>
+         <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
+            <div className="col-9 text-left">
+              <span>
+                  Copyright 2018 - 2020 Mettles Solutions, LLC.
+              </span>
+            </div>
+            <div className="col-2 text-right">
+              <span>
+                  Powered By Medical EPA.
+              </span>
+            </div>
+          </nav>
       </div>
     );
   }
@@ -307,6 +314,8 @@ export default class GenericUi {
                     />
                   </div>
                 </button>
+                (or)
+                <button type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
               </div>
               {showPreview &&
                 <div><pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
