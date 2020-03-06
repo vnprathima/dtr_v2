@@ -74,6 +74,8 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
           patientSource.loadBundles([resourceBundle]);
           const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
           console.log("elm results---", elmResults);
+          elmResults.PractitionerNPI = "9585736541"
+          elmResults.FacilityNPI = "2359347372"
           const results = {
             bundle: resourceBundle,
             elmResults: elmResults
