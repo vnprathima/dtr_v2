@@ -53,7 +53,7 @@ export default class GenericUi {
             <div className="form">
               <div className="container">
                 <div className="col-12 cerner-header">CRD Request</div>
-                <div className="row">
+                <div className="row" style={{height:"350px",overflowY:"auto"}}>
                   <div className="col-6">
                     <DropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
                   </div>
