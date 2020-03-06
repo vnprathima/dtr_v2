@@ -64,12 +64,6 @@ h6 {
   padding: 0;
 }
 
-.form-group .title{
-    color: dimgray;
-    font-size: 18px;
-    padding-top: 10px;
-}
-
 /* Back to top button */
 
 .back-to-top {
@@ -1711,4 +1705,25 @@ button[type="reset"]:hover{
   margin-top: 2px;
   line-height:2em;
   opacity: 1;
+}
+
+
+/* CSSto match cerner
+--------------------------------*/
+
+.container{
+    max-width: inherit;
+}
+#root{
+  font-size: 12px;
+  font-family: sans-serif;
+}
+
+.form-group .title {
+  color: black;
+  font-size: 14px;
+  padding: 7px;
+  background: aliceblue;
+  font-weight: 600;
+  font-family: inherit;
 }
