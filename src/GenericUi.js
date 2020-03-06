@@ -38,6 +38,14 @@ export default class GenericUi {
   }
 
   getProviderRequestForm(inputThis) {
+    let records = { "completed": [], "submitted": [], "draft": [] }
+    if (inputThis.state.prior_auth_records !== undefined && inputThis.state.prior_auth_records.length > 0) {
+        inputThis.state.prior_auth_records.map((rec, i) => {
+            console.log(JSON.stringify(rec))
+            rec["index"] = i
+            records[rec.type].push(rec)
+        })
+    }
     return (
       <React.Fragment>
         <div>
@@ -62,6 +70,7 @@ export default class GenericUi {
                     }
                   </div>
                 </div>
+
                 <div className="text-center">
                   <button type="button" onClick={inputThis.startLoading}>Submit
                     <div id="fse" className={"spinner " + (inputThis.state.loading ? "visible" : "invisible")}>
@@ -79,6 +88,102 @@ export default class GenericUi {
                     <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
                   }
                 </div>
+                <div className="row" style={{marginTop:"50px"}}>
+                  <div className="col-4">
+                      <h3>Draft Requests</h3>
+                      {records["draft"].length > 0 &&
+                            <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <td key="Date">Date</td>
+                                    <td key="Codes">Codes</td>
+                                    <td key="Action">Action</td>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    { 
+                                        records["draft"].map((rec, i) => {
+                                            return (
+                                                <tr key={i}>
+                                                    <td key="Date">{this.formatDate(rec.date)}</td>
+                                                    <td key="Codes">
+                                                        {rec.codes}
+                                                    </td>
+                                                    <td key="Action">
+                                                        <button onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                  </div>
+                  <div className="col-4">
+                      <h3>Submitted Requests</h3>
+                      {records["submitted"].length > 0 &&
+                            <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <td key="Date">Date</td>
+                                    <td key="Codes">Codes</td>
+                                    <td key="Action">Action</td>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    { 
+                                        records["submitted"].map((rec, i) => {
+                                            return (
+                                                <tr key={i}>
+                                                    <td key="Date">{this.formatDate(rec.date)}</td>
+                                                    <td key="Codes">
+                                                        {rec.codes}
+                                                    </td>
+                                                    <td key="Action">
+                                                        <button onClick={() => { inputThis.checkRequestStatus(rec) }}>Check Status</button>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                  </div>
+                  <div className="col-4">
+                      <h3>Completed Requests</h3>
+                      {records["completed"].length > 0 &&
+                            <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <td key="Date">Date</td>
+                                    <td key="Codes">Codes</td>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    { 
+                                        records["completed"].map((rec, i) => {
+                                            return (
+                                                <tr key={i}>
+                                                    <td key="Date">{this.formatDate(rec.date)}</td>
+                                                    <td key="Codes">
+                                                        {rec.codes}
+                                                    </td>
+                                                    
+                                                </tr>
+                                            )
+                                        })
+
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -86,6 +191,10 @@ export default class GenericUi {
       </React.Fragment >)
   }
 
+  formatDate(dateString) {
+        var date = new Date(dateString)
+        return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
+    }
 
   getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
     return (

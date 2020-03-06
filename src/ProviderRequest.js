@@ -710,7 +710,61 @@ class ProviderRequest extends Component {
   }
   async getJson() {
     var patientId = this.state.patientId;
-    let coverage = {}
+    let coverage = {
+        "resourceType": "Coverage",
+        "id": "7314007-12354234-12354234",
+        "meta": {
+          "versionId": "4-4",
+          "lastUpdated": "2020-02-19T18:35:29.000Z"
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Coverage</b></p><p><b>Status</b>: active</p><p><b>Subscriber</b>: SMART, RISKLD RISKLD</p><p><b>Beneficiary</b>: SMART, RISKLD RISKLD</p><p><b>Coverage Start Date</b>: Feb 11, 2020  6:00 A.M. UTC</p><p><b>Payor</b>: SELF PAY</p><p><b>Class</b>: plan: Value: 589763 Name: Self Pay</p></div>"
+        },
+        "status": "active",
+        "subscriber": {
+          "reference": "Patient/7314007",
+          "display": "SMART, RISKLD RISKLD"
+        },
+        "beneficiary": {
+          "reference": "Patient/7314007",
+          "display": "SMART, RISKLD RISKLD"
+        },
+        "relationship": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
+              "code": "self",
+              "display": "Self",
+              "userSelected": false
+            }
+          ],
+          "text": "SELF"
+        },
+        "period": {
+          "start": "2020-02-11T06:00:00.000Z"
+        },
+        "payor": [
+          {
+            "reference": "Organization/united_health_care",
+            "display": "SELF PAY"
+          }
+        ],
+        "class": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/coverage-class",
+                  "code": "plan"
+                }
+              ]
+            },
+            "value": "589763",
+            "name": "Self Pay"
+          }
+        ]
+      }
     let organization = {}
     let PractitionerRole = {
       "resourceType": "PractitionerRole",
@@ -723,30 +777,34 @@ class ProviderRequest extends Component {
     if (this.state.coverageId === '') {
       organization = {
         "resourceType": "Organization",
-        "name": this.state.payer,
-        "id": this.state.payer
+        "name":"United Health Care",
+       // "name": this.state.payer,
+        "id": "united_health_care"
       }
-      coverage = {
-        resourceType: "Coverage",
-        id: "coverage1",
-        class: [
-          {
-            type: {
-              system: "http://hl7.org/fhir/coverage-class",
-              code: "plan"
-            },
-            value: "Medicare Part D"
-          }
-        ],
-        payor: [
-          {
-            reference: "Organization/" + organization["id"]
-          }
-        ]
-      };
+      // coverage = {
+      //   resourceType: "Coverage",
+      //   id: "coverage1",
+      //   class: [
+      //     {
+      //       type: {
+      //         system: "http://hl7.org/fhir/coverage-class",
+      //         code: "plan"
+      //       },
+      //       value: "Medicare Part D"
+      //     }
+      //   ],
+      //   payor: [
+      //     {
+      //       reference: "Organization/" + organization["id"]
+      //     }
+      //   ]
+      // };
+      
     } else {
       console.log("Coverage resources--", this.state.coverageResources, this.state.coverageId)
-      coverage = this.state.coverageResources.find(cov => cov.id === this.state.coverageId);
+      //coverage = this.state.coverageResources.find(cov => cov.id === this.state.coverageId);
+      //HARDCODE
+      
       sessionStorage.setItem("coverage", JSON.stringify(coverage))
       if (coverage.hasOwnProperty("payor")) {
         let org_ref = coverage.payor[0].reference
