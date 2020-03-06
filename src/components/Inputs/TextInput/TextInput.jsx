@@ -57,16 +57,16 @@ export default class TextInput extends Component {
     render() {
         return (
             <div>
-                <div className="text-input" ref={this.myRef}>
-                    <div className="text-input-label">{this.props.inputTypeDisplay}</div>
+                <div ref={this.myRef}>
+                    {/* <div className="text-input-label">{this.props.inputTypeDisplay}</div> */}
                     {this.state.area ?
                         <textarea
-                            className="text-input-box"
+                            className="ui fluid search selection text-input-box"
                             value={this.state.value}
                             onChange={this.onInputChange}>
                         </textarea>
                         :
-                        <input className="text-input-box"
+                        <input className=" ui fluid search selection text-input-box"
                             type={this.props.inputType}
                             value={this.state.value}
                             onChange={this.onInputChange}

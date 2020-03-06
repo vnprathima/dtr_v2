@@ -18,9 +18,7 @@
     transition-delay:0s;
 }
 .showConsole{
-    height:200px;
-
-
+    height:300px;
 }
 .hideConsole{
     resize:none;
@@ -51,6 +49,7 @@
 
 .showHeader{
     width:100%;
+    padding-top:"20px";
 }
 .showHeader::after{
     content:"-";

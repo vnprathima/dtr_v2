@@ -19,6 +19,12 @@ import SelectPayer from './components/SelectPayer';
 import ProviderRequest from "./ProviderRequest";
 import './index.css';
 import './components/consoleBox.css';
+import Section from './components/Section/Section';
+import OpenChoice from './components/Inputs/OpenChoiceInput/OpenChoice';
+import { isTSEnumMember } from '@babel/types';
+import Select from "react-dropdown-select";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
 
 export default class GenericUi {
   constructor(props) {
@@ -241,8 +247,14 @@ export default class GenericUi {
 
   getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
     return (
-      <div className="App">{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
-        serviceRequest, bundle, claimEndpoint)}</div>
+      <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
+        serviceRequest, bundle, claimEndpoint)}
+        <nav class="navbar navbar-expand-sm  navbar-dark footer fixed-bottom">
+          <span>
+            <small>Copyright 2018 - 2020 Mettles Solutions, Lnc., Version 2.0 (the &quot;License&quot;).</small>
+          </span>
+        </nav>
+      </div>
     );
   }
   getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
@@ -252,98 +264,80 @@ export default class GenericUi {
       claimEndpoint={claimEndpoint} />);
 
   }
-  getQuestionnaireTemplate(inputThis, toggleFilledFields, title, items, renderComponent, showPreview, priorAuthBundle, previewloading, loading) {
+  getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
     return (
-      <div>
-        <div className="floating-tools">
-          <p className="filter-filled" >Show Prefilled : <input type="checkbox" onClick={() => {
-            inputThis.toggleFilledFields();
-          }}></input></p>
-        </div>
+      <div class="main">
         <div className="container">
-          <div className="section-header">
-            <h3>{title}</h3>
+          <div className="col-12 cerner-main-header">
+            {title}
+            <span className="show-prefilled" style={{ float: "right" }}>
+               <input type="checkbox" onClick={() => {
+                inputThis.toggleFilledFields();
+              }}></input> Show Prefilled
+            </span>
           </div>
-        </div>
-        {/* <div className="sidenav">
-                {this.state.orderedLinks.map((e) => {
-                    if (Object.keys(this.state.sectionLinks).indexOf(e) < 0) {
-                        const value = this.state.values[e];
-                        let extraClass;
-                        let indicator;
-                        if (this.state.itemTypes[e] && this.state.itemTypes[e].enabled) {
-                            extraClass = (this.isNotEmpty(value) ? "sidenav-active" : "")
-                            indicator = true;
-                        } else {
-                            if (this.isNotEmpty(value) && this.state.turnOffValues.indexOf(e) > -1) {
-                                extraClass = "sidenav-manually-disabled";
-                            } else if (value) {
-                                extraClass = "sidenav-disabled filled"
-                            } else {
-                                extraClass = "sidenav-disabled"
-                            }
+          <div className="row">
+            <div className="col-6">
+              {
+                items.map((item) => {
+                  if (item.linkId <= (items.length / 2 + 1)) {
+                    return inputThis.renderComponent(item, 0);
+                  }
+                })
+              }
 
-                        }
-                        return <div
-                            key={e}
-                            className={"sidenav-box " + extraClass}
-                            onClick={() => {
-                                indicator ? window.scrollTo(0, this.state.itemTypes[e].ref.current.previousSibling.offsetTop) : null;
-                            }}
-                        >
-                            {e}
-                        </div>
-                    }
-                })}
-                <div className="sidenav-box "></div>
-            </div> */}
-        <div className="wrapper1">
-          {
-            items.map((item) => {
-              return renderComponent(item, 0);
-            })
-          }
-          <div style={{ marginBottom: "30px" }}>
-            <DocumentInput
-              updateCallback={this.updateDocuments}
-            />
-          </div >
-          {showPreview &&
-            <div><pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
-          }
-          <div className="text-center" style={{ marginBottom: "50px" }}>
-            <button type="button" style={{ background: "grey" }} onClick={this.previewBundle}>Preview
+              <div style={{ marginBottom: "20px" }}>
+                <button type="button" style={{ background: "grey", float: "right" }} onClick={inputThis.previewBundle}>Preview
                                 <div id="fse" className={"spinner " + (previewloading ? "visible" : "invisible")}>
-                <Loader
-                  type="Oval"
-                  color="#fff"
-                  height={15}
-                  width={15}
-                />
-              </div>
-            </button>
-            <button type="button" onClick={this.outputResponse}>Submit Prior Authorization
+                    <Loader
+                      type="Oval"
+                      color="#fff"
+                      height={15}
+                      width={15}
+                    />
+                  </div>
+                </button>
+                <button type="button" onClick={inputThis.outputResponse}>Submit Prior Authorization
                                 <div id="fse" className={"spinner " + (loading ? "visible" : "invisible")}>
-                <Loader
-                  type="Oval"
-                  color="#fff"
-                  height={15}
-                  width={15}
-                />
+                    <Loader
+                      type="Oval"
+                      color="#fff"
+                      height={15}
+                      width={15}
+                    />
+                  </div>
+                </button>
               </div>
-            </button>
+              {showPreview &&
+                <div><pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
+              }
+            </div>
+            <div className="col-6">
+              {
+                items.map((item) => {
+                  if (item.linkId > (items.length / 2 + 1)) {
+                    return inputThis.renderComponent(item, 0);
+                  }
+                })
+              }
+              <DocumentInput
+                updateCallback={this.updateDocuments}
+              />
+            </div>
           </div>
+
         </div>
       </div>
     );
   }
 
-  getClaimResponseTemplate(claimMessage, claimResponse, resloading, showBundle, claimResponseBundle) {
+  getClaimResponseTemplate(inputThis, claimMessage, claimResponse, resloading, showBundle, claimResponseBundle){
     return (
-      <div>
-        <div style={{ fontSize: "1.5em", background: "#98ce94", padding: "10px" }}> {claimMessage}</div>
+      <div className="container">
+        <div className="success-msg"> 
+        <span className="success-icon"><FontAwesomeIcon icon={faCheckCircle} size="2x"/></span>{claimMessage}</div>
         <div className="form-row">
-          <div className="col-3">Status</div>
+          <div className="col-3"><b>Status</b></div>
           {claimResponse.status === "active" &&
             <div className="col-6">: Affirmed</div>
           }
@@ -352,20 +346,20 @@ export default class GenericUi {
           }
         </div>
         <div className="form-row">
-          <div className="col-3">Outcome</div>
+          <div className="col-3"><b>Outcome</b></div>
           <div className="col-6">: {claimResponse.outcome}</div>
         </div>
         {claimResponse.outcome !== "queued" &&
           <div className="form-row">
-            <div className="col-3">Prior Auth Reference No</div>
+            <div className="col-3"><b>Prior Auth Reference No</b></div>
             <div className="col-6">: {claimResponse.preAuthRef}</div>
           </div>
         }
         {JSON.stringify(claimResponse).length > 0 &&
           <div style={{ paddingTop: "10px", paddingBottom: "10px" }}>
-            <button style={{ float: "right" }} type="button" onClick={this.handleShowBundle}>Show Claim Response Bundle</button>
+            <button style={{ float: "right" }} type="button" onClick={inputThis.handleShowBundle}>Show Claim Response Bundle</button>
 
-            <button type="button" onClick={this.reloadClaimResponse} >Reload Claim Response
+            <button type="button" onClick={inputThis.reloadClaimResponse} >Reload Claim Response
                                 <div id="fse" className={"spinner " + (resloading ? "visible" : "invisible")}>
                 <Loader
                   type="Oval"
@@ -377,7 +371,7 @@ export default class GenericUi {
             </button></div>
         }
         {showBundle &&
-          <pre style={{ background: "#dee2e6", height: "500px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
+          <pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
         }
       </div>
     )
