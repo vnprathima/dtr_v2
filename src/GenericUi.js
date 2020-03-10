@@ -58,7 +58,7 @@ export default class GenericUi {
           <div id="main">
             <div className="form">
               <div className="container">
-                <div className="col-12 cerner-header">CRD Request</div>
+                <div className="col-12 cerner-header">Prior Authorization</div>
                 <div className="row" style={{marginTop:"20px"}}>
                   <div className="col-6">
                     {inputThis.state.encounters.length > 0 &&
