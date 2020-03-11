@@ -72,7 +72,7 @@ if (serviceUri !== undefined) {
   // current URL and replace "launch.html" with "index.html".
   var launchUri = window.location.protocol + "//" + window.location.host + window.location.pathname;
   // var redirectUri = launchUri.replace("launch", "index");
-  var redirectUri = "http://localhost/public/index.html";
+  var redirectUri = launchUri;
 
   console.log("redirectURI", redirectUri);
   // FHIR Service Conformance Statement URL
