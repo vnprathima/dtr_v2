@@ -4,7 +4,7 @@ const webpack = require("webpack");
 const common = require("./webpack.config.common.js");
 
 module.exports = merge(common, {
-  mode: "development",
+  mode: "production",
   module: {
     rules: [
       {

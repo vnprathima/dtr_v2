@@ -326,7 +326,7 @@ class ProviderRequest extends Component {
 
   handlePrefetch = async () => {
     if (this.state.patientId !== null) {
-      console.log(this.state.prefetch, 'here kya')
+      // console.log(this.state.prefetch, 'here kya')
       this.setState({ prefetch: true });
       this.setState({ prefetchloading: true });
       await this.getResourceData(sessionStorage.getItem("token"),
