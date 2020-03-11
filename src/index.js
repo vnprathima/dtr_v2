@@ -640,7 +640,6 @@ if (serviceUri !== undefined) {
         console.error(errorMsg);
         return;
       }
-<<<<<<< HEAD
     };
     tokenPost.send(data);
   }
@@ -690,60 +689,3 @@ if (serviceUri !== undefined) {
   //     return patientId;
   // }
 }
-=======
-    } else {
-      const errorMsg = "Token post request failed. Returned status: " + tokenPost.status;
-      document.body.innerText = errorMsg;
-      console.error(errorMsg);
-      return;
-    }
-  };
-  tokenPost.send(data);
-}
-
-/** Below code is for getting appcontext from Message definition form FHIR */
-        //   response.description = "template%3Durn%3Ahl7%3Adavinci%3Acrd%3AAmbulatoryTransportService%26request%3D%7B%22requester%22%3A%7B%22reference%22%3A%22Practitioner%3Fidentifier%3D1932102951%22%7D%2C%22identifier%22%3A%5B%7B%22value%22%3A18631431%7D%5D%2C%22subject%22%3A%7B%22reference%22%3A%22Patient%3Fidentifier%3D20198%22%7D%2C%22parameter%22%3A%5B%7B%22code%22%3A%7B%22coding%22%3A%5B%7B%22system%22%3A%22http%3A%2F%2Floinc.org%22%2C%22code%22%3A%22A0428%22%2C%22display%22%3A%22Ambulance%20service%2C%20Basic%20Life%20Support%20(BLS)%2C%20non-emergency%20transport%20The%20mileage%20code%22%7D%5D%2C%22text%22%3A%22Ambulance%20service%2C%20Basic%20Life%20Support%20(BLS)%2C%20non-emergency%20transport%20The%20mileage%20code%22%7D%7D%5D%2C%22priority%22%3A%22routine%22%2C%22intent%22%3A%22instance-order%22%2C%22resourceType%22%3A%22DeviceRequest%22%2C%22status%22%3A%22active%22%7D%26patient%3D20198";
-        //   if (appContext != undefined) {
-        //     console.log("App Context--", decodeURIComponent(response.description));
-        //     let resp = decodeURIComponent(response.description);
-        //     var request = getParameterByName('request', resp)
-        //     var patient = auth_response.patient
-        //     console.log(patient, 'too')
-        //     sessionStorage["patientId"] = patient;
-        //     const appContext = {
-        //       template: resp.split("&")[0].split("=")[1],
-        //       request: JSON.parse(request),
-        //       filepath: null,
-        //       patientId: patient
-        //     }
-        //     console.log("Appcontext--",appContext);
-        //     var smart = FHIR.client({
-        //       serviceUrl: serviceUri,
-        //       patientId: appContext.patientId,
-        //       auth: {
-        //         type: "bearer",
-        //         token: auth_response.access_token
-
-        //       }
-        //     });
-        //     ReactDOM.render(
-        //       <App
-        //         FHIR_URI_PREFIX={FHIR_URI_PREFIX}
-        //         questionnaireUri={appContext.template}
-        //         smart={smart}
-        //         serviceRequest={appContext.request}
-        //         filepath={appContext.filepath}
-        //       />,
-        //       document.getElementById("root")
-        //     );
-        //     const patientId = appContext.patientId;
-        //     if (patientId == null) {
-        //       const errorMsg = "Failed to get a patientId from the app params or the authorization response.";
-        //       document.body.innerText = errorMsg;
-        //       console.error(errorMsg);
-        //       return;
-        //     }
-        //     return patientId;
-        // }
-}
->>>>>>> c634164610d5b7f524715f74b6a4dac46d88e302
