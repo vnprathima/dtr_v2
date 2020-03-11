@@ -4,5 +4,5 @@
     "npi":"1932102951",
   "odoo_username":"admin",
   "odoo_password":"admin",
-  "restURL":"http://54.167.241.64:5000"
+  "restURL":"https://pd.mettles.com"
 }

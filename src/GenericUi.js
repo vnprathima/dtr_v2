@@ -58,8 +58,8 @@ export default class GenericUi {
           <div id="main">
             <div className="form">
               <div className="container">
-                <div className="col-12 cerner-header">CRD Request</div>
-                <div className="row" style={{minHeight:"350px",marginTop:"20px"}}>
+                <div className="col-12 cerner-header">Prior Authorization</div>
+                <div className="row" style={{marginTop:"20px"}}>
                   <div className="col-6">
                     {inputThis.state.encounters.length > 0 &&
                       <div className="form-row">
@@ -91,12 +91,9 @@ export default class GenericUi {
                   <div className="col-6 module" style={{}}>
                     <div class="module-inside">
                      <p>Prior Authorizations were never so simple. </p>
-                     <p></p>
                      <p>One app for all Payers. </p>
-                     <p></p>
                      <p>You are not among the Providers who spend 15% of your time on prior Authorizations </p>
 
-                     <p></p>
 
                      <p>Medical ePA is here </p>
                       </div>
@@ -255,12 +252,12 @@ export default class GenericUi {
       <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
         serviceRequest, bundle, claimEndpoint)}
          <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
-            <div className="col-9 text-left">
+            <div className="col-8 text-left">
               <span>
                   Copyright 2018 - 2020 Mettles Solutions, LLC.
               </span>
             </div>
-            <div className="col-2 text-right">
+            <div className="col-3 text-right">
               <span>
                   Powered By Medical EPA.
               </span>
@@ -278,7 +275,7 @@ export default class GenericUi {
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
     return (
-      <div class="main">
+      <div class="main" style={{marginBottom:"100px"}}>
         <div className="container">
           <div className="col-12 cerner-main-header">
             {title}
