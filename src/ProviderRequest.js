@@ -598,7 +598,7 @@ class ProviderRequest extends Component {
         sessionStorage.setItem("showCDSHook", false);
         self.setState({ response: cardResponse });
         if (appContext !== null) {
-          window.location = `${window.location.protocol}//${window.location.host}/index?appContextId=${appContext}`;
+          window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContext}`;
         } else {
           self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
         }
