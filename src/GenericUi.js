@@ -123,7 +123,7 @@ export default class GenericUi {
                                     {rec.codes}
                                   </td>
                                   <td key="Action">
-                                    <button className="table-btn" type="button" onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
+                                    <button className="table-btn" type="button" onClick={() => { sessionStorage.setItem("appContext", rec.app_context);sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
                                   </td>
                                 </tr>
                               )
@@ -274,6 +274,7 @@ export default class GenericUi {
 
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
+    console.log("Savedddd!",inputThis.state.saved)
     return (
       <div class="main" style={{marginBottom:"100px"}}>
         <div className="container">
@@ -318,7 +319,10 @@ export default class GenericUi {
                 </button>
                 /
                 <button type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
+                
               </div>
+              {inputThis.state.saved && <div className="simple-success"><strong style={{color:"green",marginLeft:"1%"}}>Saved Successfully!!</strong></div>}
+
               {showPreview &&
                 <div><pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
               }

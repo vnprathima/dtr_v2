@@ -19,8 +19,8 @@ if (serviceUri !== undefined) {
   } else if (serviceUri.indexOf("cerner") !== -1 && clientId === undefined) {
 
     // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
-    //clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
-    clientId = "6ef181e4-a7d8-4493-b94b-8b66d466900a"; // Prod
+    // clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
+    clientId = "6bdae3cc-09a0-450b-83fe-f181918bcc54"; // Prod
   } else if (serviceUri.indexOf("mettles") !== -1 && clientId === undefined) {
     clientId = "app-login";
   }
@@ -174,7 +174,7 @@ if (serviceUri !== undefined) {
   // This endpoint available when deployed in CRD server, for development we have
   // the proxy set up in webpack.config.dev.js so the CRD server needs to be running
   console.log("Mode----",process.env.NODE_ENV);
-  const FHIR_URI_PREFIX = "../../fetchFhirUri/";
+  var FHIR_URI_PREFIX = "../../fetchFhirUri/";
   if(process.env.NODE_ENV === "development"){
     FHIR_URI_PREFIX = "https://sm.mettles.com/crd/fetchFhirUri/";
   }

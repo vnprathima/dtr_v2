@@ -244,7 +244,7 @@ class ProviderRequest extends Component {
               let date = new Date(response.created)
               let body = {
                   "type":"completed",
-                  "date":date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate(),
+                  "date":date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate(),
                   "patient_id":this.state.patientId,
                   "claim_response_id":response.id,
                   "claim_response":response,

@@ -208,7 +208,7 @@ export default class CernerUi {
                                                         {rec.codes}
                                                     </Cell>
                                                     <Cell key="Action">
-                                                        <Button onClick={() => { sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }} text="Edit & Submit" />
+                                                        <Button onClick={() => { sessionStorage.setItem("appContext", rec.app_context);sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }} text="Edit & Submit" />
                                                     </Cell>
                                                 </Row>
                                             )
@@ -424,6 +424,7 @@ export default class CernerUi {
                                         <Button text="Submit Prior Authorization" onClick={inputThis.outputResponse} variant="emphasis" />
                                         (or)
                                         <Button text="Save for Later" onClick={() => inputThis.saveQuestionnaireData()} />
+                                        
                                     </Spacer>
                                     {inputThis.state.saved && <Spacer style={{ color: "green" }}>Saved Successfully.</Spacer>}
                                 </DynamicGrid.Region>

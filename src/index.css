@@ -952,4 +952,10 @@ input{
     font-style: italic;
     font-weight: 700;
 }
+.simple-success{
+      text-align: center;
+    background: #caf7ca;
+    height: 30px;
+    padding: 6px;
+}
 

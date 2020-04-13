@@ -1132,7 +1132,7 @@ export default class QuestionnaireForm extends Component {
 
         let body = {
             "type":"submitted",
-            "date":today.getFullYear()+"-"+today.getMonth()+"-"+today.getDate(),
+            "date":today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate(),
             "patient_id":this.state.patientId,
             "app_context":appContext,
             "claim_response_id":claimResponse.id,
@@ -1211,7 +1211,7 @@ export default class QuestionnaireForm extends Component {
             let today = new Date();
             let body = {
             "type":"draft",
-            "date":today.getFullYear()+"-"+today.getMonth()+"-"+today.getDate(),
+            "date":today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate(),
             "patient_id":this.state.patientId,
             "codes":this.getCodesString(),
             "app_context":appContext
