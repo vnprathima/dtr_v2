@@ -25,6 +25,8 @@ import { isTSEnumMember } from '@babel/types';
 import Select from "react-dropdown-select";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
+import QuantityInput from './components/Inputs/QuantityInput/QuantityInput';
+import ShowError from './components/ShowError';
 
 export default class GenericUi {
   constructor(props) {
@@ -47,7 +49,7 @@ export default class GenericUi {
     let records = { "completed": [], "submitted": [], "draft": [] }
     if (inputThis.state.prior_auth_records !== undefined && inputThis.state.prior_auth_records.length > 0) {
       inputThis.state.prior_auth_records.map((rec, i) => {
-        console.log(JSON.stringify(rec))
+        // console.log(JSON.stringify(rec))
         rec["index"] = i
         records[rec.type].push(rec)
       })
@@ -58,6 +60,9 @@ export default class GenericUi {
           <div id="main">
             <div className="form">
               <div className="container">
+                {inputThis.state.tokenExpired &&
+                    <ShowError/>
+                }
                 <div className="col-12 cerner-header">Prior Authorization</div>
                 <div className="row" style={{marginTop:"20px"}}>
                   <div className="col-6">
@@ -89,7 +94,7 @@ export default class GenericUi {
                   </div>
                   
                   <div className="col-6 module" style={{}}>
-                    <div class="module-inside">
+                    <div className="module-inside">
                      <p>Prior Authorizations were never so simple. </p>
                      <p>One app for all Payers. </p>
                      <p>You are not among the Providers who spend 15% of your time on prior Authorizations </p>
@@ -123,7 +128,8 @@ export default class GenericUi {
                                     {rec.codes}
                                   </td>
                                   <td key="Action">
-                                    <button className="table-btn" type="button" onClick={() => { sessionStorage.setItem("appContext", rec.app_context);sessionStorage.setItem("showCDSHook", false); window.location.href = "/index?appContextId=" + rec.app_context }}>Edit & Submit</button>
+                                    <button className="table-btn" type="button"
+                                     onClick={()=>{inputThis.submitDraftPA(rec)}}>Edit & Submit</button>
                                   </td>
                                 </tr>
                               )
@@ -274,9 +280,8 @@ export default class GenericUi {
 
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
-    console.log("Savedddd!",inputThis.state.saved)
     return (
-      <div class="main" style={{marginBottom:"100px"}}>
+      <div className="main" style={{marginBottom:"100px"}}>
         <div className="container">
           <div className="col-12 cerner-main-header">
             {title}
@@ -322,7 +327,9 @@ export default class GenericUi {
                 
               </div>
               {inputThis.state.saved && <div className="simple-success"><strong style={{color:"green",marginLeft:"1%"}}>Saved Successfully!!</strong></div>}
-
+              {inputThis.state.validated === false &&
+                <div className="error-msg">{inputThis.state.validationError}</div>
+              } 
               {showPreview &&
                 <div><pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
               }
@@ -423,7 +430,7 @@ export default class GenericUi {
       updateCallback={updateQuestionValue}
       retrieveCallback={retrieveValue}
       inputTypeDisplay="open-choice"
-      containedResources={this.state.containedResources}
+      containedResources={containedResources}
       valueType={valueType}
     />
   }

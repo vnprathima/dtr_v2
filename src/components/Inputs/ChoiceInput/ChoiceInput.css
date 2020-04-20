@@ -5,15 +5,13 @@
 
 
 .radio-button{
-    height:20px;
+    height:15px;
     border:2px solid;
     border-color: gray;
 }
 
 .selected{
-    background-color:#18d26e;
-    border-color:#18d26e;
-
+  background-color: #2080be !important;
 }
 .radio-button:hover{
     border:2px solid black;

@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 
 import './QuantityInput.css';
 import '../../ComponentStyles.css';
-import DropdownInput from '../DropdownInput/DropdownInput';
+import { Dropdown } from 'semantic-ui-react';
 
 const options = [
-    '=',
-    '<',
-    '>',
-    '<=',
-    '>='
+    { key: '=', text: '=', value: '=' },
+    { key: '<', text: '<', value: '<' },
+    { key: '>', text: '>', value: '>' },
+    { key: '<=', text: '<=', value: '<=' },
+    { key: '>=', text: '>=', value: '>=' }
 ]
 export default class QuantityInput extends Component {
     constructor(props) {
@@ -36,11 +36,12 @@ export default class QuantityInput extends Component {
                 "enabled": false
             }, "itemTypes")
     }
-    
+
     componentDidMount() {
         // setup initial value from qForm
         const value = this.props.retrieveCallback(this.props.item.linkId);
         if (value) {
+            // console.log("value-quantity-", value);
             this.prepopulate(value);
         }
 
@@ -75,9 +76,20 @@ export default class QuantityInput extends Component {
     render() {
         return (
 
-            <div className="text-input" ref={this.ref}>
+            <div ref={this.ref}>
                 <div className="text-input-label quantity">{this.props.inputTypeDisplay}</div>
-                <div className="quantity-border">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <Dropdown style={{borderRadius: "0px",border: "1px solid #797979"}} fluid placeholder='comparator' search selection options={options} />
+                    </div>
+                    <input type="text" class="form-control group-input-box" placeholder="value" value={this.state.value} onChange={(e) => { this.updateState("value", e) }}></input>
+                    <input type="text" class="form-control group-input-box" placeholder="unit" value={this.state.unit} onChange={(e) => { this.updateState("unit", e) }}></input>
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control group-input-box" placeholder="code" value={this.state.code} onChange={(e) => { this.updateState("code", e) }}></input>
+                    <input type="text" class="form-control group-input-box" placeholder="system" value={this.state.system} onChange={(e) => { this.updateState("system", e) }}></input>
+                </div>
+                {/* <div className="quantity-border">
                     <DropdownInput name="comparator" options={options} callback={this.updateState}></DropdownInput>
                     <input className="quantity-input value" placeholder="value" value={this.state.value} onChange={(e) => { this.updateState("value", e) }}></input>
                     <input className="quantity-input unit" placeholder="unit" value={this.state.unit} onChange={(e) => { this.updateState("unit", e) }}></input>
@@ -85,7 +97,7 @@ export default class QuantityInput extends Component {
                 <div>
                     <input className="quantity-input code" placeholder="code" value={this.state.code} onChange={(e) => { this.updateState("code", e) }}></input>
                     <input className="quantity-input system" placeholder="system" value={this.state.system} onChange={(e) => { this.updateState("system", e) }}></input>
-                </div>
+                </div> */}
             </div>
         );
     }

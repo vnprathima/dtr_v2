@@ -17,7 +17,6 @@ import prior_auth_working from '../../prior_auth_working.json';
 import UiFactory from "../../UiFactory.js";
 import globalConfig from '../../globalConfiguration.json';
 
-
 // const state = urlUtils.getUrlParameter("state"); // session key
 // const code = urlUtils.getUrlParameter("code"); // authorization code
 // console.log(state);
@@ -26,6 +25,7 @@ import globalConfig from '../../globalConfiguration.json';
 // const tokenUri = params.tokenUri;
 // const clientId = params.clientId;
 // const secret = params.secret;
+
 const tokenUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token";
 export default class QuestionnaireForm extends Component {
     constructor(props) {
@@ -62,7 +62,9 @@ export default class QuestionnaireForm extends Component {
             showPreview: false,
             previewloading: false,
             documentReference: {},
-            saved:false
+            saved: false,
+            validationError:"",
+            validated: true
         };
 
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
@@ -84,8 +86,6 @@ export default class QuestionnaireForm extends Component {
         this.handleShowBundle = this.handleShowBundle.bind(this);
         this.saveQuestionnaireData = this.saveQuestionnaireData.bind(this);
         this.createSubmittedRequest = this.createSubmittedRequest.bind(this);
-        // console.log("ServReqqqqq",this.props.serviceRequest)
-
     }
 
     relaunch() {
@@ -127,7 +127,7 @@ export default class QuestionnaireForm extends Component {
         this.setState({ showBundle: !showBundle });
     }
     setProviderSource(values) {
-        console.log(this.state);
+        // console.log(this.state);
         if (values.length > 0) {
             this.setState({ "providerSource": values[0].value });
             sessionStorage["providerSource"] = values[0].value;
@@ -274,7 +274,6 @@ export default class QuestionnaireForm extends Component {
     updateQuestionValue(elementName, object, type) {
         // callback function for children to update
         // parent state containing the linkIds
-        // console.log("Update question --", elementName, object, type);
         this.setState(prevState => ({
             [type]: {
                 ...prevState[type],
@@ -349,6 +348,7 @@ export default class QuestionnaireForm extends Component {
             const results = [];
             // false if we need all behaviorType to be "all"
             const checkAny = enableCriteria.length > 1 ? item.enableBehavior === 'any' : false
+            console.log("Checkany---",checkAny, item.linkId);
             enableCriteria.forEach((rule) => {
                 const question = this.state.values[rule.question]
                 const answer = findValueByPrefix(rule, "answer");
@@ -370,7 +370,7 @@ export default class QuestionnaireForm extends Component {
                     results.push(this.evaluateOperator(rule.operator, question, answer));
                 }
             });
-            return !checkAny ? results.some((i) => { return i }) : results.every((i) => { return i });
+            return checkAny ? results.some((i) => { return i }) : results.every((i) => { return i });
         } else {
             // default to showing the item
             return true;
@@ -386,9 +386,9 @@ export default class QuestionnaireForm extends Component {
             } else {
                 // autofill fields
                 links.push(item.linkId);
-                // if (item.enableWhen) {
-                //     console.log(item.enableWhen);
-                // }
+                if (item.enableWhen) {
+                    console.log(item.enableWhen);
+                }
                 if (item.extension) {
                     item.extension.forEach((e) => {
                         if (e.url === "http://hl7.org/fhir/StructureDefinition/cqif-calculatedValue") {
@@ -438,7 +438,7 @@ export default class QuestionnaireForm extends Component {
         const enable = this.checkEnable(item);
         if (enable && (this.state.turnOffValues.indexOf(item.linkId) < 0)) {
             // item.type="open-choice"
-            console.log("--------------------",item.type,item)
+            // console.log("--------------------",item.type,item)
             switch (item.type) {
                 case "group":
                     return this.ui.getSection(item.linkId, this.renderComponent, this.updateQuestionValue,
@@ -446,7 +446,7 @@ export default class QuestionnaireForm extends Component {
                 case "string":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "text", "string", "valueString");
-                        
+
                 case "text":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "textArea", "text", "valueString");
@@ -480,7 +480,6 @@ export default class QuestionnaireForm extends Component {
                         this.retrieveValue, "datetime-local", "datetime", "valueDateTime");
 
                 case "attachment":
-                    console.log("is attachment",item)
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, "file", "attachment", "valueAttachment");
 
@@ -489,10 +488,9 @@ export default class QuestionnaireForm extends Component {
                         this.retrieveValue, "number", "valueInteger", "integer");
 
                 case "quantity":
-                    console.log("in quantity",item)
+                    console.log("in quantity", item)
                     return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,
                         this.updateQuestionValue, this.retrieveValue, "quantity", "valueQuantity");
-
 
                 case "open-choice":
                     return this.ui.getOpenChoice(item.linkId, item, this.updateQuestionValue,
@@ -1003,225 +1001,254 @@ export default class QuestionnaireForm extends Component {
             this.setState({ previewloading: false });
         });
     }
-    // create the questionnaire response based on the current state
-    outputResponse(status) {
-        this.setState({ loading: true });
-        this.generateBundle().then((priorAuthBundle) => {
-            /*creating token */
-            const tokenPost = new XMLHttpRequest();
-            var auth_response;
-            var self = this;
-            tokenPost.open("POST", tokenUri);
-            tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            var data = `client_id=app-login&grant_type=password&username=john&password=john123`
-            tokenPost.send(data);
-            tokenPost.onload = function () {
-                if (tokenPost.status === 200) {
-                    try {
-                        auth_response = JSON.parse(tokenPost.responseText);
-                        console.log("auth res--1243-", auth_response);
-                    } catch (e) {
-                        const errorMsg = "Failed to parse auth response";
-                        document.body.innerText = errorMsg;
-                        console.error(errorMsg);
-                        return;
-                    }
-                    /** creating cliam  */
-                    const Http = new XMLHttpRequest();
-                    // const priorAuthUrl = "https://davinci-prior-auth.logicahealth.org/fhir/Claim/$submit";
-                    // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/Claim/$submit";
-                    // const priorAuthUrl = "http://cdex.mettles.com:9000/fhir/Claim/$submit";
-                    var priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
-                    if (self.props.hasOwnProperty("claimEndpoint") && self.props.claimEndpoint !== null) {
-                        priorAuthUrl = self.props.claimEndpoint;
-                    }
-                    if (priorAuthUrl === "http://stdrfp.mettles.com:8080/drfp/fhir/Claim/$submit") {
-                        priorAuthBundle = prior_auth_working;
-                    }
-                    console.log("claim final--", JSON.stringify(priorAuthBundle));
-                    Http.open("POST", priorAuthUrl);
-                    Http.setRequestHeader("Content-Type", "application/fhir+json");
-                    // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
-                    // Http.send(JSON.stringify(pBundle));
-                    Http.send(JSON.stringify(priorAuthBundle));
-                    Http.onreadystatechange = function () {
-                        if (this.readyState === XMLHttpRequest.DONE) {
-                            var message = "";
-                            self.setState({ displayQuestionnaire: false })
-                            if (this.status === 200) {
-                                var claimResponseBundle = JSON.parse(this.responseText);
-                                var claimResponse = self.state.claimResponse;
-                                console.log("lllllll")
-                                if (claimResponseBundle.hasOwnProperty('entry')) {
-                                    claimResponseBundle.entry.forEach((res) => {
-                                        if (res.resource.resourceType === "ClaimResponse") {
-                                            claimResponse = res.resource;
-                                        }
-                                    })
-                                }
-                                self.setState({ claimResponseBundle })
-                                self.setState({ claimResponse })
-                                console.log(self.state.claimResponseBundle, self.state.claimResponse);
-                                self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
-                                message = "Prior Authorization " + claimResponse.disposition + "\n";
-                                message += "Prior Authorization Number: " + claimResponse.preAuthRef;
-                                self.createSubmittedRequest(claimResponse);
-                            } else {
-                                self.setState({ "claimMessage": "Prior Authorization Request Failed." })
-                                message = "Prior Authorization Request Failed."
-                            }
-                            self.setState({ loading: false });
-                            console.log(message);
-                            //alert(message);
-                            console.log(this.responseText);
+    validateQuestitionnarie() {
+        var self = this;
+        return new Promise(function (resolve, reject) {
+            console.log("Ordered links--", self.state.orderedLinks);
+            console.log("Section links--", self.state.sectionLinks);
+            console.log("Values--", self.state.values);
+            console.log("items--", self.state.items);
+            let validation = self.state.items.map((section) => {
+                section.item.map((item) => {
+                    if (item.hasOwnProperty('required') && item.required) {
+                        console.log("In required true--", item.linkId);
+                        if (!self.state.values.hasOwnProperty(item.linkId) || self.state.values[item.linkId] === "") {
+                            console.log("In false condition--", item.linkId);
+                            resolve(false);
                         }
                     }
-                } else {
-                    const errorMsg = "Token post request failed. Returned status: " + tokenPost.status;
-                    document.body.innerText = errorMsg;
-                    console.error(errorMsg);
-                    return;
-                }
-            };
-        }).catch((error) => {
-            console.log("unable to generate bundle", error);
-        })
+                })
+            })
+            resolve(true);
+        });
+
+    }
+    // create the questionnaire response based on the current state
+    outputResponse(status) {
+        this.validateQuestitionnarie().then((validated) => {
+            console.log("Validated----", validated);
+            this.setState({validated:validated});
+            if (validated) {
+                this.setState({ loading: true });
+                this.generateBundle().then((priorAuthBundle) => {
+                    /*creating token */
+                    const tokenPost = new XMLHttpRequest();
+                    var auth_response;
+                    var self = this;
+                    tokenPost.open("POST", tokenUri);
+                    tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    var data = `client_id=app-login&grant_type=password&username=john&password=john123`
+                    tokenPost.send(data);
+                    tokenPost.onload = function () {
+                        if (tokenPost.status === 200) {
+                            try {
+                                auth_response = JSON.parse(tokenPost.responseText);
+                                console.log("auth res--1243-", auth_response);
+                            } catch (e) {
+                                const errorMsg = "Failed to parse auth response";
+                                document.body.innerText = errorMsg;
+                                console.error(errorMsg);
+                                return;
+                            }
+                            /** creating cliam  */
+                            const Http = new XMLHttpRequest();
+                            // const priorAuthUrl = "https://davinci-prior-auth.logicahealth.org/fhir/Claim/$submit";
+                            // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/Claim/$submit";
+                            // const priorAuthUrl = "http://cdex.mettles.com:9000/fhir/Claim/$submit";
+                            var priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
+                            if (self.props.hasOwnProperty("claimEndpoint") && self.props.claimEndpoint !== null) {
+                                priorAuthUrl = self.props.claimEndpoint;
+                            }
+                            if (priorAuthUrl === "http://stdrfp.mettles.com:8080/drfp/fhir/Claim/$submit") {
+                                priorAuthBundle = prior_auth_working;
+                            }
+                            console.log("claim final--", JSON.stringify(priorAuthBundle));
+                            Http.open("POST", priorAuthUrl);
+                            Http.setRequestHeader("Content-Type", "application/fhir+json");
+                            // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
+                            // Http.send(JSON.stringify(pBundle));
+                            Http.send(JSON.stringify(priorAuthBundle));
+                            Http.onreadystatechange = function () {
+                                if (this.readyState === XMLHttpRequest.DONE) {
+                                    var message = "";
+                                    self.setState({ displayQuestionnaire: false })
+                                    if (this.status === 200) {
+                                        var claimResponseBundle = JSON.parse(this.responseText);
+                                        var claimResponse = self.state.claimResponse;
+                                        console.log("lllllll")
+                                        if (claimResponseBundle.hasOwnProperty('entry')) {
+                                            claimResponseBundle.entry.forEach((res) => {
+                                                if (res.resource.resourceType === "ClaimResponse") {
+                                                    claimResponse = res.resource;
+                                                }
+                                            })
+                                        }
+                                        self.setState({ claimResponseBundle })
+                                        self.setState({ claimResponse })
+                                        console.log(self.state.claimResponseBundle, self.state.claimResponse);
+                                        self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
+                                        message = "Prior Authorization " + claimResponse.disposition + "\n";
+                                        message += "Prior Authorization Number: " + claimResponse.preAuthRef;
+                                        self.createSubmittedRequest(claimResponse);
+                                    } else {
+                                        self.setState({ "claimMessage": "Prior Authorization Request Failed." })
+                                        message = "Prior Authorization Request Failed."
+                                    }
+                                    self.setState({ loading: false });
+                                    console.log(message);
+                                    //alert(message);
+                                    console.log(this.responseText);
+                                }
+                            }
+                        } else {
+                            const errorMsg = "Token post request failed. Returned status: " + tokenPost.status;
+                            document.body.innerText = errorMsg;
+                            console.error(errorMsg);
+                            return;
+                        }
+                    };
+                }).catch((error) => {
+                    console.log("unable to generate bundle", error);
+                })
+            } else {
+                this.setState({validationError:"Please fill all the required questions with (*) !!"});
+            }
+        });
+
     }
 
-    getCodesString()
-    {
+    getCodesString() {
         let codesString = ""
         console.log(this.props.serviceRequest);
         if (this.props.serviceRequest.hasOwnProperty("resourceType") &&
-             this.props.serviceRequest.resourceType === "ServiceRequest" &&
-             this.props.serviceRequest.hasOwnProperty("code")) {
-            if(this.props.serviceRequest.code.hasOwnProperty("coding")){
-                this.props.serviceRequest.code.coding.map((coding)=>{
-                    if(codesString==""){
+            this.props.serviceRequest.resourceType === "ServiceRequest" &&
+            this.props.serviceRequest.hasOwnProperty("code")) {
+            if (this.props.serviceRequest.code.hasOwnProperty("coding")) {
+                this.props.serviceRequest.code.coding.map((coding) => {
+                    if (codesString == "") {
                         codesString = coding.code
                     }
-                    else{
-                        codesString = codesString+","+coding.code
+                    else {
+                        codesString = codesString + "," + coding.code
                     }
                 })
             }
-           
+
         }
-      else if (self.props.serviceRequest.hasOwnProperty("resourceType") && 
-       self.props.serviceRequest.resourceType === "DeviceRequest" &&
-       self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
-            if(this.props.serviceRequest.codeCodeableConcept.hasOwnProperty("coding")){
-                this.props.serviceRequest.codeCodeableConcept.coding.map((coding)=>{
-                    if(codesString==""){
+        else if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+            self.props.serviceRequest.resourceType === "DeviceRequest" &&
+            self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+            if (this.props.serviceRequest.codeCodeableConcept.hasOwnProperty("coding")) {
+                this.props.serviceRequest.codeCodeableConcept.coding.map((coding) => {
+                    if (codesString == "") {
                         codesString = coding.code
                     }
-                    else{
-                        codesString = codesString+","+coding.code
+                    else {
+                        codesString = codesString + "," + coding.code
                     }
                 })
             }
-      
-      }
-      return codesString
+
+        }
+        return codesString
     }
 
-    async createSubmittedRequest(claimResponse){
+    async createSubmittedRequest(claimResponse) {
         await this.deleteReqByAppContext()
         let today = new Date();
         let appContext = sessionStorage.getItem("appContext")
 
         let body = {
-            "type":"submitted",
-            "date":today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate(),
-            "patient_id":this.state.patientId,
-            "app_context":appContext,
-            "claim_response_id":claimResponse.id,
-            "claim_response":claimResponse,
-            "codes":this.getCodesString(),
-            "prior_auth_ref":claimResponse.preAuthRef
+            "type": "submitted",
+            "date": today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate(),
+            "patient_id": this.state.patientId,
+            "app_context": appContext,
+            "claim_response_id": claimResponse.id,
+            "claim_response": claimResponse,
+            "codes": this.getCodesString(),
+            "prior_auth_ref": claimResponse.preAuthRef
         }
         await this.createRequest(body)
-
     }
 
-    async createRequest(body){
-        this.setState({saved:false})
+    async createRequest(body) {
+        this.setState({ saved: false })
         let headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          "Access-Control-Allow-Origin":"*",
-          'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            "Access-Control-Allow-Origin": "*",
+            'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
         }
-        let url = globalConfig.restURL+"/api/pa_info"
+        let url = globalConfig.restURL + "/api/pa_info"
         let today = new Date();
- //        if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
- //                self.props.serviceRequest.resourceType === "ServiceRequest" &&
- //                self.props.serviceRequest.hasOwnProperty("code")) {
- //                service["productOrService"] = self.props.serviceRequest.code;
- // if (self.props.serviceRequest.hasOwnProperty("resourceType") && 
- //                self.props.serviceRequest.resourceType === "DeviceRequest" &&
- //                self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
- //                service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
-       
+        //        if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+        //                self.props.serviceRequest.resourceType === "ServiceRequest" &&
+        //                self.props.serviceRequest.hasOwnProperty("code")) {
+        //                service["productOrService"] = self.props.serviceRequest.code;
+        // if (self.props.serviceRequest.hasOwnProperty("resourceType") && 
+        //                self.props.serviceRequest.resourceType === "DeviceRequest" &&
+        //                self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+        //                service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
+
         let res = await fetch(url, {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify(body)
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
         }).then((response) => {
-          return response.json();
+            return response.json();
         }).then((response) => {
-          console.log("Questionnaires Saved: ",response);
-          this.setState({saved:true})
-          return response
+            console.log("Questionnaires Saved: ", response);
+            this.setState({ saved: true })
+            return response
         })
         return res;
     }
 
-    async deleteReqByAppContext(){
-        console.log("Save questionnaire",sessionStorage.getItem("appContext"));
+    async deleteReqByAppContext() {
+        console.log("Save questionnaire", sessionStorage.getItem("appContext"));
         let appContext = sessionStorage.getItem("appContext")
         let headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          "Access-Control-Allow-Origin":"*",
-          'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            "Access-Control-Allow-Origin": "*",
+            'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
         }
-        let url = globalConfig.restURL+"/api/pa_info/"+this.state.patientId+"/"+appContext;
-        try{
+        let url = globalConfig.restURL + "/api/pa_info/" + this.state.patientId + "/" + appContext;
+        try {
             let deleteReq = await fetch(url, {
-              method: "DELETE",
-              headers: headers,
+                method: "DELETE",
+                headers: headers,
             }).then((response) => {
-              return response.json();
+                return response.json();
             }).then((response) => {
-              console.log("!!Questionnaire deleted",response);
-              return response
+                console.log("!!Questionnaire deleted", response);
+                return response
             })
         }
-        catch(e){
+        catch (e) {
             console.log(e)
         }
     }
 
-    async saveQuestionnaireData(){
+    async saveQuestionnaireData() {
 
         await this.deleteReqByAppContext();
         let appContext = sessionStorage.getItem("appContext")
-        try{
+        try {
             let today = new Date();
             let body = {
-            "type":"draft",
-            "date":today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate(),
-            "patient_id":this.state.patientId,
-            "codes":this.getCodesString(),
-            "app_context":appContext
+                "type": "draft",
+                "date": today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate(),
+                "patient_id": this.state.patientId,
+                "codes": this.getCodesString(),
+                "app_context": appContext
             }
             await this.createRequest(body)
         }
-        catch(e){
-             console.log(e)
+        catch (e) {
+            console.log(e)
         }
-        
+
     }
 
     isEmptyAnswer(answer) {

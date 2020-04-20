@@ -39,7 +39,6 @@ export default class CernerTextInput extends Component {
         if (this.props.inputType === "date" && value) {
             this.setState({ value: value.toString() });
         } else if (this.props.inputType === "boolean" && value !== undefined && value !== null) {
-            // console.log("Initial boolean value---", value, this.props.item.text);
             if (value === "true") {
                 this.setState({ value: true });
             }
@@ -105,7 +104,6 @@ export default class CernerTextInput extends Component {
                 this.setState({ value: false })
             }
         } else {
-            // console.log("value----", event.target.value);
             // update the parent state
             this.props.updateCallback(this.props.item.linkId, event.target.value, "values")
             // update local state

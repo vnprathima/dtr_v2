@@ -74,7 +74,7 @@ class DropdownServiceCode extends Component {
 
   async getResources() {
     // console.log("Props in  codes----", this.props.config);
-    //    var url = this.props.config.cds_service.get_codes;
+      //  var url = this.props.config.cds_service.get_codes;
     var url = "https://sm.mettles.com/cds/getCodes";
     // let token;
     // token = await createToken(this.props.config.provider.grant_type, 'provider', sessionStorage.getItem('username'), sessionStorage.getItem('password'))
@@ -222,7 +222,7 @@ class DropdownServiceCode extends Component {
         {this.state.selected_codes.length > 0 &&
           <div className="form-row">
             <div className="col-md-12">
-              <table class="table table-bordered table-sm table-striped">
+              <table className="table table-bordered table-sm table-striped">
                 <thead>
                   <tr><td style={{width:"20%"}}>Code</td><td style={{width:"10%"}}>Quantity</td><td>Description</td></tr>
                 </thead>

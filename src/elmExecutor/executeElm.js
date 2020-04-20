@@ -14,7 +14,6 @@ function getSmartConnection() {
     auth: {
       type: "bearer",
       token: sessionStorage["token"]
-
     }
   });
   return smart

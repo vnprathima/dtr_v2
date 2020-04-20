@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './TextInput.css';
 import '../../ComponentStyles.css';
+var dateFormat = require('dateformat');
 
 export default class TextInput extends Component {
     constructor(props) {
@@ -27,9 +28,17 @@ export default class TextInput extends Component {
 
     componentDidMount() {
         // setup initial value from qForm
-        const value = this.props.retrieveCallback(this.props.item.linkId);
+        var value = this.props.retrieveCallback(this.props.item.linkId); 
+        // console.log("Initial value---",value, this.props.inputType, this.props.item.text);
         if (value) {
+            if(this.props.inputType === "datetime-local"){
+                value = value.toString();   
+                value = dateFormat(value, "yyyy-mm-dd'T'HH:MM:ss");
+            }
             this.setState({ value: value });
+        // Add Values from initial key setup in Questionnarie
+        } else if(this.props.item.hasOwnProperty("initial") && this.props.item.initial[0].hasOwnProperty(this.props.valueType)){
+            this.setState({ value: this.props.item.initial[0][this.props.valueType] });
         }
         if (this.props.inputType === "textArea") {
             this.setState({ area: true });
@@ -66,7 +75,7 @@ export default class TextInput extends Component {
                             onChange={this.onInputChange}>
                         </textarea>
                         :
-                        <input className=" ui fluid search selection text-input-box"
+                        <input className="ui fluid search selection text-input-box"
                             type={this.props.inputType}
                             value={this.state.value}
                             onChange={this.onInputChange}

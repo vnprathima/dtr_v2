@@ -1,26 +1,16 @@
 
 import React, { Component } from 'react';
 import { hot } from "react-hot-loader";
-import SelectPayer from './components/SelectPayer';
-import DropdownServiceCode from './components/DropdownServiceCode';
-import DropdownCoverage from './components/DropdownCoverage';
-import { DateInput } from 'semantic-ui-calendar-react';
 import Client from 'fhir-kit-client';
 import "react-datepicker/dist/react-datepicker.css";
 import './index.css';
 import './components/consoleBox.css';
-import Loader from 'react-loader-spinner';
 // import { createToken } from './components/Authentication';
-import { Dropdown } from 'semantic-ui-react';
 import stateOptions from './stateOptions'
 import "isomorphic-fetch";
-// var dateFormat = require('dateformat');
-import DropdownEncounter from './components/DropdownEncounter';
 import UiFactory from "./UiFactory.js";
 import globalConfig from './globalConfiguration.json';
-
-
-
+import { hasTokenExpired } from './util/util.js';
 const types = {
   error: "errorClass",
   info: "infoClass",
@@ -39,7 +29,7 @@ class ProviderRequest extends Component {
       accessToken: '',
       scope: '',
       payer: '',
-      loadingTabels:true,
+      loadingTabels: true,
       patientId: sessionStorage.getItem('auth_patient_id') !== undefined ? sessionStorage.getItem('auth_patient_id') : '',
       practitionerId: (localStorage.getItem('npi') !== null) ? localStorage.getItem('npi') : "",
       resourceType: null,
@@ -102,9 +92,9 @@ class ProviderRequest extends Component {
       stateOptions: stateOptions,
       encounters: [],
       provider_fhir_url: sessionStorage.getItem("serviceUri"),
-      prior_auth_records:[
-        ]
-      
+      prior_auth_records: [
+      ],
+      tokenExpired: false
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
@@ -134,7 +124,10 @@ class ProviderRequest extends Component {
   }
 
   async componentDidMount() {
-    await this.handlePrefetch()
+    this.setState({ tokenExpired: hasTokenExpired() });
+    if (!this.state.tokenExpired) {
+      await this.handlePrefetch();
+    }
     await this.getRequests()
 
   }
@@ -145,34 +138,34 @@ class ProviderRequest extends Component {
     let headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-       "Cache-Control": "no-cache,no-store",
+      "Cache-Control": "no-cache,no-store",
       // 'Accept-Encoding': 'gzip, deflate, sdch, br',
       // 'Accept-Language': 'en-US,en;q=0.8',
-      "Access-Control-Allow-Origin":"*",
-      'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+      "Access-Control-Allow-Origin": "*",
+      'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
     }
-    const url = globalConfig.restURL+"/api/pa_info/"+this.state.patientId;
+    const url = globalConfig.restURL + "/api/pa_info/" + this.state.patientId;
     let res = fetch(url, {
       method: "GET",
       headers: headers,
     }).then((response) => {
-      this.setState({loadingTabels:false})
+      this.setState({ loadingTabels: false })
       return response.json();
     }).then((response) => {
-      console.log("requests recccss",response);
-      this.setState({prior_auth_records:response.result,loadingTabels:false})
+      console.log("requests recccss", response);
+      this.setState({ prior_auth_records: response.result, loadingTabels: false })
       return response
     })
     return res;
   }
 
- 
-  async checkRequestStatus(rec){
-    console.log("check stattt records",rec.index)
+
+  async checkRequestStatus(rec) {
+    console.log("check stattt records", rec.index)
     let prior_auth_records = this.state.prior_auth_records
     prior_auth_records[rec.index].checking = true
-    this.setState({prior_auth_records})
-    if(rec.claim_response_id != undefined){
+    this.setState({ prior_auth_records })
+    if (rec.claim_response_id != undefined) {
 
       const priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
       let fhirHeaders = {
@@ -186,89 +179,89 @@ class ProviderRequest extends Component {
 
       }).then((response) => {
         return response.json();
-      }).then(async(response) => {
-        console.log("claim Resppsps",response);
-        if(response.hasOwnProperty("outcome")){
-           // response.outcome = "complete"
-          if(response.outcome == "complete"){
+      }).then(async (response) => {
+        console.log("claim Resppsps", response);
+        if (response.hasOwnProperty("outcome")) {
+          // response.outcome = "complete"
+          if (response.outcome == "complete") {
 
             let headers = {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               "Cache-Control": "no-store",
-              "Access-Control-Allow-Origin":"*",
-              'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+              "Access-Control-Allow-Origin": "*",
+              'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
             }
-            let url = globalConfig.restURL+"/api/pa_info_cri/"+this.state.patientId+"/"+rec.claim_response_id;
+            let url = globalConfig.restURL + "/api/pa_info_cri/" + this.state.patientId + "/" + rec.claim_response_id;
             let codesString = ""
-            try{
-                let getReq = await fetch(url, {
-                  method: "GET",
-                  headers: headers,
-                }).then((response) => {
-                  return response.json();
-                }).then((response) => {
-                  console.log("!!Record found",response);
-                  if(response.hasOwnProperty("result")){
-                    response.result.map((rec)=>{
-                      if(codesString != ""){
-                        codesString = codesString+","+rec.codes
-                      }
-                      else{
-                        codesString = rec.codes
-                      }
-                    })
-                  }
-                  return response
-                })
+            try {
+              let getReq = await fetch(url, {
+                method: "GET",
+                headers: headers,
+              }).then((response) => {
+                return response.json();
+              }).then((response) => {
+                console.log("!!Record found", response);
+                if (response.hasOwnProperty("result")) {
+                  response.result.map((rec) => {
+                    if (codesString != "") {
+                      codesString = codesString + "," + rec.codes
+                    }
+                    else {
+                      codesString = rec.codes
+                    }
+                  })
+                }
+                return response
+              })
             }
-            catch(e){
-                console.log(e)
+            catch (e) {
+              console.log(e)
 
             }
-            try{
-                let deleteReq = await fetch(url, {
-                  method: "DELETE",
-                  headers: headers,
-                }).then((response) => {
-                  return response.json();
-                }).then((response) => {
-                  console.log("!!Record deleted",response);
-                  return response
-                })
+            try {
+              let deleteReq = await fetch(url, {
+                method: "DELETE",
+                headers: headers,
+              }).then((response) => {
+                return response.json();
+              }).then((response) => {
+                console.log("!!Record deleted", response);
+                return response
+              })
             }
-            catch(e){
-                console.log(e)
+            catch (e) {
+              console.log(e)
             }
-            try{
+            try {
               let date = new Date(response.created)
               let body = {
-                  "type":"completed",
-                  "date":date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate(),
-                  "patient_id":this.state.patientId,
-                  "claim_response_id":response.id,
-                  "claim_response":response,
-                  "prior_auth_ref":response.preAuthRef,
-                  "codes":codesString
-                }
+                "type": "completed",
+                "date": date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
+                "patient_id": this.state.patientId,
+                "claim_response_id": response.id,
+                "claim_response": response,
+                "prior_auth_ref": response.preAuthRef,
+                "codes": codesString
+              }
 
               await this.createRequest(body)
               await this.getRequests();
             }
-            catch(e){
-              console.log("Error!!",e)
+            catch (e) {
+              console.log("Error!!", e)
             }
           }
-          else{
+          else {
             // console.log("in else 1",prior_auth_records[rec.index])
             prior_auth_records[rec.index].checking = false
-            this.setState({prior_auth_records})
+            this.setState({ prior_auth_records })
           }
         }
-        else{
+        else {
           // console.log("in else 2",prior_auth_records[rec.index])
           prior_auth_records[rec.index].checking = false
-          this.setState({prior_auth_records})
+          this.setState({ prior_auth_records })
         }
         //this.setState({prior_auth_records:response.result})
         return response
@@ -277,23 +270,23 @@ class ProviderRequest extends Component {
     }
 
     prior_auth_records[rec.index].checking = false
-    this.setState({prior_auth_records})
+    this.setState({ prior_auth_records })
     return false;
   }
 
 
-  async createRequest(body){
-    this.setState({saved:false})
+  async createRequest(body) {
+    this.setState({ saved: false })
     let headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      "Access-Control-Allow-Origin":"*",
-      'Authorization': "Basic " +btoa(globalConfig.odoo_username +":"+globalConfig.odoo_password)
+      "Access-Control-Allow-Origin": "*",
+      'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
     }
-    let url = globalConfig.restURL+"/api/pa_info"
+    let url = globalConfig.restURL + "/api/pa_info"
     let today = new Date();
-    
-   
+
+
     let res = await fetch(url, {
       method: "POST",
       headers: headers,
@@ -301,12 +294,12 @@ class ProviderRequest extends Component {
     }).then((response) => {
       return response.json();
     }).then((response) => {
-      console.log("Questionnaires Saved: ",response);
-      this.setState({saved:true})
+      console.log("Questionnaires Saved: ", response);
+      this.setState({ saved: true })
       return response
     })
     return res;
-    }
+  }
 
   consoleLog(content, type) {
     let jsonContent = {
@@ -330,7 +323,7 @@ class ProviderRequest extends Component {
       this.setState({ prefetch: true });
       this.setState({ prefetchloading: true });
       await this.getResourceData(sessionStorage.getItem("token"),
-        "Patient", "/" + this.state.patientId).then(async(patientResource) => {
+        "Patient", "/" + this.state.patientId).then(async (patientResource) => {
           console.log("Patient get response", patientResource);
           this.setState({ prefetchloading: false });
           if (patientResource.hasOwnProperty("resourceType") && patientResource.resourceType === 'Patient') {
@@ -344,6 +337,32 @@ class ProviderRequest extends Component {
               this.setState({ patientState: patientResource.address[0].state })
               this.setState({ patientPostalCode: patientResource.address[0].postalCode })
             }
+            await this.getResourceData(sessionStorage.getItem("token"),
+              "Encounter", "?patient=" + this.state.patientId).then(async (encounterRes) => {
+                if (encounterRes.resourceType === "Bundle" && encounterRes.total > 0) {
+                  this.setState({ encounters: encounterRes.entry })
+                }
+              }).catch((reason) => {
+                console.log("No response recieved from the server", reason)
+              });
+            await this.getResourceData(sessionStorage.getItem("token"),
+              "Coverage", "?patient=" + this.state.patientId).then(async (coverageRes) => {
+                console.log("Coverage resource", coverageRes.total);
+                if (coverageRes.total > 0) {
+                  console.log("if total>0", coverageRes.entry);
+                  let coverageResources = this.state.coverageResources
+                  let coverageId = false;
+                  for (var r in coverageRes.entry) {
+                    console.log("in loop,", r)
+                    coverageId = coverageRes.entry[r].resource.id
+                    coverageResources.push(coverageRes.entry[r].resource);
+                  }
+                  this.setState({ coverageResources: coverageResources, coverageId: coverageId });
+                  console.log("Coversge reso", this.state.coverageResources)
+                }
+              }).catch((reason) => {
+                console.log("No response recieved from the server", reason)
+              });
           } else {
             const errorMsg = "Token post request failed. Try launching again !!";
             document.body.innerText = errorMsg;
@@ -359,32 +378,7 @@ class ProviderRequest extends Component {
           this.setState({ firstName: '' })
           this.setState({ lastName: '' })
         });
-      await this.getResourceData(sessionStorage.getItem("token"),
-        "Encounter", "?patient=" + this.state.patientId).then(async(encounterRes) => {
-          if (encounterRes.resourceType === "Bundle" && encounterRes.total > 0) {
-            this.setState({ encounters: encounterRes.entry })
-          }
-        }).catch((reason) => {
-          console.log("No response recieved from the server", reason)
-        });
-      await this.getResourceData(sessionStorage.getItem("token"),
-        "Coverage", "?patient=" + this.state.patientId).then(async(coverageRes) => {
-          console.log("Coverage resource", coverageRes.total);
-          if (coverageRes.total > 0) {
-            console.log("if total>0", coverageRes.entry);
-            let coverageResources = this.state.coverageResources
-            let coverageId = false;
-            for (var r in coverageRes.entry) {
-              console.log("in loop,", r)
-              coverageId = coverageRes.entry[r].resource.id
-              coverageResources.push(coverageRes.entry[r].resource);
-            }
-            this.setState({ coverageResources:coverageResources,coverageId:coverageId });
-            console.log("Coversge reso", this.state.coverageResources)
-          }
-        }).catch((reason) => {
-          console.log("No response recieved from the server", reason)
-        });
+
     }
   }
 
@@ -410,11 +404,11 @@ class ProviderRequest extends Component {
     if (this.state.firstName === '' || this.state.lastName === '') {
       formValidate = false;
     }
-    if(this.state.coverageId === ""){
+    if (this.state.coverageId === "") {
       formValidate = false;
       this.setState({ loading: false, crd_error_msg: "Unable to Submit Request. No Coverage Information Found !!" });
     }
-    if(this.state.encounterId === ""){
+    if (this.state.encounterId === "") {
       formValidate = false;
       this.setState({ loading: false, crd_error_msg: "Unable to Submit Request. No Encounter Information Found !!" });
     }
@@ -429,10 +423,22 @@ class ProviderRequest extends Component {
   }
 
   startLoading() {
-    if (this.validateForm()) {
-      this.setState({ loading: true }, () => {
-        this.submit_info();
-      })
+    this.setState({ tokenExpired: hasTokenExpired() });
+    if (!this.state.tokenExpired) {
+      if (this.validateForm()) {
+        this.setState({ loading: true }, () => {
+          this.submit_info();
+        })
+      }
+    }
+  }
+
+  submitDraftPA(draftPA) {
+    this.setState({ tokenExpired: hasTokenExpired() });
+    if (!this.state.tokenExpired) {
+      sessionStorage.setItem("appContext", draftPA.app_context);
+      sessionStorage.setItem("showCDSHook", false);
+      window.location.href = "/index?appContextId=" + draftPA.app_context
     }
   }
 
@@ -558,33 +564,21 @@ class ProviderRequest extends Component {
   }
 
   async submit_info() {
-    //alert("in submit");
-    //let token = await createToken(this.state.config.provider_grant_type, 'provider', localStorage.getItem('username'), localStorage.getItem('password'), true);
-    //token = "Bearer " + token;
     var myHeaders = new Headers({
       "Content-Type": "application/json"
-      //"authorization": token,
     });
-    //    let accessToken = this.state.accessToken;
-    //  accessToken = token;
-    // console.log(accessToken, 'accesstoken')
-    // this.setState({ accessToken });
-    //alert("before json");
     let json_request = await this.getJson();
-
     let url = '';
     if (this.state.hook === 'order-review') {
-      // url = this.state.config.crd_order_review_url;
-      url = "https://sm.mettles.com/crd/r4/cds-services/order-review-crd";
+      // url = "https://sm.mettles.com/crd/r4/cds-services/order-review-crd";
+      url = "http://localhost:8090/r4/cds-services/order-review-crd";
     }
     if (this.state.hook === 'order-select') {
-      // url = this.state.config.crd_url;
-      url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
+      // url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
+      url = "http://localhost:8090/r4/cds-services/order-select-crd";
     }
-    // console.log("json_request", json_request, this.state.config.crd_url)
     try {
       let self = this;
-      //alert(JSON.stringify(json_request));
       await fetch(url, {
         method: "POST",
         headers: myHeaders,
@@ -634,12 +628,10 @@ class ProviderRequest extends Component {
     }
   }
   renderClaimSubmit() {
-    console.log(this.ui);
     return this.ui.getProviderRequestForm(this);
   };
 
   async getRequestID(token) {
-
     const min = 1;
     const max = 1000000000;
     const num = parseInt(min + Math.random() * (max - min));
@@ -726,8 +718,8 @@ class ProviderRequest extends Component {
     if (this.state.coverageId === '') {
       organization = {
         "resourceType": "Organization",
-        "name":"United Health Care",
-       // "name": this.state.payer,
+        "name": "United Health Care",
+        // "name": this.state.payer,
         "id": "united_health_care"
       }
       coverage = {
@@ -748,12 +740,10 @@ class ProviderRequest extends Component {
           }
         ]
       };
-      
+
     } else {
       console.log("Coverage resources--", this.state.coverageResources, this.state.coverageId)
       coverage = this.state.coverageResources.find(cov => cov.id === this.state.coverageId);
-      //HARDCODE
-      
       sessionStorage.setItem("coverage", JSON.stringify(coverage))
       if (coverage.hasOwnProperty("payor")) {
         let org_ref = coverage.payor[0].reference
@@ -888,7 +878,7 @@ class ProviderRequest extends Component {
         entry: []
       }
       for (var i = 0; i < selected_codes.length; i++) {
-        console.log("IIn device request--",selected_codes[i], i);
+        console.log("IIn device request--", selected_codes[i], i);
         let deviceRequest = {
           "resourceType": "DeviceRequest",
           "identifier": [
@@ -907,7 +897,7 @@ class ProviderRequest extends Component {
               "reference": "Coverage/" + coverage.id
             }
           ],
-          "encounter":{
+          "encounter": {
             "reference": "Encounter/" + this.state.encounterId
           },
           "performer": {
@@ -949,7 +939,7 @@ class ProviderRequest extends Component {
               "reference": "Coverage/" + coverage.id
             }
           ],
-          "encounter":{
+          "encounter": {
             "reference": "Encounter/" + this.state.encounterId
           },
           "performer": {

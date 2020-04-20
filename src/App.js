@@ -6,13 +6,7 @@ import executeElm from "./elmExecutor/executeElm";
 import fetchArtifacts from "./util/fetchArtifacts";
 //import Testing from "./components/ConsoleBox/Testing";
 import UiFactory from "./UiFactory.js";
-// import sample from './sample_questionnaire.json';
 
-
-// aggregateTranslations({ configPath: './terraI18n.config.js' });
-
-
-//window.alert("in App.js")
 class App extends Component {
   constructor(props) {
     super(props);
@@ -34,7 +28,6 @@ class App extends Component {
   componentDidMount() {
     const fhirWrapper = cqlfhir.FHIRWrapper.FHIRv300();
     this.consoleLog("fetching artifacts", "infoClass");
-    //window.alert("fetchartifacts in componentDidMount-- ");
     fetchArtifacts(this.props.FHIR_URI_PREFIX, this.props.questionnaireUri, this.smart, this.props.filepath, this.consoleLog)
       .then(artifacts => {
         //window.alert("Got Requirements to load ");
