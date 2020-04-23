@@ -94,7 +94,9 @@ class ProviderRequest extends Component {
       provider_fhir_url: sessionStorage.getItem("serviceUri"),
       prior_auth_records: [
       ],
-      tokenExpired: false
+      tokenExpired: false,
+      showError: false,
+      errorType: ''
     }
     this.validateMap = {
       status: (foo => { return foo !== "draft" && foo !== "open" }),
@@ -124,9 +126,12 @@ class ProviderRequest extends Component {
   }
 
   async componentDidMount() {
-    this.setState({ tokenExpired: hasTokenExpired() });
-    if (!this.state.tokenExpired) {
+    this.setState({ showError: hasTokenExpired() });
+    if (!this.state.showError) {
       await this.handlePrefetch();
+    } else {
+      console.log("In else--");
+      this.setState({ errorType: "token" })
     }
     await this.getRequests()
 
@@ -343,6 +348,8 @@ class ProviderRequest extends Component {
                   this.setState({ encounters: encounterRes.entry })
                 }
               }).catch((reason) => {
+                this.setState({ "showError": true });
+                this.setState({ "errorType": "token" });
                 console.log("No response recieved from the server", reason)
               });
             await this.getResourceData(sessionStorage.getItem("token"),
@@ -361,15 +368,18 @@ class ProviderRequest extends Component {
                   console.log("Coversge reso", this.state.coverageResources)
                 }
               }).catch((reason) => {
+                this.setState({ "showError": true });
+                this.setState({ "errorType": "token" });
                 console.log("No response recieved from the server", reason)
               });
           } else {
-            const errorMsg = "Token post request failed. Try launching again !!";
-            document.body.innerText = errorMsg;
-            console.error(errorMsg);
-            return;
+            console.log("In patient else---");
+            this.setState({ "showError": true });
+            this.setState({ "errorType": "token" });
           }
         }).catch((reason) => {
+          this.setState({ "showError": true });
+          this.setState({ "errorType": "token" });
           console.log("No response recieved from the server", reason)
           this.setState({ gender: '' })
           this.setState({ birthDate: '' })
@@ -379,6 +389,9 @@ class ProviderRequest extends Component {
           this.setState({ lastName: '' })
         });
 
+    } else {
+      this.setState({ "showError": true });
+      this.setState({ "errorType": "noPatient" })
     }
   }
 

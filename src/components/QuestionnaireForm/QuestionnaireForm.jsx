@@ -63,8 +63,11 @@ export default class QuestionnaireForm extends Component {
             previewloading: false,
             documentReference: {},
             saved: false,
-            validationError:"",
-            validated: true
+            validationError: "",
+            validated: true,
+            showError: false,
+            errorType: '',
+            referenceDocs: []
         };
 
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
@@ -301,7 +304,7 @@ export default class QuestionnaireForm extends Component {
         if (this.state.files != null) {
             var fileInputData = {
                 "resourceType": "DocumentReference",
-                "id": this.randomString,
+                "id": this.randomString(),
                 "status": "current",
                 "content": [],
             }
@@ -348,7 +351,6 @@ export default class QuestionnaireForm extends Component {
             const results = [];
             // false if we need all behaviorType to be "all"
             const checkAny = enableCriteria.length > 1 ? item.enableBehavior === 'any' : false
-            console.log("Checkany---",checkAny, item.linkId);
             enableCriteria.forEach((rule) => {
                 const question = this.state.values[rule.question]
                 const answer = findValueByPrefix(rule, "answer");
@@ -365,6 +367,10 @@ export default class QuestionnaireForm extends Component {
                             })
                         }
                         results.push(result);
+                    }
+                } else if (typeof question === "boolean"){
+                    if (rule.answerBoolean) {
+                        results.push(this.evaluateOperator(rule.operator, question, answer));
                     }
                 } else {
                     results.push(this.evaluateOperator(rule.operator, question, answer));
@@ -387,7 +393,7 @@ export default class QuestionnaireForm extends Component {
                 // autofill fields
                 links.push(item.linkId);
                 if (item.enableWhen) {
-                    console.log(item.enableWhen);
+                    // console.log(item.enableWhen);
                 }
                 if (item.extension) {
                     item.extension.forEach((e) => {
@@ -456,8 +462,8 @@ export default class QuestionnaireForm extends Component {
                         this.retrieveValue, this.state.containedResources, "valueCoding");
 
                 case "boolean":
-                    return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
-                        this.retrieveValue, "boolean", "boolean", "valueBoolean");
+                    return this.ui.getBooleanInput(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "valueBoolean");
 
                 case "decimal":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
@@ -488,13 +494,17 @@ export default class QuestionnaireForm extends Component {
                         this.retrieveValue, "number", "valueInteger", "integer");
 
                 case "quantity":
-                    console.log("in quantity", item)
                     return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,
                         this.updateQuestionValue, this.retrieveValue, "quantity", "valueQuantity");
 
                 case "open-choice":
                     return this.ui.getOpenChoice(item.linkId, item, this.updateQuestionValue,
                         this.retrieveValue, this.state.containedResources, ["valueCoding", "valueString"]);
+
+                case "reference":
+                    console.log("in reference", item);
+                    return this.ui.getReferences(item.linkId, item, this.updateQuestionValue,
+                        this.retrieveValue, "valueReference");
 
                 default:
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
@@ -599,6 +609,24 @@ export default class QuestionnaireForm extends Component {
                             } else {
                                 answerItem.answer.push({ [itemType.valueType]: "" });
                             }
+                            break;
+                        case "valueReference":
+                            console.log("In reference", self.state.values[item])
+                            const attac = self.state.values[item]
+                            // This is a temporary fix as cerner is not allowing to read Document reference
+                            let id = self.randomString();
+                            let docRef = {
+                                "resourceType": "DocumentReference",
+                                "id": id,
+                                "status": "current",
+                                "content": [{ "attachment": attac }]
+                            }
+                            self.setState({ referenceDocs: [docRef] })
+                            answerItem.answer.push({
+                                [itemType.valueType]: {
+                                    "reference": "DocumentReference/" + id
+                                }
+                            })
                             break;
                         default:
                             const answer = self.state.values[item];
@@ -987,6 +1015,16 @@ export default class QuestionnaireForm extends Component {
                     priorAuthBundle.entry.push({ resource: self.state.documentReference })
                 }
             }
+            console.log("reference  docs---", self.state.referenceDocs);
+            // Add referenced Docs in claim
+            if (self.state.referenceDocs.length > 0) {
+                self.state.referenceDocs.map((doc) => {
+                    if (doc.hasOwnProperty("content") && doc.content.length > 0) {
+                        priorAuthBundle.entry.push({ resource: doc })
+                    }
+                })
+            }
+
             resolve(priorAuthBundle);
         });
 
@@ -1027,7 +1065,7 @@ export default class QuestionnaireForm extends Component {
     outputResponse(status) {
         this.validateQuestitionnarie().then((validated) => {
             console.log("Validated----", validated);
-            this.setState({validated:validated});
+            this.setState({ validated: validated });
             if (validated) {
                 this.setState({ loading: true });
                 this.generateBundle().then((priorAuthBundle) => {
@@ -1101,8 +1139,8 @@ export default class QuestionnaireForm extends Component {
                                 }
                             }
                         } else {
-                            const errorMsg = "Token post request failed. Returned status: " + tokenPost.status;
-                            document.body.innerText = errorMsg;
+                            this.setState({ "showError": true });
+                            this.setState({ "errorType": "token" });
                             console.error(errorMsg);
                             return;
                         }
@@ -1111,7 +1149,7 @@ export default class QuestionnaireForm extends Component {
                     console.log("unable to generate bundle", error);
                 })
             } else {
-                this.setState({validationError:"Please fill all the required questions with (*) !!"});
+                this.setState({ validationError: "Please fill all the required questions with (*) !!" });
             }
         });
 
@@ -1231,14 +1269,13 @@ export default class QuestionnaireForm extends Component {
     }
 
     async saveQuestionnaireData() {
-
         await this.deleteReqByAppContext();
         let appContext = sessionStorage.getItem("appContext")
         try {
             let today = new Date();
             let body = {
                 "type": "draft",
-                "date": today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate(),
+                "date": today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate(),
                 "patient_id": this.state.patientId,
                 "codes": this.getCodesString(),
                 "app_context": appContext

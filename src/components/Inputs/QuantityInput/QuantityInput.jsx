@@ -75,7 +75,6 @@ export default class QuantityInput extends Component {
 
     render() {
         return (
-
             <div ref={this.ref}>
                 <div className="text-input-label quantity">{this.props.inputTypeDisplay}</div>
                 <div class="input-group">

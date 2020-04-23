@@ -39,7 +39,7 @@ export default class OpenChoice extends Component {
             if (!this.props.item.repeats) {
                 this.setState({ "display": returnAnswer.display });
             }
-            console.log("in return answer--",returnAnswer);
+            // console.log("in return answer--",returnAnswer);
             this.props.updateCallback(this.props.item.linkId, returnAnswer, "values");
         }
     }
@@ -59,7 +59,7 @@ export default class OpenChoice extends Component {
 
     autofill(choices, values) {
         const options = []
-        console.log("Choices--", choices, values);
+        // console.log("Choices--", choices, values);
         if (typeof values === "string") {
             let v = values.split(",");
             let f = [];
@@ -70,17 +70,17 @@ export default class OpenChoice extends Component {
             })
             values = f;
         }
-        console.log("Values---",values);
+        // console.log("Values---",values);
         values && values.forEach((value) => {
             choices.forEach((choice) => {
-                if (value.code) {
+                if (value !== null && value.code) {
                     value = value.code;
                 }
                 if (choice.code === value) {
                     options.push(choice);
                 }
             })
-            if (value.valueTypeFinal === "valueString") {
+            if (value !== null && value.valueTypeFinal === "valueString") {
                 // manually entered info
                 options.push(value);
             }
@@ -164,9 +164,9 @@ export default class OpenChoice extends Component {
                         }}
                         onClick={() => {
                             if (this.props.item.repeats) {
-                                this.myInp.focus();
+                                // this.myInp.focus();
                                 this.setState(prevState => ({
-                                    open: true
+                                    open: !prevState.open
                                 }))
                             } else {
                                 this.setState(prevState => ({

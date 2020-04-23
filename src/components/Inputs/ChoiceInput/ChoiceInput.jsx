@@ -50,6 +50,7 @@ export default class ChoiceInput extends Component {
     componentDidMount() {
         // autofill takes priority of initial selected
         const value = this.props.retrieveCallback(this.props.item.linkId);
+        console.log("value--",value);
         this.autofill(this.state.choices, value);
     }
 
@@ -65,7 +66,6 @@ export default class ChoiceInput extends Component {
                 // value is of type `coding`
                 if (Array.isArray(value)) {
                     value.forEach((val) => {
-
                         if (choice.code === val.code) {
                             this.setValue(choice);
                         }
@@ -83,7 +83,6 @@ export default class ChoiceInput extends Component {
 
     }
     setValue(value) {
-
         const newArray = this.state.values.filter((e) => {
             return e.code !== value.code;
         })

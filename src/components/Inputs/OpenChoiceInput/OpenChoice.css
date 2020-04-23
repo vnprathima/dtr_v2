@@ -78,9 +78,9 @@
 .open-choice .dropdown-block div,
 .open-choice .top-block {
     color: black;
-    padding: 0px 5px;
-    border: 1px solid transparent;
-    border-color: rgba(255, 255, 255, 0.2) transparent transparent transparent;
+    padding: 5px;
+    border-bottom: 1px solid lightgrey;
+    /* border-color: rgba(255, 255, 255, 0.2) transparent transparent transparent; */
     cursor: pointer;
 }
 

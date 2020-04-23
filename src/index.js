@@ -20,8 +20,8 @@ if (serviceUri !== undefined) {
 
         // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
         // clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
-
-        clientId = "6ef181e4-a7d8-4493-b94b-8b66d466900a"; // Prod
+        // clientId = "6ef181e4-a7d8-4493-b94b-8b66d466900a"; // Prod
+        clientId = "6bdae3cc-09a0-450b-83fe-f181918bcc54" //CF Prod
     } else if (serviceUri.indexOf("mettles") !== -1 && clientId === undefined) {
         clientId = "app-login";
     }
@@ -48,6 +48,7 @@ if (serviceUri !== undefined) {
         "patient/Organization.read", "patient/Organization.write",
         "user/Organization.read", "user/Organization.write", "patient/Observation.read",
         "user/Observation.read", "patient/Encounter.read", "user/Encounter.read",
+        "user/Documentreference.read","patient/Documentreference.read"
     ].join(" ");
 
     var app_context = urlUtils.getUrlParameter("app_context");
@@ -83,15 +84,15 @@ if (serviceUri !== undefined) {
     sessionStorage.setItem("serviceUri", serviceUri)
     sessionStorage.setItem("launchContextId", launchContextId)
     sessionStorage.setItem("launchUri", launchUri)
-        // Let's request the conformance statement from the SMART on FHIR API server and
-        // find out the endpoint URLs for the authorization server
+    // Let's request the conformance statement from the SMART on FHIR API server and
+    // find out the endpoint URLs for the authorization server
     let conformanceStatement;
     const conformanceGet = new XMLHttpRequest();
     conformanceGet.open("GET", conformanceUri);
     conformanceGet.setRequestHeader("Content-Type", "application/json");
     conformanceGet.setRequestHeader("Accept", "application/json");
 
-    conformanceGet.onload = function() {
+    conformanceGet.onload = function () {
         if (conformanceGet.status === 200) {
             try {
                 // //alert("Got Metadata from "+conformanceUri);
@@ -122,11 +123,11 @@ if (serviceUri !== undefined) {
             authUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/auth";
             tokenUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token"
         } else {
-            var smartExtension = conformanceStatement.rest[0].security.extension.filter(function(e) {
+            var smartExtension = conformanceStatement.rest[0].security.extension.filter(function (e) {
                 return e.url === "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris";
             });
 
-            smartExtension[0].extension.forEach(function(arg) {
+            smartExtension[0].extension.forEach(function (arg) {
                 if (arg.url === "authorize") {
                     authUri = arg.valueUri;
                 } else if (arg.url === "token") {
@@ -169,8 +170,8 @@ if (serviceUri !== undefined) {
     const params = JSON.parse(sessionStorage.getItem(s)); // load app session
 
     if (params === null || params === undefined) {
-        ReactDOM.render( <
-            ShowError type = "invalidContext" / > ,
+        ReactDOM.render(<
+            ShowError type="invalidContext" />,
             document.getElementById("root")
         )
     }
@@ -210,10 +211,10 @@ if (serviceUri !== undefined) {
 
     function handleFetchErrors(response) {
         if (!response.ok) {
-            const errorMsg = "Invalid app context. Unable to fetch resources !!";
-            document.body.innerText = errorMsg;
-            console.error(errorMsg, response);
-            return { "error": errorMsg };
+            ReactDOM.render(<ShowError type="invalidContext" />,
+                document.getElementById("root")
+            )
+            return { "error": "Invalid App Context!!" };
         }
         return response;
     }
@@ -271,13 +272,13 @@ if (serviceUri !== undefined) {
                         }
                     });
                     //alert("2 before loading app.js")
-                    ReactDOM.render( <
-                        App FHIR_URI_PREFIX = { FHIR_URI_PREFIX }
-                        questionnaireUri = { appContext.template }
-                        smart = { smart }
-                        serviceRequest = { appContext.request }
-                        filepath = { appContext.filepath }
-                        />,
+                    ReactDOM.render(<
+                        App FHIR_URI_PREFIX={FHIR_URI_PREFIX}
+                        questionnaireUri={appContext.template}
+                        smart={smart}
+                        serviceRequest={appContext.request}
+                        filepath={appContext.filepath}
+                    />,
                         document.getElementById("root")
                     );
                 }
@@ -289,7 +290,7 @@ if (serviceUri !== undefined) {
         // obtain authorization token from the authorization service using the authorization code
         tokenPost.open("POST", tokenUri);
         tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        tokenPost.onload = function() {
+        tokenPost.onload = function () {
             if (tokenPost.status === 200) {
                 try {
                     auth_response = JSON.parse(tokenPost.responseText);
@@ -311,8 +312,7 @@ if (serviceUri !== undefined) {
                         );
                     }
                 } catch (e) {
-                    ReactDOM.render( <
-                        ShowError type = "invalidAuth" / > ,
+                    ReactDOM.render(<ShowError type="invalidAuth" />,
                         document.getElementById("root")
                     )
                 }
@@ -340,7 +340,7 @@ if (serviceUri !== undefined) {
         // obtain authorization token from the authorization service using the authorization code
         tokenPost.open("POST", tokenUri);
         tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        tokenPost.onload = function() {
+        tokenPost.onload = function () {
             if (tokenPost.status === 200) {
                 try {
                     //alert("got token response: "+auth_response);
@@ -348,14 +348,14 @@ if (serviceUri !== undefined) {
                     sessionStorage["token"] = auth_response.access_token;
                     loadDTRApp(auth_response);
                 } catch (e) {
-                    ReactDOM.render( <
-                        ShowError type = "invalidAuth" / > ,
+                    ReactDOM.render(<
+                        ShowError type="invalidAuth" />,
                         document.getElementById("root")
                     )
                 }
             } else {
-                ReactDOM.render( <
-                    ShowError type = "token" / > ,
+                ReactDOM.render(<
+                    ShowError type="token" />,
                     document.getElementById("root")
                 )
             }

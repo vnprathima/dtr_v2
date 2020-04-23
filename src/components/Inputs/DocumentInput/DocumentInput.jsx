@@ -136,7 +136,7 @@ export default class DocumentInput extends Component {
                             )}
                         </Dropzone>
                     </section>
-                    <div  >{files}</div>
+                    <div>{files}</div>
                 </div>
             </div>
         )

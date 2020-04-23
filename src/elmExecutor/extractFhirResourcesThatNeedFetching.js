@@ -9,20 +9,22 @@ function extractFhirResourcesThatNeedFetching(elm) {
   //     extractResourcesFromExpression(resources, elm.library.statements.def[expDef].expression);
   //   }
   // }
-  if (elm || []){
+  if (elm || []) {
     for (const query of Object.keys(elm)) {
-      const resource = {type:"",query:{}}
-      if (elm[query].type !== undefined){
+      const resource = { type: "", query: {} }
+      if (elm[query].type !== undefined) {
         resource.type = elm[query].type;
       }
-      if (elm[query].codeFilter !== undefined){
-        if ((elm[query].codeFilter || [])){
-          const key = elm[query].codeFilter[0].path;
-          if (elm[query].codeFilter[0].valueSetString !== "Patient.id"){
-            resource.query[key] = elm[query].codeFilter[0].valueSetString;
-          } else {
-            resource.query[key] = sessionStorage["patientId"];
-          }
+      if (elm[query].codeFilter !== undefined) {
+        if ((elm[query].codeFilter || [])) {
+          elm[query].codeFilter.map((filter) => {
+            const key = filter.path;
+            if (filter.valueSetString !== "Patient.id") {
+              resource.query[key] = filter.valueSetString;
+            } else {
+              resource.query[key] = sessionStorage["patientId"];
+            }
+          })
         }
       }
       resources.add(resource);
@@ -33,7 +35,7 @@ function extractFhirResourcesThatNeedFetching(elm) {
 
 function extractResourcesFromExpression(resources, expression) {
   if (expression && Array.isArray(expression)) {
-    expression.forEach(function(e) {
+    expression.forEach(function (e) {
       extractResourcesFromExpression(resources, e);
     });
   } else if (expression && typeof expression === "object") {
@@ -45,18 +47,18 @@ function extractResourcesFromExpression(resources, expression) {
         console.error("Cannot find resource for Retrieve w/ dataType: ", expression.dataType);
       }
     } if (expression.type === "List") {
-      Object.keys(expression.element).forEach((e)=>{
-        if (expression.element[e].value !== undefined){
+      Object.keys(expression.element).forEach((e) => {
+        if (expression.element[e].value !== undefined) {
           resources.add(expression.element[e].value);
         }
       });
-    }else {
-        Object.keys(expression).forEach((e)=>{
-            extractResourcesFromExpression(resources, expression[e]);
-        });
-    //   for (const val of Object.keys(expression)) {
-    //     extractResourcesFromExpression(resources, expression[val]);
-    //   }
+    } else {
+      Object.keys(expression).forEach((e) => {
+        extractResourcesFromExpression(resources, expression[e]);
+      });
+      //   for (const val of Object.keys(expression)) {
+      //     extractResourcesFromExpression(resources, expression[val]);
+      //   }
     }
   }
 }

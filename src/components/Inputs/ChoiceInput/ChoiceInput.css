@@ -15,6 +15,7 @@
 }
 .radio-button:hover{
     border:2px solid black;
+    background: #2080be !important;
 }
 
 /* Tooltip container */

@@ -40,9 +40,9 @@ export default class BooleanInput extends Component {
     }
 
     setValue(value) {
-        if(this.state.value === value) {
-            value = null;
-        }
+        // if(this.state.value === value) {
+        //     value = null;
+        // }
         this.setState({value});
         this.props.updateCallback(this.props.item.linkId, value, "values")
     }
@@ -50,24 +50,24 @@ export default class BooleanInput extends Component {
     render() {
         return (
             <div className="text-input" ref={this.ref}>
-                <div className="toggle row" style={{paddingTop:"15px"}}>
-                    <div className="col-6">
+                <div className="toggle row" style={{paddingTop:"7px"}}>
+                    <div>
                         <button
                             className={"boolButton true btn " + (this.state.value?"selected":null)}
                             onClick={()=>{
                                 this.setValue(true)
                             }}>
                         </button>
-                        <span>true</span>
+                        <span>True</span>
                     </div>
-                    <div className="col-6">
+                    <div style={{marginLeft:"10px"}}>
                         <button
                             className={"boolButton false btn " + (this.state.value===false?"selected":null)}
                             onClick={()=>{
                                 this.setValue(false)
                             }}>
                         </button>
-                        <span>false</span>
+                        <span>False</span>
                     </div>
                 </div>
 

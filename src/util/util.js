@@ -61,19 +61,44 @@ function getListOfChoices(props, setChoice) {
 function hasTokenExpired() {
     const token = sessionStorage.getItem("token");
     try {
-        console.log("In check token--", jwtDecode(token).exp, Date.now()/1000);
         if (jwtDecode(token).exp < Date.now() / 1000) {
             sessionStorage.clear();
             return true;
         }
         return false;
     } catch (e) {
-        console.log("in catch--");
         return false;
     }
 };
+function getDocumentReferences() {
+    const Http = new XMLHttpRequest();
+    let url = sessionStorage.getItem("serviceUri")+"/DocumentReference?patient="+sessionStorage.getItem('auth_patient_id');
+    Http.open("GET", url);
+    Http.setRequestHeader("Content-Type", "application/json");
+    Http.setRequestHeader("Accept", "application/json");
+    Http.setRequestHeader("Authorization", "Bearer " + sessionStorage.getItem("token"));
+    Http.onreadystatechange = function () {
+        if (this.readyState === XMLHttpRequest.DONE) {
+            let references = [];
+            console.log("Doc reference ---",JSON.parse(this.responseText));
+            let response = JSON.parse(this.responseText);
+            if(response.hasOwnProperty("total") && response.total > 0){
+                response.entry.map((doc)=>{
+                    references.push({key:doc.id,text:doc.id,value:doc.id});
+                })
+                return references;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    Http.send();
+}
 export {
     findValueByPrefix,
     getListOfChoices,
-    hasTokenExpired
+    hasTokenExpired,
+    getDocumentReferences
 }

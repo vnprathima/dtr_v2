@@ -34,7 +34,7 @@ function doSearch(smart, type, q, callback) {
       //nothing
     }
   }
-  if (type === "Encounter") {
+  if (type === "Encounter" || type === "SupplyRequest") {
     smart.api
       .search({ type: type, query: q })
       .then(processSuccess(smart, [], callback), processError(smart, callback));
@@ -162,7 +162,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
     smart.patient.read().then(
       pt => {
         console.log("got pt", pt);
-        consoleLog("got pt:" + pt, "infoClass");
+        consoleLog("got patient:" + pt.id, "infoClass");
         sessionStorage['patientObject'] = JSON.stringify(pt)
         const entryResources = [pt];
         // entryResources = getInfoFromPatient(pt, neededResources, entryResources);
@@ -252,6 +252,12 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                     });
                   }
                 }
+                // if(r === "Condition" && results.length > 0){
+                //   console.log("condition.code-query --",q);
+                //     results.map((cond)=>{
+                //         console.log("condition --",cond);
+                //     })
+                // }
               }
               if (error) {
                 console.error(error);

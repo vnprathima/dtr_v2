@@ -26,6 +26,7 @@ import Select from "react-dropdown-select";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
 import QuantityInput from './components/Inputs/QuantityInput/QuantityInput';
+import ReferenceInput from './components/Inputs/ReferenceInput/ReferenceInput';
 import ShowError from './components/ShowError';
 
 export default class GenericUi {
@@ -59,18 +60,18 @@ export default class GenericUi {
         <div>
           <div id="main">
             <div className="form">
-              <div className="container">
-                {inputThis.state.tokenExpired &&
-                    <ShowError/>
+              <div className="container disable">
+                {inputThis.state.showError &&
+                  <ShowError type={inputThis.state.errorType} />
                 }
                 <div className="col-12 cerner-header">Prior Authorization</div>
-                <div className="row" style={{marginTop:"20px"}}>
+                <div className="row" style={{ marginTop: "20px" }}>
                   <div className="col-6">
                     {inputThis.state.encounters.length > 0 &&
                       <div className="form-row">
                         <div className="form-group col-md-6">
                           <h4 className="title">Encounter</h4>
-                          
+
                         </div>
                         <div className="form-group col-md-6">
                           <DropdownEncounter elementName="encounterId" encounters={inputThis.state.encounters} updateCB={inputThis.updateStateElement} />
@@ -80,29 +81,29 @@ export default class GenericUi {
                     <DropdownServiceCode elementName="selected_codes" updateCB={inputThis.updateStateElement} />
                     <button type="button" onClick={inputThis.startLoading}>Submit
                     <div id="fse" className={"spinner " + (inputThis.state.loading ? "visible" : "invisible")}>
-                      <Loader
-                        type="Oval"
-                        color="#fff"
-                        height={15}
-                        width={15}
-                      />
-                    </div>
-                  </button>
-                  {inputThis.state.crd_error_msg &&
-                    <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
-                  }
+                        <Loader
+                          type="Oval"
+                          color="#fff"
+                          height={15}
+                          width={15}
+                        />
+                      </div>
+                    </button>
+                    {inputThis.state.crd_error_msg &&
+                      <div className="text-center"><p>{inputThis.state.crd_error_msg}</p></div>
+                    }
                   </div>
-                  
+
                   <div className="col-6 module" style={{}}>
                     <div className="module-inside">
-                     <p>Prior Authorizations were never so simple. </p>
-                     <p>One app for all Payers. </p>
-                     <p>You are not among the Providers who spend 15% of your time on prior Authorizations </p>
+                      <p>Prior Authorizations were never so simple. </p>
+                      <p>One app for all Payers. </p>
+                      <p>You are not among the Providers who spend 15% of your time on prior Authorizations </p>
 
 
-                     <p>Medical ePA is here </p>
-                      </div>
-                    
+                      <p>Medical ePA is here </p>
+                    </div>
+
                   </div>
                 </div>
 
@@ -129,7 +130,7 @@ export default class GenericUi {
                                   </td>
                                   <td key="Action">
                                     <button className="table-btn" type="button"
-                                     onClick={()=>{inputThis.submitDraftPA(rec)}}>Edit & Submit</button>
+                                      onClick={() => { inputThis.submitDraftPA(rec) }}>Edit & Submit</button>
                                   </td>
                                 </tr>
                               )
@@ -139,15 +140,15 @@ export default class GenericUi {
                         </tbody>
                       </table>
                     }
-                    {records["draft"].length == 0 && inputThis.state.loadingTabels && 
+                    {records["draft"].length == 0 && inputThis.state.loadingTabels &&
                       <span>Loading ...</span>
                     }
-                    {(records["draft"].length == 0 && !inputThis.state.loadingTabels) && 
+                    {(records["draft"].length == 0 && !inputThis.state.loadingTabels) &&
                       <span>No Requests.</span>
                     }
                   </div>
                   <div className="col-4">
-                  <div className="col-12 cerner-header">Pending PA Requests</div>
+                    <div className="col-12 cerner-header">Pending PA Requests</div>
                     {records["submitted"].length > 0 &&
                       <table className="table table-striped table-sm table-bordered">
                         <thead className="thead-light" >
@@ -177,10 +178,10 @@ export default class GenericUi {
                         </tbody>
                       </table>
                     }
-                    {records["submitted"].length == 0 && inputThis.state.loadingTabels && 
+                    {records["submitted"].length == 0 && inputThis.state.loadingTabels &&
                       <span>Loading ...</span>
                     }
-                    {(records["submitted"].length == 0 && !inputThis.state.loadingTabels) && 
+                    {(records["submitted"].length == 0 && !inputThis.state.loadingTabels) &&
                       <span>No Requests.</span>
                     }
                   </div>
@@ -220,10 +221,10 @@ export default class GenericUi {
                         </tbody>
                       </table>
                     }
-                    {records["completed"].length == 0 && inputThis.state.loadingTabels && 
+                    {records["completed"].length == 0 && inputThis.state.loadingTabels &&
                       <span>Loading ...</span>
                     }
-                    {(records["completed"].length == 0 && !inputThis.state.loadingTabels) && 
+                    {(records["completed"].length == 0 && !inputThis.state.loadingTabels) &&
                       <span>No Requests.</span>
                     }
                   </div>
@@ -235,12 +236,12 @@ export default class GenericUi {
           <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
             <div className="col-9 text-left">
               <span>
-                  Copyright 2018 - 2020 Mettles Solutions, LLC.
+                Copyright 2018 - 2020 Mettles Solutions, LLC.
               </span>
             </div>
             <div className="col-2 text-right">
               <span>
-                  Powered By Medical EPA.
+                Powered By Medical EPA.
               </span>
             </div>
           </nav>
@@ -257,18 +258,18 @@ export default class GenericUi {
     return (
       <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
         serviceRequest, bundle, claimEndpoint)}
-         <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
-            <div className="col-8 text-left">
-              <span>
-                  Copyright 2018 - 2020 Mettles Solutions, LLC.
+        <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
+          <div className="col-8 text-left">
+            <span>
+              Copyright 2018 - 2020 Mettles Solutions, LLC.
               </span>
-            </div>
-            <div className="col-3 text-right">
-              <span>
-                  Powered By Medical EPA.
+          </div>
+          <div className="col-3 text-right">
+            <span>
+              Powered By Medical EPA.
               </span>
-            </div>
-          </nav>
+          </div>
+        </nav>
       </div>
     );
   }
@@ -281,12 +282,16 @@ export default class GenericUi {
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
     return (
-      <div className="main" style={{marginBottom:"100px"}}>
+      <div className="main" style={{ marginBottom: "100px" }}>
         <div className="container">
+          {inputThis.state.showError &&
+            <ShowError type={this.state.errorType} />
+          }
+
           <div className="col-12 cerner-main-header">
             {title}
             <span className="show-prefilled" style={{ float: "right" }}>
-               <input type="checkbox" onClick={() => {
+              <input type="checkbox" onClick={() => {
                 inputThis.toggleFilledFields();
               }}></input> Show Prefilled
             </span>
@@ -322,16 +327,15 @@ export default class GenericUi {
                     />
                   </div>
                 </button>
-                /
-                <button type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
-                
+                <button style={{marginLeft:"5px"}} type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
+
               </div>
-              {inputThis.state.saved && <div className="simple-success"><strong style={{color:"green",marginLeft:"1%"}}>Saved Successfully!!</strong></div>}
+              {inputThis.state.saved && <div className="simple-success"><strong style={{ color: "green", marginLeft: "1%" }}>Saved Successfully!!</strong></div>}
               {inputThis.state.validated === false &&
                 <div className="error-msg">{inputThis.state.validationError}</div>
-              } 
+              }
               {showPreview &&
-                <div><pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
+                <div><pre style={{ background: "#dee2e6", margin: "0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>
               }
             </div>
             <div className="col-6">
@@ -343,7 +347,7 @@ export default class GenericUi {
                 })
               }
               <DocumentInput
-                updateCallback={this.updateDocuments}
+                updateCallback={updateDocuments}
               />
             </div>
           </div>
@@ -353,12 +357,12 @@ export default class GenericUi {
     );
   }
 
-  getClaimResponseTemplate(inputThis, claimMessage, claimResponse, resloading, showBundle, claimResponseBundle){
+  getClaimResponseTemplate(inputThis, claimMessage, claimResponse, resloading, showBundle, claimResponseBundle) {
     return (
       <div className="container">
-        <div className="success-msg"> 
-        <span className="success-icon">
-          <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white"/></span>&nbsp;&nbsp;{claimMessage}</div>
+        <div className="success-msg">
+          <span className="success-icon">
+            <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white" /></span>&nbsp;&nbsp;{claimMessage}</div>
         <div className="form-row">
           <div className="col-3"><b>Outcome</b></div>
           {claimResponse.outcome === "complete" &&
@@ -394,7 +398,7 @@ export default class GenericUi {
             </button></div>
         }
         {showBundle &&
-          <pre style={{ background: "#dee2e6",margin:"0px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
+          <pre style={{ background: "#dee2e6", margin: "0px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
         }
       </div>
     )
@@ -467,6 +471,15 @@ export default class GenericUi {
       valueType={valueQuantity}
     />
   }
-
+  getReferences(linkId, item, updateQuestionValue, retrieveValue, valueType) {
+    return <ReferenceInput
+      key={linkId}
+      item={item}
+      updateCallback={updateQuestionValue}
+      retrieveCallback={retrieveValue}
+      inputTypeDisplay="reference"
+      valueType={valueType}
+    />
+  }
 
 }

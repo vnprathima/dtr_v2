@@ -54,7 +54,9 @@ export default class Section extends Component {
                     const component = obj.component;
                     const _item = obj._item;
                     return component ? _item.type !== "group" ? (
-                        <div className="form-row" key={_item.linkId}>
+                        <div>
+                            {_item.type !== "display" ?
+                            <div className="form-row" key={_item.linkId}>
                             <div className={"form-group col-6 " + (_item.readOnly ? "read-only" : "")}>
                                 <h4 className="title">
                                     {/* <span
@@ -75,8 +77,12 @@ export default class Section extends Component {
                             <div className="form-group col-6">
                                 {component}
                             </div>
+                            </div>
+                        :
+                        <div className="form-group" key={_item.linkId}>
+                            {_item.text}
+                        </div>}
                         </div>
-
                     ) : <div key={_item.linkId}>{component}</div> : null
                 })}
                 <br />
