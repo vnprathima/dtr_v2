@@ -194,7 +194,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
             }
             doSearch(smart, r, q, (results, error) => {
               if (results) {
-                entryResources.push(...results);
+
                 if (q["code"] !== undefined) {
                   consoleLog("got " + r + "?code=" + q["code"], "infoClass");
                 } else {
@@ -252,13 +252,31 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                     });
                   }
                 }
-                // if(r === "Condition" && results.length > 0){
-                //   console.log("condition.code-query --",q);
-                //     results.map((cond)=>{
-                //         console.log("condition --",cond);
-                //     })
-                // }
+                if (r === "Condition" && results.length > 0 && q.hasOwnProperty("code")) {
+                  console.log("condition.code-query --", q);
+                  var filteredConditions = [];
+                  var codes = q.code.split(",");
+                  results.map((cond) => {
+                    if (cond.hasOwnProperty("code") && cond.code.hasOwnProperty("coding")) {
+                      var found = false;
+                      cond.code.coding.map((codeObj) => {
+                        if (codes.indexOf(codeObj.code) >= 0) {
+                          found = true;
+                        }
+                      })
+                      if (found) {
+                        filteredConditions.push(cond)
+                      }
+                    }
+
+                  })
+                  console.log("condition --", filteredConditions);
+                  entryResources.push(...filteredConditions);
+                } else {
+                  entryResources.push(...results);
+                }
               }
+
               if (error) {
                 console.error(error);
                 if (q["code"] !== undefined) {

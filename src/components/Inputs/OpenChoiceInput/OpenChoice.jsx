@@ -39,7 +39,7 @@ export default class OpenChoice extends Component {
             if (!this.props.item.repeats) {
                 this.setState({ "display": returnAnswer.display });
             }
-            // console.log("in return answer--",returnAnswer);
+            console.log("in return answer--", returnAnswer);
             this.props.updateCallback(this.props.item.linkId, returnAnswer, "values");
         }
     }
@@ -59,8 +59,8 @@ export default class OpenChoice extends Component {
 
     autofill(choices, values) {
         const options = []
-        // console.log("Choices--", choices, values);
-        if (typeof values === "string") {
+        console.log("Choices--", choices, values, this.props.item.linkId);
+        if (typeof values === "string" && this.props.item.repeats) {
             let v = values.split(",");
             let f = [];
             v.forEach((i) => {
@@ -70,22 +70,34 @@ export default class OpenChoice extends Component {
             })
             values = f;
         }
-        // console.log("Values---",values);
-        values && values.forEach((value) => {
-            choices.forEach((choice) => {
-                if (value !== null && value.code) {
-                    value = value.code;
-                }
-                if (choice.code === value) {
-                    options.push(choice);
+        console.log("Values---", values, this.props.item.linkId);
+        if (this.props.item.repeats) {
+            values && values.length >0 && values.forEach((value) => {
+                choices.forEach((choice) => {
+                    if (value !== null && value.code) {
+                        value = value.code;
+                    }
+                    if (choice.code === value) {
+                        options.push(choice);
+                    }
+                })
+                if (value !== null && value.valueTypeFinal === "valueString") {
+                    // manually entered info
+                    options.push(value);
                 }
             })
-            if (value !== null && value.valueTypeFinal === "valueString") {
-                // manually entered info
-                options.push(value);
+            this.addOption(options);
+        } else {
+            if (values && typeof values === "string") {
+                this.setState({ display: values })
+                this.setState({ "values": [{ display: values }] });
+                this.props.updateCallback(this.props.item.linkId, [{ code: values }], "values")
+            } else if(Array.isArray(values) && values.length > 0 && values[0].hasOwnProperty("code")) {
+                this.setState({ display: values[0].code })
+                this.setState({ "values": [{ display: values[0].code }] });
+                this.props.updateCallback(this.props.item.linkId, values, "values")
             }
-        })
-        this.addOption(options);
+        }
     }
 
     onInputChange(event) {
@@ -142,7 +154,7 @@ export default class OpenChoice extends Component {
             if (this.state.display.trim().length > 0) {
 
                 if (this.state.values.filter((el) => { return el.display.trim() === this.state.display.trim() }).length === 0) {
-                    console.log("save to display---",this.state.display);
+                    console.log("save to display---", this.state.display);
                     this.addOption({ display: this.state.display, valueTypeFinal: "valueString" });
                 }
             }
@@ -176,7 +188,7 @@ export default class OpenChoice extends Component {
 
                         }}
                     >
-                        
+
                         {this.props.item.repeats ? this.state.values.map((value) => {
                             return <a
                                 key={value.display}
@@ -197,7 +209,10 @@ export default class OpenChoice extends Component {
                         <input
                             ref={(ip) => this.myInp = ip}
                             value={this.state.display}
-                            style={{ width: this.state.display.length + 4 + "ch", backgroundColor: "white", fontFamily: "inherit", padding: "0px" }}
+                            style={{
+                                backgroundColor: "white", fontFamily: "inherit", padding: "0px", paddingRight: "15px",
+                                textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden"
+                            }}
                             className={"input-block top-block " + (this.props.item.repeats ? "repeated-input" : "")}
                             spellCheck="false"
                             onChange={this.onInputChange}

@@ -60,6 +60,7 @@ function getListOfChoices(props, setChoice) {
 
 function hasTokenExpired() {
     const token = sessionStorage.getItem("token");
+    console.log("in token expired---",jwtDecode(token).exp,"<",Date.now()/1000)
     try {
         if (jwtDecode(token).exp < Date.now() / 1000) {
             sessionStorage.clear();

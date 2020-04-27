@@ -61,7 +61,7 @@ class App extends Component {
           valueSetDB: {},
           parameters: { device_request: this.props.serviceRequest }
         }
-        this.consoleLog("executing elm", "infoClass");
+        this.consoleLog("executing cql", "infoClass");
         return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
       })
       .then(cqlResults => {

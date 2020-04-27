@@ -77,7 +77,13 @@ export default class TextInput extends Component {
                 }
                 reader.readAsBinaryString(file);
             })(event.target.files[0])
-        } else {
+        } else if (this.props.valueType === "valueDateTime") {
+            var datetime = dateFormat(event.target.value, "yyyy-mm-dd'T'HH:MM:ss");
+             // update the parent state
+             this.props.updateCallback(this.props.item.linkId, datetime, "values")
+             // update local state
+             this.setState({ value: event.target.value })
+        }else {
             // update the parent state
             this.props.updateCallback(this.props.item.linkId, event.target.value, "values")
             // update local state

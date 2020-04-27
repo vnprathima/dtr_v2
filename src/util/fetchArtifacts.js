@@ -50,7 +50,7 @@ function fetchArtifacts(fhirUriPrefix, questionnaireUri, smart, filepath, consol
       const mainElmUri = questionnaire.extension.filter(ext => ext.url == "http://hl7.org/fhir/StructureDefinition/cqif-library")[0].valueReference.reference;
       fetchElm(mainElmUri, true)
       pendingFetches -= 1;
-      consoleLog("fetched elms", "infoClass");
+      // consoleLog("fetched elms", "infoClass");
 
     })
     .catch(err => reject(err));
@@ -84,7 +84,7 @@ function fetchArtifacts(fhirUriPrefix, questionnaireUri, smart, filepath, consol
         fetchElmFile(libraryResource, isMain);
         fetchDataRequirements(libraryResource);
         fetchClaimURL(libraryResource);
-        consoleLog("fetched Elm","infoClass");
+        consoleLog("fetched related libraries","infoClass");
         pendingFetches -= 1;
       })
       .catch(err => reject(err));
