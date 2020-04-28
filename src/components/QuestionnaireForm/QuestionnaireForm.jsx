@@ -218,7 +218,7 @@ export default class QuestionnaireForm extends Component {
         const Http = new XMLHttpRequest();
         // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/ClaimResponse/" + this.state.claimResponse.id;
         // const priorAuthUrl = "http://cdex.mettles.com:9000/fhir/ClaimResponse/" + this.state.claimResponse.id;
-        const priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + this.state.claimResponse.id;
+        const priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + this.state.claimResponse.id;
         Http.open("GET", priorAuthUrl);
         Http.setRequestHeader("Content-Type", "application/fhir+json");
         Http.send();

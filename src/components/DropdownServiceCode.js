@@ -210,11 +210,12 @@ class DropdownServiceCode extends Component {
               className={blackBorder}
               options={this.state.codes}
               value={this.state.selected_codes}
-              placeholder='ICD 10 codes'
+              placeholder='Codes'
               search
               selection
               fluid
               multiple
+              closeOnChange
               onChange={this.handleChange}
             />
           </div>
@@ -237,7 +238,7 @@ class DropdownServiceCode extends Component {
                           
                           <td>
                             <div className="">
-                              <input type="number" step="0.01" name="quantity" className="form-control" id="number" placeholder="NPI"
+                              <input type="number" step="0.01" name="quantity" className="form-control" id="number" placeholder="Quantity"
                                 onChange={(event) => this.onChangeAmount(item.value, event)}
                                 value={item.quantity}
                               />
