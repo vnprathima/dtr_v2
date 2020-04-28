@@ -1195,10 +1195,9 @@ export default class QuestionnaireForm extends Component {
         await this.deleteReqByAppContext()
         let today = new Date();
         let appContext = sessionStorage.getItem("appContext")
-
         let body = {
             "type": "submitted",
-            "date": today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate(),
+            "date": today.getFullYear() + "-" + (today.getMonth() +1) + "-" + today.getDate(),
             "patient_id": this.state.patientId,
             "app_context": appContext,
             "claim_response_id": claimResponse.id,

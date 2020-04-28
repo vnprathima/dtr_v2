@@ -583,12 +583,12 @@ class ProviderRequest extends Component {
     let json_request = await this.getJson();
     let url = '';
     if (this.state.hook === 'order-review') {
-      // url = "https://sm.mettles.com/crd/r4/cds-services/order-review-crd";
-      url = "http://localhost:8090/r4/cds-services/order-review-crd";
+      url = "https://sm.mettles.com/crd/r4/cds-services/order-review-crd";
+      // url = "http://localhost:8090/r4/cds-services/order-review-crd";
     }
     if (this.state.hook === 'order-select') {
-      // url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
-      url = "http://localhost:8090/r4/cds-services/order-select-crd";
+      url = "https://sm.mettles.com/crd/r4/cds-services/order-select-crd";
+      // url = "http://localhost:8090/r4/cds-services/order-select-crd";
     }
     try {
       let self = this;
