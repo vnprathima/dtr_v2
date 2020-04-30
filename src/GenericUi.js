@@ -368,7 +368,10 @@ export default class GenericUi {
           {claimResponse.outcome === "complete" &&
             <div className="col-6">: Affirmed</div>
           }
-          {claimResponse.outcome !== "complete" &&
+          {claimResponse.outcome === "queued" &&
+            <div className="col-6">: Pending</div>
+          }
+          {claimResponse.outcome !== "complete" && claimResponse.outcome !== "queued" &&
             <div className="col-6">: {claimResponse.outcome}</div>
           }
         </div>

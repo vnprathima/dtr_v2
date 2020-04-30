@@ -91,7 +91,6 @@ function randomString() {
 function getInfoFromPatient(pt, neededResources, entryResources) {
   try {
     if (pt.hasOwnProperty("managingOrganization")) {
-      console.log("organization----------", pt.managingOrganization, neededResources);
       sessionStorage.setItem("managingOrganization", pt.managingOrganization.reference);
       var org_id = pt.managingOrganization.reference.split("/");
       neededResources.push({
@@ -102,7 +101,6 @@ function getInfoFromPatient(pt, neededResources, entryResources) {
       })
     }
     if (pt.hasOwnProperty("generalPractitioner")) {
-      console.log("Practitioner---------", pt.generalPractitioner, neededResources);
       sessionStorage.setItem("generalPractitioner", pt.generalPractitioner[0].reference);
       var prac_id = pt.generalPractitioner[0].reference.split("/");
       neededResources.push({
@@ -209,7 +207,8 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                   doSearch(smart, "Organization", { "_id": org_id }, (results, error) => {
                     if (results) {
                       entryResources.push(...results);
-                      consoleLog("got Organization?_id=" + org_id, "infoClass");
+                      sessionStorage.setItem("insurer", "Organization/" + org_id);
+                      consoleLog("got Payor Organization?_id=" + org_id, "infoClass");
                     }
                     if (error) {
                       console.error(error);
@@ -244,6 +243,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                       if (results) {
                         entryResources.push(...results);
                         consoleLog("got Provider Organization?_id=" + org_id, "infoClass");
+                        sessionStorage.setItem("provider", "Organization/" + org_id);
                       }
                       if (error) {
                         console.error(error);
@@ -253,7 +253,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                   }
                 }
                 if (r === "Condition" && results.length > 0 && q.hasOwnProperty("code")) {
-                  console.log("condition.code-query --", q);
                   var filteredConditions = [];
                   var codes = q.code.split(",");
                   results.map((cond) => {
@@ -270,7 +269,6 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                     }
 
                   })
-                  console.log("condition --", filteredConditions);
                   entryResources.push(...filteredConditions);
                 } else {
                   entryResources.push(...results);

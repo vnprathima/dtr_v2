@@ -71,6 +71,20 @@ function hasTokenExpired() {
         return false;
     }
 };
+function getResourceFromBundle(bundle, resourceType, id = false) {
+    var filtered_entry = bundle.entry.find(function (entry) {
+        if (entry.resource !== undefined) {
+            if (id !== false) {
+                return entry.resource.id === id;
+            }
+            return entry.resource.resourceType === resourceType;
+        }
+    });
+    if (filtered_entry !== undefined) {
+        return filtered_entry.resource;
+    }
+    return null
+}
 function getDocumentReferences() {
     const Http = new XMLHttpRequest();
     let url = sessionStorage.getItem("serviceUri")+"/DocumentReference?patient="+sessionStorage.getItem('auth_patient_id');
@@ -101,5 +115,6 @@ export {
     findValueByPrefix,
     getListOfChoices,
     hasTokenExpired,
-    getDocumentReferences
+    getDocumentReferences,
+    getResourceFromBundle
 }

@@ -1,17 +1,5 @@
 import React, { Component } from 'react';
-import urlUtils from "../../util/url";
-
-
-// import './QuestionnaireForm.css';
-
-import Section from '../Section/Section';
-import TextInput from '../Inputs/TextInput/TextInput';
-import BooleanInput from '../Inputs/BooleanInput/BooleanInput';
-import QuantityInput from '../Inputs/QuantityInput/QuantityInput';
-import { findValueByPrefix } from '../../util/util.js';
-import OpenChoice from '../Inputs/OpenChoiceInput/OpenChoice';
-import { isTSEnumMember } from '@babel/types';
-import Select from "react-dropdown-select";
+import { findValueByPrefix, getResourceFromBundle } from '../../util/util.js';
 import providerOptions from "../../providerOptions.json";
 import prior_auth_working from '../../prior_auth_working.json';
 import UiFactory from "../../UiFactory.js";
@@ -79,11 +67,8 @@ export default class QuestionnaireForm extends Component {
         this.previewBundle = this.previewBundle.bind(this);
         this.generateBundle = this.generateBundle.bind(this);
         this.reloadClaimResponse = this.reloadClaimResponse.bind(this);
-        this.onChangeOtherProvider = this.onChangeOtherProvider.bind(this);
-        this.getProviderQueries = this.getProviderQueries.bind(this);
+        // this.getProviderQueries = this.getProviderQueries.bind(this);
         this.renderQueries = this.renderQueries.bind(this);
-        this.onChangeProviderQuery = this.onChangeProviderQuery.bind(this);
-        this.setProviderSource = this.setProviderSource.bind(this);
         this.submitCommunicationRequest = this.submitCommunicationRequest.bind(this);
         this.relaunch = this.relaunch.bind(this);
         this.handleShowBundle = this.handleShowBundle.bind(this);
@@ -122,102 +107,25 @@ export default class QuestionnaireForm extends Component {
             this.setState({ turnOffValues: [] });
         }
         // console.log(this.state.turnOffValues);
-        this.getProviderQueries(items);
+        // this.getProviderQueries(items);
     }
 
     handleShowBundle() {
         var showBundle = this.state.showBundle;
         this.setState({ showBundle: !showBundle });
     }
-    setProviderSource(values) {
-        // console.log(this.state);
-        if (values.length > 0) {
-            this.setState({ "providerSource": values[0].value });
-            sessionStorage["providerSource"] = values[0].value;
-            // console.log("options---", providerOptions)
-            providerOptions.forEach((p) => {
-                if (p.value === values[0].value) {
-                    this.setState({ "otherProviderName": p.label });
-                    sessionStorage["otherProviderUrl"] = p.url;
-                    console.log("Selected PRovider URi", p.url)
-                }
-            })
-            // sessionStorage["serviceUri"] = values[0].url;
-        }
-    }
 
-    getProviderQueries(questions) {
-        // console.log("In get queries------", questions);
-        let queries = this.state.providerQueries;
-        // let questions = this.state.items;
-        questions.forEach((group) => {
-            if (group.type === "group") {
-                group.item.forEach((link) => {
-                    if (link.type === "attachment" && link.code !== undefined) {
-                        console.log("Intype attachemnt---", link);
-                        let eachQuery = {
-                            "id": link.linkId,
-                            "name": link.text,
-                            "type": "attachment",
-                            "code": link.code,
-                            "checked": false
-                        }
-                        queries.push(eachQuery);
-                    }
-                })
-            }
-        })
-        if (sessionStorage["fhir_queries"] !== undefined) {
-            let fhir_queries = JSON.parse(sessionStorage["fhir_queries"]);
-            fhir_queries.forEach((query, key) => {
-                let code = "";
-                if (query.query["code"] !== undefined) {
-                    code = "code=" + query.query["code"];
-                }
-                let eachQuery = {
-                    "id": "fhir_" + key,
-                    "name": query.type,
-                    "type": "query",
-                    "code": code,
-                    "checked": false
-                }
-                queries.push(eachQuery);
-            })
-        }
-        this.setState({ providerQueries: queries });
-        // console.log("Final queries---", this.state.providerQueries);
 
-    }
     componentDidMount() {
-
         this.getCodesString();
     }
 
-    onChangeOtherProvider(event) {
-        // console.log("other provider----", event.target.value);
-        let otherProvider = this.state.otherProvider;
-        otherProvider = !otherProvider;
-        this.setState({ otherProvider: otherProvider });
-    }
-
-    onChangeProviderQuery(event) {
-        // console.log("event --", event.target.value, event.target.name);
-        let queries = this.state.providerQueries;
-        queries.forEach((q) => {
-            if (q.id === event.target.name) {
-                q.checked = !q.checked;
-            }
-        })
-        this.setState({ providerQueries: queries });
-        console.log("key, queries--", queries, this.state.providerQueries);
-    }
 
     reloadClaimResponse() {
         var self = this
         this.setState({ resloading: true });
         const Http = new XMLHttpRequest();
         // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/ClaimResponse/" + this.state.claimResponse.id;
-        // const priorAuthUrl = "http://cdex.mettles.com:9000/fhir/ClaimResponse/" + this.state.claimResponse.id;
         const priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + this.state.claimResponse.id;
         Http.open("GET", priorAuthUrl);
         Http.setRequestHeader("Content-Type", "application/fhir+json");
@@ -368,7 +276,7 @@ export default class QuestionnaireForm extends Component {
                         }
                         results.push(result);
                     }
-                } else if (typeof question === "boolean"){
+                } else if (typeof question === "boolean") {
                     if (rule.answerBoolean) {
                         results.push(this.evaluateOperator(rule.operator, question, answer));
                     }
@@ -517,7 +425,6 @@ export default class QuestionnaireForm extends Component {
     generateBundle() {
         var self = this;
         return new Promise(function (resolve, reject) {
-            console.log(self.state.sectionLinks);
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
             const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -659,156 +566,156 @@ export default class QuestionnaireForm extends Component {
             priorAuthBundle.entry.unshift({ resource: response })
             // priorAuthBundle.entry.unshift({ resource: self.props.serviceRequest });
 
-            let orgRes = {
-                "resourceType": "Organization"
-            };
-            let org_resource = sessionStorage.getItem("organization");
-            if (org_resource === undefined || org_resource === "" || org_resource === null || org_resource.length === 0) {
-                let payer = sessionStorage.getItem("payerName");
-                if (payer === "united_health_care") {
-                    orgRes["id"] = "516"
-                    orgRes["name"] = "United Health Care"
-                    orgRes['address'] = [
-                        {
-                            "use": "work",
-                            "line": [
-                                "9700 Health Care Lane"
-                            ],
-                            "city": "Minnetonka",
-                            "state": "Minnesota",
-                            "postalCode": "55343"
-                        }
-                    ]
-                    orgRes["contact"] = [
-                        {
-                            "name": [
-                                {
-                                    "use": "official",
-                                    "family": "Randall",
-                                    "given": [
-                                        "Janice"
-                                    ]
-                                }
-                            ],
-                            "telecom": [
-                                {
-                                    "system": "phone",
-                                    "value": "803-763-5900",
-                                    "use": "home"
-                                }
-                            ]
-                        }
-                    ]
-                    orgRes["identifier"] = [
-                        {
-                            "system": "urn:ietf:rfc:3986",
-                            "value": "96855.9662.3575.4099.5718.533.8838"
-                        }
-                    ]
-                }
-                if (payer === "medicare_fee_for_service") {
-                    orgRes["id"] = "516"
-                    orgRes["name"] = "Medicare Fee for service"
-                    orgRes['address'] = [
-                        {
-                            "use": "work",
-                            "line": [
-                                "7210 Ambassador Road"
-                            ],
-                            "city": "Windsor Mill",
-                            "state": "MaryLand",
-                            "postalCode": "21244"
-                        }
-                    ]
-                    orgRes["contact"] = [
-                        {
-                            "name": [
-                                {
-                                    "use": "official",
-                                    "family": "Oliver",
-                                    "given": [
-                                        "James"
-                                    ]
-                                }
-                            ],
-                            "telecom": [
-                                {
-                                    "system": "phone",
-                                    "value": "725-778-5600",
-                                    "use": "home"
-                                }
-                            ]
-                        }
-                    ]
-                    orgRes["identifier"] = [
-                        {
-                            "system": "urn:ietf:rfc:3986",
-                            "value": "17086.5403.3613.5769.6889.6096.6384"
-                        }
-                    ]
-                }
-            } else {
-                orgRes = JSON.parse(org_resource);
-            }
-            priorAuthBundle.entry.unshift({ resource: orgRes })
-            console.log("org res---", orgRes);
+            // let orgRes = {
+            //     "resourceType": "Organization"
+            // };
+            // let org_resource = sessionStorage.getItem("organization");
+            // if (org_resource === undefined || org_resource === "" || org_resource === null || org_resource.length === 0) {
+            //     let payer = sessionStorage.getItem("payerName");
+            //     if (payer === "united_health_care") {
+            //         orgRes["id"] = "516"
+            //         orgRes["name"] = "United Health Care"
+            //         orgRes['address'] = [
+            //             {
+            //                 "use": "work",
+            //                 "line": [
+            //                     "9700 Health Care Lane"
+            //                 ],
+            //                 "city": "Minnetonka",
+            //                 "state": "Minnesota",
+            //                 "postalCode": "55343"
+            //             }
+            //         ]
+            //         orgRes["contact"] = [
+            //             {
+            //                 "name": [
+            //                     {
+            //                         "use": "official",
+            //                         "family": "Randall",
+            //                         "given": [
+            //                             "Janice"
+            //                         ]
+            //                     }
+            //                 ],
+            //                 "telecom": [
+            //                     {
+            //                         "system": "phone",
+            //                         "value": "803-763-5900",
+            //                         "use": "home"
+            //                     }
+            //                 ]
+            //             }
+            //         ]
+            //         orgRes["identifier"] = [
+            //             {
+            //                 "system": "urn:ietf:rfc:3986",
+            //                 "value": "96855.9662.3575.4099.5718.533.8838"
+            //             }
+            //         ]
+            //     }
+            //     if (payer === "medicare_fee_for_service") {
+            //         orgRes["id"] = "516"
+            //         orgRes["name"] = "Medicare Fee for service"
+            //         orgRes['address'] = [
+            //             {
+            //                 "use": "work",
+            //                 "line": [
+            //                     "7210 Ambassador Road"
+            //                 ],
+            //                 "city": "Windsor Mill",
+            //                 "state": "MaryLand",
+            //                 "postalCode": "21244"
+            //             }
+            //         ]
+            //         orgRes["contact"] = [
+            //             {
+            //                 "name": [
+            //                     {
+            //                         "use": "official",
+            //                         "family": "Oliver",
+            //                         "given": [
+            //                             "James"
+            //                         ]
+            //                     }
+            //                 ],
+            //                 "telecom": [
+            //                     {
+            //                         "system": "phone",
+            //                         "value": "725-778-5600",
+            //                         "use": "home"
+            //                     }
+            //                 ]
+            //             }
+            //         ]
+            //         orgRes["identifier"] = [
+            //             {
+            //                 "system": "urn:ietf:rfc:3986",
+            //                 "value": "17086.5403.3613.5769.6889.6096.6384"
+            //             }
+            //         ]
+            //     }
+            // } else {
+            //     orgRes = JSON.parse(org_resource);
+            // }
+            // priorAuthBundle.entry.unshift({ resource: orgRes })
+            // console.log("org res---", orgRes);
 
-            let coverageRes = {
-                "resourceType": "Coverage"
-            };
-            let coverage_res = sessionStorage.getItem("coverage");
-            if (coverage_res === undefined || coverage_res === "" || coverage_res === null || coverage_res.length === 0) {
-                coverageRes =
-                {
-                    "resourceType": "Coverage",
-                    "id": "SP1234",
-                    "text": {
-                        "status": "generated",
-                        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">A human-readable rendering of a Self Pay Agreement.</div>"
-                    },
-                    "identifier": [
-                        {
-                            "system": "http://hospitalx.com/selfpayagreement",
-                            "value": "SP12345678"
-                        }
-                    ],
-                    "status": "active",
-                    "type": {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/coverage-selfpay",
-                                "code": "pay",
-                                "display": "PAY"
-                            }
-                        ]
-                    },
-                    "subscriber": {
-                        reference: self.makeReference(priorAuthBundle, "Patient")
-                    },
-                    "beneficiary": {
-                        reference: self.makeReference(priorAuthBundle, "Patient")
-                    },
-                    "relationship": {
-                        "coding": [
-                            {
-                                "code": "self"
-                            }
-                        ]
-                    },
-                    "period": {
-                        "end": "2012-03-17"
-                    },
-                    "payor": [
-                        {
-                            "reference": "Organization/516"
-                        }
-                    ]
-                }
-            } else {
-                coverageRes = JSON.parse(coverage_res);
-            }
-            priorAuthBundle.entry.unshift({ resource: coverageRes })
-            console.log("Coverage res---", coverageRes);
+            // let coverageRes = {
+            //     "resourceType": "Coverage"
+            // };
+            // let coverage_res = sessionStorage.getItem("coverage");
+            // if (coverage_res === undefined || coverage_res === "" || coverage_res === null || coverage_res.length === 0) {
+            //     coverageRes =
+            //     {
+            //         "resourceType": "Coverage",
+            //         "id": "SP1234",
+            //         "text": {
+            //             "status": "generated",
+            //             "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">A human-readable rendering of a Self Pay Agreement.</div>"
+            //         },
+            //         "identifier": [
+            //             {
+            //                 "system": "http://hospitalx.com/selfpayagreement",
+            //                 "value": "SP12345678"
+            //             }
+            //         ],
+            //         "status": "active",
+            //         "type": {
+            //             "coding": [
+            //                 {
+            //                     "system": "http://terminology.hl7.org/CodeSystem/coverage-selfpay",
+            //                     "code": "pay",
+            //                     "display": "PAY"
+            //                 }
+            //             ]
+            //         },
+            //         "subscriber": {
+            //             reference: self.makeReference(priorAuthBundle, "Patient")
+            //         },
+            //         "beneficiary": {
+            //             reference: self.makeReference(priorAuthBundle, "Patient")
+            //         },
+            //         "relationship": {
+            //             "coding": [
+            //                 {
+            //                     "code": "self"
+            //                 }
+            //             ]
+            //         },
+            //         "period": {
+            //             "end": "2012-03-17"
+            //         },
+            //         "payor": [
+            //             {
+            //                 "reference": "Organization/516"
+            //             }
+            //         ]
+            //     }
+            // } else {
+            //     coverageRes = JSON.parse(coverage_res);
+            // }
+            // priorAuthBundle.entry.unshift({ resource: coverageRes })
+            // console.log("Coverage res---", coverageRes);
 
             const locationResource = {
                 "resourceType": "Location",
@@ -832,7 +739,7 @@ export default class QuestionnaireForm extends Component {
                     }
                 ],
                 "managingOrganization": {
-                    "reference": "Organization/" + orgRes.id
+                    "reference": sessionStorage.getItem("provider")
                 },
                 "name": "South Wing, second floor",
                 "address": {
@@ -857,21 +764,12 @@ export default class QuestionnaireForm extends Component {
                         display: "Professional"
                     }]
                 },
-                subType: {
-                    coding: [
-                        {
-                            system: "https://www.cms.gov/codes/billtype",
-                            code: "41",
-                            display: "Hospital Outpatient Surgery performed in an Ambulatory ​Surgical Center"
-                        }
-                    ]
-                },
                 use: "preauthorization",
                 patient: { reference: self.makeReference(priorAuthBundle, "Patient") },
                 created: authored,
-                provider: { reference: self.makeReference(priorAuthBundle, "Organization") },
+                provider: { reference: sessionStorage.getItem("provider") },
                 enterer: { reference: self.makeReference(priorAuthBundle, "Practitioner") },
-                insurer: { reference: self.makeReference(priorAuthBundle, "Organization") },
+                insurer: { reference: sessionStorage.getItem("insurer") },
                 facility: { reference: self.makeReference(priorAuthBundle, "Location") },
                 priority: { coding: [{ "code": "normal" }] },
                 supportingInfo: [{
@@ -898,7 +796,9 @@ export default class QuestionnaireForm extends Component {
                             display: "Information"
                         }]
                     },
-                    valueReference: { reference: self.makeReference(priorAuthBundle, "QuestionnaireResponse") }
+                    valueReference: {
+                        reference: self.makeReference(priorAuthBundle, "QuestionnaireResponse")
+                    }
                 }],
                 item: [
 
@@ -951,7 +851,7 @@ export default class QuestionnaireForm extends Component {
                 if (self.props.serviceRequest.hasOwnProperty("category")) {
                     service["category"] = self.props.serviceRequest.category[0];
                 }
-                priorAuthClaim["presciption"] = { reference: self.makeReference(priorAuthBundle, "ServiceRequest") }
+                priorAuthClaim["referral"] = { reference: self.makeReference(priorAuthBundle, "ServiceRequest") }
             }
             if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
                 self.props.serviceRequest.resourceType === "DeviceRequest" &&
@@ -1024,7 +924,12 @@ export default class QuestionnaireForm extends Component {
                     }
                 })
             }
-
+            let filtered_entries = priorAuthBundle.entry.filter(function (entry) {
+                if (entry.resource !== undefined) {
+                    return (entry.resource.resourceType !== "SupplyRequest");
+                }
+            });
+            priorAuthBundle.entry = filtered_entries;
             resolve(priorAuthBundle);
         });
 
@@ -1042,11 +947,11 @@ export default class QuestionnaireForm extends Component {
     validateQuestitionnarie() {
         var self = this;
         return new Promise(function (resolve, reject) {
-            console.log("Ordered links--", self.state.orderedLinks);
-            console.log("Section links--", self.state.sectionLinks);
-            console.log("Values--", self.state.values);
-            console.log("items--", self.state.items);
-            let validation = self.state.items.map((section) => {
+            // console.log("Ordered links--", self.state.orderedLinks);
+            // console.log("Section links--", self.state.sectionLinks);
+            // console.log("Values--", self.state.values);
+            // console.log("items--", self.state.items);
+            self.state.items.map((section) => {
                 section.item.map((item) => {
                     if (item.hasOwnProperty('required') && item.required) {
                         console.log("In required true--", item.linkId);
@@ -1197,7 +1102,7 @@ export default class QuestionnaireForm extends Component {
         let appContext = sessionStorage.getItem("appContext")
         let body = {
             "type": "submitted",
-            "date": today.getFullYear() + "-" + (today.getMonth() +1) + "-" + today.getDate(),
+            "date": today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate(),
             "patient_id": this.state.patientId,
             "app_context": appContext,
             "claim_response_id": claimResponse.id,
@@ -1300,7 +1205,7 @@ export default class QuestionnaireForm extends Component {
     makeReference(bundle, resourceType) {
         var entry = bundle.entry.find(function (entry) {
             if (entry.resource !== undefined) {
-                return (entry.resource.resourceType == resourceType);
+                return (entry.resource.resourceType === resourceType);
             }
         });
         if (entry.resource.hasOwnProperty("id")) {
