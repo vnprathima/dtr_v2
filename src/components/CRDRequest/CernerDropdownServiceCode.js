@@ -82,15 +82,10 @@ class CernerDropdownServiceCode extends Component {
 
   async getResources() {
     // console.log("Props in  codes----", this.props.config);
-      //  var url = this.props.config.cds_service.get_codes;
     var url = "https://sm.mettles.com/cds/getCodes";
-    // let token;
-    // token = await createToken(this.props.config.provider.grant_type, 'provider', sessionStorage.getItem('username'), sessionStorage.getItem('password'))
     let headers = {
       "Content-Type": "application/json",
-      // 'Authorization': 'Bearer ' + token
     }
-
     let codesList = await fetch(url, {
       method: "GET",
       headers: headers

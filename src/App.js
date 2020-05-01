@@ -5,7 +5,7 @@ import cqlfhir from "cql-exec-fhir";
 import executeElm from "./elmExecutor/executeElm";
 import fetchArtifacts from "./util/fetchArtifacts";
 //import Testing from "./components/ConsoleBox/Testing";
-import UiFactory from "./UiFactory.js";
+import UiFactory from "./ui/UiFactory.js";
 
 class App extends Component {
   constructor(props) {

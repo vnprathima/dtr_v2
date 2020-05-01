@@ -217,6 +217,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
                   });
                 }
                 if (r === "Encounter" && results.length > 0) {
+                  sessionStorage.setItem("encounter", "Encounter/" + results[0].id);
                   //Retrieve Practitioner Info from  Encounter.participant
                   if (results[0].hasOwnProperty("participant") && results[0].participant.length > 0) {
                     let participant = results[0].participant;

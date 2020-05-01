@@ -958,4 +958,12 @@ input{
     height: 30px;
     padding: 6px;
 }
+.patient-data{
+  background-color: #fafafa;
+    margin: 0;
+    padding: 5px 0%;
+    margin-bottom: 7px;
+        color: #082568;
+    font-size: 1.1em;
 
+}

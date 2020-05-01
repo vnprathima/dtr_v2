@@ -1,27 +1,27 @@
 import React, { Component } from "react";
-import Testing from "./components/ConsoleBox/Testing";
-import TextInput from './components/Inputs/TextInput/TextInput';
-import QuestionnaireForm from "./components/QuestionnaireForm/QuestionnaireForm";
-import ChoiceInput from './components/Inputs/ChoiceInput/ChoiceInput';
+import Testing from "../components/ConsoleBox/Testing";
+import TextInput from '../components/Inputs/TextInput/TextInput';
+import QuestionnaireForm from "../components/QuestionnaireForm/QuestionnaireForm";
+import ChoiceInput from '../components/Inputs/ChoiceInput/ChoiceInput';
 import Base from 'terra-base';
 import Arrange from 'terra-arrange';
 import Heading from 'terra-heading';
 import Input from 'terra-form-input';
 import Select from 'terra-form-select';
 import Field from 'terra-form-field';
-import DocumentInput from './components/Inputs/DocumentInput/DocumentInput';
+import DocumentInput from '../components/Inputs/DocumentInput/DocumentInput';
 import Loader from 'react-loader-spinner';
-import CernerTextInput from './components/Inputs/TextInput/CernerTextInput';
-import CernerSection from './components/Section/CernerSection';
+import CernerTextInput from '../components/Inputs/TextInput/CernerTextInput';
+import CernerSection from '../components/Section/CernerSection';
 import ThemeProvider from "terra-theme-provider";
-import BooleanInput from './components/Inputs/BooleanInput/BooleanInput';
-import QuantityInput from './components/Inputs/QuantityInput/QuantityInput';
+import BooleanInput from '../components/Inputs/BooleanInput/BooleanInput';
+import QuantityInput from '../components/Inputs/QuantityInput/QuantityInput';
 import ApplicationBase from 'terra-application/lib/application-base';
 import ContentContainer from 'terra-content-container';
 import DynamicGrid from 'terra-dynamic-grid';
 import Button from 'terra-button/lib/Button';
-import CernerDropdownServiceCode from './components/CernerDropdownServiceCode';
-import CernerDropdownCoverage from './components/CernerDropdownCoverage';
+import CernerDropdownServiceCode from '../components/CRDRequest/CernerDropdownServiceCode';
+import CernerDropdownCoverage from '../components/CRDRequest/CernerDropdownCoverage';
 import SectionHeaderExampleTemplate from 'terra-section-header/lib/terra-dev-site/doc/example/SectionHeaderExampleTemplate';
 import Table, {
     Header,
@@ -31,10 +31,10 @@ import Table, {
     Row,
 } from 'terra-html-table';
 import Hyperlink from 'terra-hyperlink';
-import CernerDropdownEncounter from './components/CernerDropdownEncounter';
-import SelectPayer from './components/SelectPayer';
+import CernerDropdownEncounter from '../components/CRDRequest/CernerDropdownEncounter';
+import SelectPayer from '../components/CRDRequest/SelectPayer';
 import Checkbox from 'terra-form-checkbox';
-import ProviderRequest from "./ProviderRequest";
+import CRDRequest from "../components/CRDRequest/CRDRequest";
 import SectionHeader from 'terra-section-header';
 import Spacer from 'terra-spacer';
 import IconSuccess from 'terra-icon/lib/icon/IconSuccess';
@@ -65,12 +65,12 @@ export default class CernerUi {
         );
     }
 
-    getProviderRequestUI() {
+    getCRDRequestUI() {
         return (
             <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
                 <Base locale={locale}>
                     <ContentContainer style={{marginBottom:"100px"}}>
-                        <ProviderRequest />
+                        <CRDRequest />
                         
                     </ContentContainer>
                 </Base>
@@ -89,7 +89,7 @@ export default class CernerUi {
 
 
 
-    getProviderRequestForm(inputThis) {
+    getCRDRequestForm(inputThis) {
         const template = {
             'grid-template-columns': '1fr 1fr',
             'grid-template-rows': 'auto',

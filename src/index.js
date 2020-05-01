@@ -4,9 +4,7 @@ import urlUtils from "./util/url";
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App.js";
-import { stat } from "fs";
-import ProviderRequest from "./ProviderRequest";
-import UiFactory from "./UiFactory.js";
+import UiFactory from "./ui/UiFactory.js";
 import ShowError from './components/ShowError';
 //alert("Loaded imports");
 
@@ -19,9 +17,9 @@ if (serviceUri !== undefined) {
     } else if (serviceUri.indexOf("cerner") !== -1 && clientId === undefined) {
 
         // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
-        // clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
+        clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
         // clientId = "6ef181e4-a7d8-4493-b94b-8b66d466900a"; // Prod
-        clientId = "6bdae3cc-09a0-450b-83fe-f181918bcc54" //CF Prod
+        // clientId = "6bdae3cc-09a0-450b-83fe-f181918bcc54" //CF Prod
     } else if (serviceUri.indexOf("mettles") !== -1 && clientId === undefined) {
         clientId = "app-login";
     }
@@ -302,7 +300,15 @@ if (serviceUri !== undefined) {
     if (serviceUri.search('mettles.com') > 0) {
         auth_response = { "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ1X3RfUnQwaUJTaFZMUEpxc2xYdWVodmRwN0FadDN0a3l4TzFWb0lYSG9FIn0.eyJqdGkiOiI3NGE5MzY2My1iN2YwLTRmZjItOGVkZC0xMWYxMjU0MjExMzEiLCJleHAiOjE1ODgwODI3NDcsIm5iZiI6MCwiaWF0IjoxNTg4MDc5MTQ3LCJpc3MiOiJodHRwczovL2F1dGgubWV0dGxlcy5jb206ODQ0My9hdXRoL3JlYWxtcy9Qcm92aWRlckNyZWRlbnRpYWxzIiwic3ViIjoiYzcxYzU2MWUtZjI4MC00ODRmLWJlM2YtOWZiNTFhNjhmYWQyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYXBwLWxvZ2luIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiNDAxMjMyNjMtNzVjMC00ZGI0LTg1NTYtMDMwMGY5YzM4YWY4IiwiYWNyIjoiMSIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkpvaG4gRG9lIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiam9obiIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UifQ.Zw6lcoP3AdmPeNURT1m7vUFcWx0AEJXgX8dgbAlGX-27tLwBu_IlQbhaPQvFr4ISCSTYLfcz3i7YS39aBf0NnRyusli9XXJGKhyix10lgonRn2D--7T32CMiFjzRzGY1QxbUSN1Vv8S6D_EkwbEH2zGXgfgFWfO6xcXSlAyRHhQkqUatO-h6Zh0341xMtweJa3uwLSv8PAxBAjMSMkyyPKdpAncMS7E6PmgcY431LEB-YAgBlH8Iw_bVAIJLYvINxij-K3MZ1-nFQAVF5Jmt8i8Zx81WigD21xKQGS1Ms5rcgGDZDgMDc-j2f1IidoacnlJ_cxLIGetch5GKKxkCZA", "expires_in": 3600, "refresh_expires_in": 1800, "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5YTA5ZGY3Yy1mM2JhLTRlMmQtYTg0NC01ZmMwYjljMGE1M2EifQ.eyJqdGkiOiJjYzVjMmI2Ni1hMjYwLTRkNmUtOThkMi04ZTYxMTcyM2Y0NWMiLCJleHAiOjE1ODgwODA5NDcsIm5iZiI6MCwiaWF0IjoxNTg4MDc5MTQ3LCJpc3MiOiJodHRwczovL2F1dGgubWV0dGxlcy5jb206ODQ0My9hdXRoL3JlYWxtcy9Qcm92aWRlckNyZWRlbnRpYWxzIiwiYXVkIjoiaHR0cHM6Ly9hdXRoLm1ldHRsZXMuY29tOjg0NDMvYXV0aC9yZWFsbXMvUHJvdmlkZXJDcmVkZW50aWFscyIsInN1YiI6ImM3MWM1NjFlLWYyODAtNDg0Zi1iZTNmLTlmYjUxYTY4ZmFkMiIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJhcHAtbG9naW4iLCJhdXRoX3RpbWUiOjAsInNlc3Npb25fc3RhdGUiOiI0MDEyMzI2My03NWMwLTRkYjQtODU1Ni0wMzAwZjljMzhhZjgiLCJzY29wZSI6InByb2ZpbGUgZW1haWwifQ.8PGhyznrydVQ-Mmtmd9why0J9etJW4oFuoSIderXEDs", "token_type": "bearer", "not-before-policy": 0, "session_state": "40123263-75c0-4db4-8556-0300f9c38af8", "scope": "profile email" }
         sessionStorage["token"] = auth_response.access_token;
-        loadDTRApp(auth_response);
+        if(sessionStorage.getItem("showCDSHook") === "true"){
+            ReactDOM.render(
+                ui.getCRDRequestUI(),
+                document.getElementById("root")
+            );
+        } else {
+            sessionStorage.setItem("showCDSHook", false);
+            loadDTRApp(auth_response);
+        }   
     } else if (sessionStorage.getItem("auth_response") === null && sessionStorage.getItem("showCDSHook") === "true") {
         // obtain authorization token from the authorization service using the authorization code
         tokenPost.open("POST", tokenUri);
@@ -324,7 +330,7 @@ if (serviceUri !== undefined) {
                         loadDTRApp(auth_response);
                     } else {
                         ReactDOM.render(
-                            ui.getProviderRequestUI(),
+                            ui.getCRDRequestUI(),
                             document.getElementById("root")
                         );
                     }
@@ -346,7 +352,7 @@ if (serviceUri !== undefined) {
             loadDTRApp(auth_response);
         } else {
             ReactDOM.render(
-                ui.getProviderRequestUI(),
+                ui.getCRDRequestUI(),
                 document.getElementById("root")
             );
         }

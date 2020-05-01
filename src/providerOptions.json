@@ -1,5 +1,0 @@
-[
-  { "label": "Internal Provider", "key":"default","value": 1 , "url":"http://cdex.mettles.com:8080/hapi-fhir-jpaserver/fhir"},
-  { "label": "MaxMD", "key":"maxmd","value": 2 ,"url":"https://ehr-sandbox.directmdemail.com:8443/fhir/baseR4"}
-]
-    

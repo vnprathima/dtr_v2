@@ -48,13 +48,9 @@ export class SelectPayer extends Component {
   }
 
   async getResources() {
-      // var url = this.props.config.cds_service.get_payers;
       var url = "https://sm.mettles.com/cds/getPayers";
-    // let token;
-    // token = await createToken(this.props.config.provider.grant_type, 'provider', sessionStorage.getItem('username'), sessionStorage.getItem('password'))
     let headers = {
       "Content-Type": "application/json",
-      // 'Authorization': 'Bearer ' + token
     }
     let payersList = await fetch(url, {
       method: "GET",

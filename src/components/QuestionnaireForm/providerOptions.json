@@ -1,0 +1,5 @@
+[
+  { "text": "Internal Provider", "key":"default","value": "https://sm.mettles.com/ehrfhir/hapi-fhir-jpaserver/fhir"},
+  { "text": "MaxMD", "key":"maxmd","value": "https://ehr-sandbox.directmdemail.com:8443/fhir/baseR4"}
+]
+    

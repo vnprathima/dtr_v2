@@ -60,7 +60,10 @@ function getListOfChoices(props, setChoice) {
 
 function hasTokenExpired() {
     const token = sessionStorage.getItem("token");
-    console.log("in token expired---",jwtDecode(token).exp,"<",Date.now()/1000)
+    if (sessionStorage.getItem("serviceUri").search('mettles.com') > 0) {
+        return false;
+    }
+    console.log("in token expired---", jwtDecode(token).exp, "<", Date.now() / 1000)
     try {
         if (jwtDecode(token).exp < Date.now() / 1000) {
             sessionStorage.clear();
@@ -87,7 +90,7 @@ function getResourceFromBundle(bundle, resourceType, id = false) {
 }
 function getDocumentReferences() {
     const Http = new XMLHttpRequest();
-    let url = sessionStorage.getItem("serviceUri")+"/DocumentReference?patient="+sessionStorage.getItem('auth_patient_id');
+    let url = sessionStorage.getItem("serviceUri") + "/DocumentReference?patient=" + sessionStorage.getItem('auth_patient_id');
     Http.open("GET", url);
     Http.setRequestHeader("Content-Type", "application/json");
     Http.setRequestHeader("Accept", "application/json");
@@ -95,11 +98,11 @@ function getDocumentReferences() {
     Http.onreadystatechange = function () {
         if (this.readyState === XMLHttpRequest.DONE) {
             let references = [];
-            console.log("Doc reference ---",JSON.parse(this.responseText));
+            console.log("Doc reference ---", JSON.parse(this.responseText));
             let response = JSON.parse(this.responseText);
-            if(response.hasOwnProperty("total") && response.total > 0){
-                response.entry.map((doc)=>{
-                    references.push({key:doc.id,text:doc.id,value:doc.id});
+            if (response.hasOwnProperty("total") && response.total > 0) {
+                response.entry.map((doc) => {
+                    references.push({ key: doc.id, text: doc.id, value: doc.id });
                 })
                 return references;
             } else {
@@ -111,10 +114,95 @@ function getDocumentReferences() {
     }
     Http.send();
 }
+async function postResource(url, resource_type, body, token = '') {
+    if (resource_type !== '') {
+        url = url + "/" + resource_type;
+    }
+    let headers = {
+        "Content-Type": "application/json",
+    }
+    if (token !== '') {
+        headers['Authorization'] = token;
+    }
+    let resources = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body)
+    }).then(response => {
+        return response.json();
+    }).then((response) => {
+        return response;
+    }).catch(reason => {
+        return false;
+    });
+    return resources;
+}
+async function fetchFhirResource(url, resource_type, query, token = '') {
+    let connector = "?";
+    if (resource_type !== '') {
+        url = url + "/" + resource_type;
+    }
+    console.log("query----", query);
+    let i = 0;
+    Object.keys(query).map(key => {
+        if (query[key].length > 0) {
+            console.log("In each query--", key, query[key]);
+            if (i > 0) {
+                connector = "&"
+            }
+            url += connector + "" + key + "=" + query[key];
+            i++;
+        }
+    })
+    let headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json+fhir',
+        'Accept-Encoding': 'gzip, deflate, sdch, br',
+        'Accept-Language': 'en-US,en;q=0.8'
+    }
+    if (token !== '') {
+        headers['Authorization'] = token;
+    }
+    let resources = await fetch(url, {
+        method: "GET",
+        headers: headers
+    }).then(response => {
+        return response.json();
+    }).then((response) => {
+        return response;
+    }).catch(reason => {
+        return false;
+    });
+    return resources;
+}
+function randomString() {
+    var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ-";
+    var string_length = 8;
+    var randomstring = '';
+    for (var i = 0; i < string_length; i++) {
+        var rnum = Math.floor(Math.random() * chars.length);
+        randomstring += chars.substring(rnum, rnum + 1);
+    }
+    return randomstring
+}
+
+var dateFormat = require('dateformat');
+
+function convertDate(date, format = "mm/dd/yyyy") {
+    if (date !== "") {
+        return dateFormat(date, format);
+    } else {
+        return false;
+    }
+}
 export {
     findValueByPrefix,
     getListOfChoices,
     hasTokenExpired,
     getDocumentReferences,
-    getResourceFromBundle
+    getResourceFromBundle,
+    fetchFhirResource,
+    randomString,
+    postResource,
+    convertDate
 }

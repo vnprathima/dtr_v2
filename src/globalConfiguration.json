@@ -1,8 +1,10 @@
 {
   "token_url": "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token",
     "clientId":"",
-    "npi":"1932102951",
   "odoo_username":"admin",
   "odoo_password":"admin",
-  "restURL":"https://pd.mettles.com"
+  "restURL":"https://pd.mettles.com",
+  "order_review_url": "https://sm.mettles.com/crd/r4/cds-services/order-review-crd",
+  "order_select_url": "https://sm.mettles.com/crd/r4/cds-services/order-select-crd",
+  "order_review_codes":["E1390", "E1391", "E0424", "E0439", "E1405", "E1406", "E0431", "E0434", "E1392", "E0433", "K0738", "E0441", "E0442", "E0443", "E0444"]
 }

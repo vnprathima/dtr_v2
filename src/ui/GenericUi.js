@@ -1,33 +1,26 @@
 import React, { Component } from "react";
-import Testing from "./components/ConsoleBox/Testing";
-import TextInput from './components/Inputs/TextInput/TextInput';
-import QuestionnaireForm from "./components/QuestionnaireForm/QuestionnaireForm";
-import ChoiceInput from './components/Inputs/ChoiceInput/ChoiceInput';
-import DocumentInput from './components/Inputs/DocumentInput/DocumentInput';
+import Testing from "../components/ConsoleBox/Testing";
+import TextInput from '../components/Inputs/TextInput/TextInput';
+import QuestionnaireForm from "../components/QuestionnaireForm/QuestionnaireForm";
+import ChoiceInput from '../components/Inputs/ChoiceInput/ChoiceInput';
+import DocumentInput from '../components/Inputs/DocumentInput/DocumentInput';
 import Loader from 'react-loader-spinner';
-import BooleanInput from './components/Inputs/BooleanInput/BooleanInput';
-import DropdownServiceCode from './components/DropdownServiceCode';
-
-import DropdownCoverage from './components/DropdownCoverage';
-
-import { DateInput } from 'semantic-ui-calendar-react';
-
-import { Dropdown } from 'semantic-ui-react';
-
-import DropdownEncounter from './components/DropdownEncounter';
-import SelectPayer from './components/SelectPayer';
-import ProviderRequest from "./ProviderRequest";
-import './index.css';
-import './components/consoleBox.css';
-import Section from './components/Section/Section';
-import OpenChoice from './components/Inputs/OpenChoiceInput/OpenChoice';
-import { isTSEnumMember } from '@babel/types';
-import Select from "react-dropdown-select";
+import BooleanInput from '../components/Inputs/BooleanInput/BooleanInput';
+import DropdownServiceCode from '../components/CRDRequest/DropdownServiceCode';
+import DropdownEncounter from '../components/CRDRequest/DropdownEncounter';
+import CRDRequest from "../components/CRDRequest/CRDRequest";
+import '../index.css';
+import '../components/ConsoleBox/consoleBox.css';
+import Section from '../components/Section/Section';
+import OpenChoice from '../components/Inputs/OpenChoiceInput/OpenChoice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
-import QuantityInput from './components/Inputs/QuantityInput/QuantityInput';
-import ReferenceInput from './components/Inputs/ReferenceInput/ReferenceInput';
-import ShowError from './components/ShowError';
+import QuantityInput from '../components/Inputs/QuantityInput/QuantityInput';
+import ReferenceInput from '../components/Inputs/ReferenceInput/ReferenceInput';
+import ShowError from '../components/ShowError';
+import { convertDate } from '../util/util.js';
+import { Radio } from 'semantic-ui-react';
+import DropdownOrderTo from "../components/QuestionnaireForm/DropdownOrderTo";
 
 export default class GenericUi {
   constructor(props) {
@@ -42,11 +35,11 @@ export default class GenericUi {
     );
   }
 
-  getProviderRequestUI() {
-    return (<ProviderRequest />);
+  getCRDRequestUI() {
+    return (<CRDRequest />);
   }
 
-  getProviderRequestForm(inputThis) {
+  getCRDRequestForm(inputThis) {
     let records = { "completed": [], "submitted": [], "draft": [] }
     if (inputThis.state.prior_auth_records !== undefined && inputThis.state.prior_auth_records.length > 0) {
       inputThis.state.prior_auth_records.map((rec, i) => {
@@ -64,9 +57,93 @@ export default class GenericUi {
                 {inputThis.state.showError &&
                   <ShowError type={inputThis.state.errorType} />
                 }
-                <div className="col-12 cerner-header">Prior Authorization</div>
+                <div className="col-12 cerner-header">Orders and Prior Authorization</div>
                 <div className="row" style={{ marginTop: "20px" }}>
                   <div className="col-6">
+                    <div className="form-row">
+                      <div className="col-6 offset-6">
+                        <Radio
+                          label='Order'
+                          name='order_pa'
+                          value='Order'
+                          checked={inputThis.state.order_pa === 'Order'}
+                          onChange={inputThis.handleChange}
+                        />
+                        <Radio
+                          style={{ marginLeft: "10px" }}
+                          label='Prior Authorization'
+                          name='order_pa'
+                          value='PA'
+                          checked={inputThis.state.order_pa === 'PA'}
+                          onChange={inputThis.handleChange}
+                        />
+                      </div>
+                    </div>
+                    {
+                      inputThis.state.showPatientField === true &&
+                      <div className="form-row">
+                        <div className="form-group col-md-6">
+                          <h4 className="title">Benificiary Identifier</h4>
+                        </div>
+                        <div className="form-group col-md-4">
+                          <input type="text" className="form-control" onChange={(event) => { inputThis.onPatientChange(event) }}></input>
+                        </div>
+                        <div className="form-group col-md-2">
+                          <button type="button" style={{ "padding": "7px 10px" }} onClick={inputThis.handlePrefetch}>Search
+                              <div id="fse" className={"spinner " + (inputThis.state.prefetchloading ? "visible" : "invisible")}>
+                              <Loader
+                                type="Oval"
+                                color="#fff"
+                                height={15}
+                                width={15}
+                              />
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    {
+                      inputThis.state.showPatientField && inputThis.state.patientId != null && inputThis.state.patientId != undefined && inputThis.state.patientResource &&
+                      <div className="">
+                        <div className="form-row ">
+                          <div className="ml-md-auto col-md-3 patient-data">
+                            <div className="col-md-12">
+                              {inputThis.state.patientResource.name[0].given[0] + " " + inputThis.state.patientResource.name[0].family}
+                            </div>
+                            <div className="col-md-12">
+                              {inputThis.state.patientResource.gender.charAt(0).toUpperCase() + inputThis.state.patientResource.gender.slice(1)}
+                            </div>
+                          </div>
+                          <div className="col-md-3 patient-data">
+                            <div className="col-md-12 ">
+                              {convertDate(inputThis.state.patientResource.birthDate)}
+                            </div>
+                            <div className="col-md-12">
+
+                              {inputThis.state.patientResource.address !== undefined && inputThis.state.patientResource.address !== null &&
+
+                                <span>{inputThis.state.patientResource.address[0].state + " "}</span>
+
+                              }
+                              {(inputThis.state.patientResource.address[0].postalCode !== undefined && inputThis.state.patientResource.address[0].postalCode !== null) &&
+
+                                <span>-</span>
+
+                              }
+                              {(inputThis.state.patientResource.address[0].postalCode !== undefined && inputThis.state.patientResource.address[0].postalCode !== null) &&
+                                <span>{" " + inputThis.state.patientResource.address[0].postalCode}</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+
+
+
+                      </div>
+                    }
+
+
+
                     {inputThis.state.encounters.length > 0 &&
                       <div className="form-row">
                         <div className="form-group col-md-6">
@@ -306,6 +383,35 @@ export default class GenericUi {
                 })
               }
 
+              <div className="col-12">
+                <Radio
+                  label='Just Order'
+                  name='order_pa'
+                  value='Order'
+                  checked={inputThis.state.order_pa === 'Order'}
+                  onChange={inputThis.handleChange}
+                />
+                <Radio
+                  style={{ marginLeft: "10px" }}
+                  label='Submit for Prior Authorization'
+                  name='order_pa'
+                  value='PA'
+                  checked={inputThis.state.order_pa === 'PA'}
+                  onChange={inputThis.handleChange}
+                />
+              </div>
+              {sessionStorage.getItem("order_pa") === "Order" &&
+                <div className="form-row">
+                  <div className="form-group col-md-6">
+                    <h4 className="title">Order To *</h4>
+
+                  </div>
+                  <div className="form-group col-md-6">
+                    <DropdownOrderTo elementName="orderTo" updateCB={inputThis.updateStateElement} />
+                  </div>
+                </div>
+              }
+
               <div style={{ marginBottom: "20px" }}>
                 <button type="button" style={{ background: "grey", float: "right" }} onClick={inputThis.previewBundle}>Preview FHIR Data
                                 <div id="fse" className={"spinner " + (previewloading ? "visible" : "invisible")}>
@@ -317,7 +423,7 @@ export default class GenericUi {
                     />
                   </div>
                 </button>
-                <button type="button" onClick={inputThis.outputResponse}>Submit Prior Authorization
+                <button type="button" onClick={inputThis.outputResponse}>Submit
                                 <div id="fse" className={"spinner " + (loading ? "visible" : "invisible")}>
                     <Loader
                       type="Oval"
@@ -327,7 +433,7 @@ export default class GenericUi {
                     />
                   </div>
                 </button>
-                <button style={{marginLeft:"5px"}} type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
+                <button style={{ marginLeft: "5px" }} type="button" onClick={() => inputThis.saveQuestionnaireData()}>Save for Later</button>
 
               </div>
               {inputThis.state.saved && <div className="simple-success"><strong style={{ color: "green", marginLeft: "1%" }}>Saved Successfully!!</strong></div>}
@@ -363,45 +469,52 @@ export default class GenericUi {
         <div className="success-msg">
           <span className="success-icon">
             <FontAwesomeIcon icon={faCheckCircle} size="2x" color="white" /></span>&nbsp;&nbsp;{claimMessage}</div>
-        <div className="form-row">
-          <div className="col-3"><b>Outcome</b></div>
-          {claimResponse.outcome === "complete" &&
-            <div className="col-6">: Affirmed</div>
-          }
-          {claimResponse.outcome === "queued" &&
-            <div className="col-6">: Pending</div>
-          }
-          {claimResponse.outcome !== "complete" && claimResponse.outcome !== "queued" &&
-            <div className="col-6">: {claimResponse.outcome}</div>
-          }
-        </div>
-        {/* <div className="form-row">
-          <div className="col-3"><b>Outcome</b></div>
-          <div className="col-6">: {claimResponse.outcome}</div>
-        </div> */}
-        {claimResponse.outcome !== "queued" &&
-          <div className="form-row">
-            <div className="col-3"><b>Prior Auth Reference No</b></div>
-            <div className="col-6">: {claimResponse.preAuthRef}</div>
+        {inputThis.state.order_pa === "PA" &&
+          <div>
+            <div className="form-row">
+              <div className="col-3"><b>Outcome</b></div>
+              {claimResponse.outcome === "complete" &&
+                <div className="col-6">: Affirmed</div>
+              }
+              {claimResponse.outcome === "queued" &&
+                <div className="col-6">: Pending</div>
+              }
+              {claimResponse.outcome !== "complete" && claimResponse.outcome !== "queued" &&
+                <div className="col-6">: {claimResponse.outcome}</div>
+              }
+            </div>
+            {claimResponse.outcome !== "queued" &&
+              <div className="form-row">
+                <div className="col-3"><b>Prior Auth Reference No</b></div>
+                <div className="col-6">: {claimResponse.preAuthRef}</div>
+              </div>
+            }
+            {JSON.stringify(claimResponse).length > 0 &&
+              <div style={{ paddingTop: "10px", paddingBottom: "10px" }}>
+                <button style={{ float: "right" }} type="button" onClick={inputThis.handleShowBundle}>Show Claim Response Bundle</button>
+
+                <button type="button" onClick={inputThis.reloadClaimResponse} >Reload Claim Response
+                                <div id="fse" className={"spinner " + (resloading ? "visible" : "invisible")}>
+                    <Loader
+                      type="Oval"
+                      color="#fff"
+                      height={15}
+                      width={15}
+                    />
+                  </div>
+                </button></div>
+            }
           </div>
         }
-        {JSON.stringify(claimResponse).length > 0 &&
-          <div style={{ paddingTop: "10px", paddingBottom: "10px" }}>
-            <button style={{ float: "right" }} type="button" onClick={inputThis.handleShowBundle}>Show Claim Response Bundle</button>
-
-            <button type="button" onClick={inputThis.reloadClaimResponse} >Reload Claim Response
-                                <div id="fse" className={"spinner " + (resloading ? "visible" : "invisible")}>
-                <Loader
-                  type="Oval"
-                  color="#fff"
-                  height={15}
-                  width={15}
-                />
-              </div>
-            </button></div>
+        {inputThis.state.order_pa === "Order" &&
+          <div style={{ paddingTop: "10px", paddingBottom: "10px" }} className="col-12">
+            <button style={{ float: "right" }} type="button" onClick={inputThis.handleShowBundle}>Show Order Response Bundle</button>
+          </div>
         }
         {showBundle &&
-          <pre style={{ background: "#dee2e6", margin: "0px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
+          <div style={{ paddingTop: "10px", paddingBottom: "10px", paddingRight: "0px" }} className="row col-12">
+            <pre style={{ background: "#dee2e6", margin: "0px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
+          </div>
         }
       </div>
     )
