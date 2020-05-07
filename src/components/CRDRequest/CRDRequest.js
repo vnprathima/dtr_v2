@@ -36,7 +36,7 @@ class CRDRequest extends Component {
       showError: false,
       errorType: '',
       showPatientField: false,
-      order_pa : "PA"
+      order_pa: "PA"
     }
     this.startLoading = this.startLoading.bind(this);
     this.submit_info = this.submit_info.bind(this);
@@ -56,14 +56,14 @@ class CRDRequest extends Component {
     await this.getRequests()
   }
   onPatientChange(event) {
-    console.log("event.target.value",event.target.value)
+    console.log("event.target.value", event.target.value)
     this.setState({ patientId: event.target.value });
   }
-  
-  handleChange(e, { name, value }){
+
+  handleChange(e, { name, value }) {
     console.log("In on change---", name, value);
     this.setState({ [name]: value })
-    sessionStorage.setItem("order_pa",value);
+    sessionStorage.setItem("order_pa", value);
   }
 
   async getRequests() {
@@ -97,7 +97,7 @@ class CRDRequest extends Component {
     this.setState({ prior_auth_records })
     if (rec.claim_response_id != undefined) {
 
-      const priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
+      const priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
       let fhirHeaders = {
         'Content-Type': 'application/fhir+json',
         "Cache-Control": "no-cache,no-store"
@@ -240,7 +240,7 @@ class CRDRequest extends Component {
             this.setState({ patientResource: patientResource })
             await fetchFhirResource(this.state.provider_fhir_url,
               "Encounter", { "patient": this.state.patientId }, "Bearer " + sessionStorage.getItem("token")).then(async (encounterRes) => {
-                if (encounterRes.resourceType === "Bundle" && encounterRes.total > 0) {
+                if (encounterRes.resourceType === "Bundle" && encounterRes.entry.length > 0) {
                   this.setState({ encounters: encounterRes.entry })
                 }
               }).catch((reason) => {
@@ -269,8 +269,8 @@ class CRDRequest extends Component {
           this.setState({ "showError": true, "errorType": "token" });
         });
     } else {
-      if(this.state.showPatientField !== true ){
-        this.setState({ "showPatientField": true});
+      if (this.state.showPatientField !== true) {
+        this.setState({ "showPatientField": true });
       }
     }
   }
@@ -278,13 +278,12 @@ class CRDRequest extends Component {
   updateStateElement = (elementName, text) => {
     let value = text;
     if (elementName === "selected_codes") {
-      if (text.hasOwnProperty("codes") && globalConfig.order_review_codes.indexOf(text.codes[0]) >= 0) {
-        value = text.codes
-        this.setState({ hook: "order-review" });
-      }
-      else {
+      // if (text.hasOwnProperty("codes") && globalConfig.order_review_codes.indexOf(text.codes[0]) >= 0) {
+      //   this.setState({ hook: "order-review" });
+      // }
+      // else {
         this.setState({ hook: "order-select" });
-      }
+      // }
       value = text.codeObjects;
     }
     this.setState({ [elementName]: value });
@@ -349,14 +348,18 @@ class CRDRequest extends Component {
     postResource(url, '', json_request).then((cardResponse) => {
       if (cardResponse) {
         console.log("CRD Response---", cardResponse);
-        let appContext = cardResponse['cards'][0].links[0].appContext;
-        sessionStorage.setItem("appContext", appContext);
-        sessionStorage.setItem("showCDSHook", false);
-        self.setState({ response: cardResponse });
-        if (appContext !== null) {
-          window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContext}`;
+        if (cardResponse.hasOwnProperty("cards") && cardResponse.cards !== null) {
+          let appContext = cardResponse['cards'][0].links[0].appContext;
+          sessionStorage.setItem("appContext", appContext);
+          sessionStorage.setItem("showCDSHook", false);
+          self.setState({ response: cardResponse });
+          if (appContext !== null) {
+            window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContext}`;
+          } else {
+            self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
+          }
         } else {
-          self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
+          self.setState({ loading: false, crd_error_msg: "Invalid CRD Response !!" });
         }
       } else {
         self.setState({ loading: false, crd_error_msg: "Unable to get CRD Response !! Please try again." });
@@ -366,9 +369,8 @@ class CRDRequest extends Component {
 
   async getJson() {
     var patientId = this.state.patientId;
-    let coverage = {}
     let organization = {}
-    let performer = []
+    var performer = []
     let prefetch = {}
     let prefetchObj = {
       "resourceType": "Bundle",
@@ -393,9 +395,11 @@ class CRDRequest extends Component {
       sessionStorage.setItem("coverage", JSON.stringify(coverage))
       if (coverage.hasOwnProperty("payor")) {
         let org_ref = coverage.payor[0].reference
-        fetchFhirResource(this.state.provider_fhir_url, org_ref, {},
+        await fetchFhirResource(this.state.provider_fhir_url, org_ref, {},
           "Bearer " + sessionStorage.getItem("token")).then((org) => {
-            if (org) {
+            if (org.resourceType === "OperationOutcome") {
+              this.setState({ "showError": true, "errorType": "token" });
+            } else {
               prefetchObj.entry.push({ "resource": org });
               sessionStorage.setItem("organization", JSON.stringify(organization))
             }
@@ -410,17 +414,20 @@ class CRDRequest extends Component {
       prefetchObj.entry.push({ "resource": encounter });
       sessionStorage.setItem("encounter", JSON.stringify(encounter))
       if (encounter.hasOwnProperty("participant")) {
-        encounter.participant.map((individual) => {
-          fetchFhirResource(this.state.provider_fhir_url, individual.individual.reference,
+        await Promise.all(encounter.participant.map(async (individual) => {
+          await fetchFhirResource(this.state.provider_fhir_url, individual.individual.reference,
             {}, "Bearer " + sessionStorage.getItem("token")).then((res) => {
-              prefetchObj.entry.push({ "resource": res });
+              if (res.resourceType === "OperationOutcome") {
+                this.setState({ "showError": true, "errorType": "token" });
+              } else {
+                prefetchObj.entry.push({ "resource": res });
+                performer.push({
+                  "reference": res.resourceType+"/"+res.id
+                })
+                console.log("performer---", performer);
+              }
             })
-          if (individual.hasOwnProperty(individual)) {
-            performer.push({
-              "reference": individual.individual
-            })
-          }
-        })
+        }))
       }
     }
 
@@ -463,18 +470,19 @@ class CRDRequest extends Component {
           "authoredOn": convertDate(new Date(), "isoUtcDateTime"),
           "insurance": [
             {
-              "reference": "Coverage/" + coverage.id
+              "reference": "Coverage/" + this.state.coverageId
             }
           ],
           "encounter": {
             "reference": "Encounter/" + this.state.encounterId
           },
           "performer": performer,
-          "codeCodeableConcept": {
+          "code": {
             "coding": [
               {
                 "system": "http://loinc.org",
-                "code": selected_codes[i].value
+                "code": selected_codes[i].value,
+                "display": selected_codes[i].text
               }
             ],
           }
@@ -499,11 +507,11 @@ class CRDRequest extends Component {
           "subject": {
             "reference": "Patient/" + patientId
           },
-          "quantity": { "value": selected_codes[i].quantity },
+          "quantityQuantity": { "value": selected_codes[i].quantity },
           "authoredOn": convertDate(new Date(), "isoUtcDateTime"),
           "insurance": [
             {
-              "reference": "Coverage/" + coverage.id
+              "reference": "Coverage/" + this.state.coverageId
             }
           ],
           "encounter": {
@@ -514,7 +522,8 @@ class CRDRequest extends Component {
             "coding": [
               {
                 "system": "http://loinc.org",
-                "code": selected_codes[i].value
+                "code": selected_codes[i].value,
+                "display": selected_codes[i].text
               }
             ],
           }

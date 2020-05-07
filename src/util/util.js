@@ -142,7 +142,6 @@ async function fetchFhirResource(url, resource_type, query, token = '') {
     if (resource_type !== '') {
         url = url + "/" + resource_type;
     }
-    console.log("query----", query);
     let i = 0;
     Object.keys(query).map(key => {
         if (query[key].length > 0) {

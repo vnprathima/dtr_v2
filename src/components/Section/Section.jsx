@@ -54,7 +54,7 @@ export default class Section extends Component {
                     const component = obj.component;
                     const _item = obj._item;
                     return component ? _item.type !== "group" ? (
-                        <div>
+                        <div key={_item.linkId}>
                             {_item.type !== "display" ?
                             <div className="form-row" key={_item.linkId}>
                             <div className={"form-group col-6 " + (_item.readOnly ? "read-only" : "")}>

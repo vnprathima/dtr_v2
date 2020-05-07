@@ -46,10 +46,11 @@ export default class QuestionnaireForm extends Component {
             showError: false,
             errorType: '',
             referenceDocs: [],
-            order_pa: sessionStorage.getItem("order_pa"),
+            order_pa: (sessionStorage.getItem('order_pa') !== undefined && sessionStorage.getItem('order_pa') !== null) ? sessionStorage.getItem('order_pa') : 'PA',
             orderTo: ''
         };
 
+        console.log("order_pa---",sessionStorage.getItem('order_pa'));
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
         this.updateNestedQuestionValue = this.updateNestedQuestionValue.bind(this);
         this.updateDocuments = this.updateDocuments.bind(this);
@@ -191,6 +192,7 @@ export default class QuestionnaireForm extends Component {
                 [elementName]: object
             }
         }))
+        console.log("elemne,value--",elementName,object, type);
     }
 
     updateNestedQuestionValue(linkId, elementName, object) {
@@ -261,9 +263,11 @@ export default class QuestionnaireForm extends Component {
             const checkAny = enableCriteria.length > 1 ? item.enableBehavior === 'any' : false
             enableCriteria.forEach((rule) => {
                 const question = this.state.values[rule.question]
+                console.log("type of ques---", typeof question);
                 const answer = findValueByPrefix(rule, "answer");
                 if (typeof question === 'object' && typeof answer === 'object') {
                     if (rule.answerQuantity) {
+                        console.log("in answerquantity---", rule, question, answer);
                         // at the very least the unit and value need to be the same
                         results.push(this.evaluateOperator(rule.operator, question.value, answer.value.toString())
                             && this.evaluateOperator(rule.operator, question.unit, answer.unit));
@@ -772,12 +776,6 @@ export default class QuestionnaireForm extends Component {
                     }
                 })
             }
-            let filtered_entries = priorAuthBundle.entry.filter(function (entry) {
-                if (entry.resource !== undefined) {
-                    return (entry.resource.resourceType !== "SupplyRequest");
-                }
-            });
-            priorAuthBundle.entry = filtered_entries;
             resolve(priorAuthBundle);
         });
 
@@ -837,78 +835,124 @@ export default class QuestionnaireForm extends Component {
     }
 
     submitPA(priorAuthBundle) {
-        /*creating token */
-        const tokenPost = new XMLHttpRequest();
-        var auth_response;
-        var self = this;
-        tokenPost.open("POST", tokenUri);
-        tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var data = `client_id=app-login&grant_type=password&username=john&password=john123`
-        tokenPost.send(data);
-        tokenPost.onload = function () {
-            if (tokenPost.status === 200) {
-                try {
-                    auth_response = JSON.parse(tokenPost.responseText);
-                    console.log("auth res--1243-", auth_response);
-                } catch (e) {
-                    const errorMsg = "Failed to parse auth response";
-                    document.body.innerText = errorMsg;
-                    console.error(errorMsg);
-                    return;
-                }
-                /** creating cliam  */
-                const Http = new XMLHttpRequest();
-                // const priorAuthUrl = "https://davinci-prior-auth.logicahealth.org/fhir/Claim/$submit";
-                // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/Claim/$submit";
-                // const priorAuthUrl = "http://stdrfp.mettles.com:8080/drfp/fhir/Claim/$submit";
-                var priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
-                if (self.props.hasOwnProperty("claimEndpoint") && self.props.claimEndpoint !== null) {
-                    priorAuthUrl = self.props.claimEndpoint;
-                }
-                console.log("claim final--", JSON.stringify(priorAuthBundle));
-                Http.open("POST", priorAuthUrl);
-                Http.setRequestHeader("Content-Type", "application/fhir+json");
-                // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
-                // Http.send(JSON.stringify(pBundle));
-                Http.send(JSON.stringify(priorAuthBundle));
-                Http.onreadystatechange = function () {
-                    if (this.readyState === XMLHttpRequest.DONE) {
-                        var message = "";
-                        self.setState({ displayQuestionnaire: false })
-                        if (this.status === 200) {
-                            var claimResponseBundle = JSON.parse(this.responseText);
-                            var claimResponse = self.state.claimResponse;
-                            if (claimResponseBundle.hasOwnProperty('entry')) {
-                                claimResponseBundle.entry.forEach((res) => {
-                                    if (res.resource.resourceType === "ClaimResponse") {
-                                        claimResponse = res.resource;
-                                    }
-                                })
+        /** creating cliam  */
+        
+        const Http = new XMLHttpRequest();
+        var priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
+        if (this.props.hasOwnProperty("claimEndpoint") && this.props.claimEndpoint !== null) {
+            priorAuthUrl = this.props.claimEndpoint;
+        }
+        let self = this;
+        console.log("claim final--", JSON.stringify(priorAuthBundle));
+        Http.open("POST", priorAuthUrl);
+        Http.setRequestHeader("Content-Type", "application/fhir+json");
+        // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
+        // Http.send(JSON.stringify(pBundle));
+        Http.send(JSON.stringify(priorAuthBundle));
+        Http.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE) {
+                var message = "";
+                self.setState({ displayQuestionnaire: false })
+                if (this.status === 200) {
+                    var claimResponseBundle = JSON.parse(this.responseText);
+                    var claimResponse = self.state.claimResponse;
+                    if (claimResponseBundle.hasOwnProperty('entry')) {
+                        claimResponseBundle.entry.forEach((res) => {
+                            if (res.resource.resourceType === "ClaimResponse") {
+                                claimResponse = res.resource;
                             }
-                            self.setState({ claimResponseBundle })
-                            self.setState({ claimResponse })
-                            console.log(self.state.claimResponseBundle, self.state.claimResponse);
-                            self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
-                            message = "Prior Authorization " + claimResponse.disposition + "\n";
-                            message += "Prior Authorization Number: " + claimResponse.preAuthRef;
-                            self.createSubmittedRequest(claimResponse);
-                        } else {
-                            self.setState({ "claimMessage": "Prior Authorization Request Failed." })
-                            message = "Prior Authorization Request Failed."
-                        }
-                        self.setState({ loading: false });
-                        console.log(message);
-                        console.log(this.responseText);
+                        })
                     }
+                    self.setState({ claimResponseBundle })
+                    self.setState({ claimResponse })
+                    console.log(self.state.claimResponseBundle, self.state.claimResponse);
+                    self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
+                    message = "Prior Authorization " + claimResponse.disposition + "\n";
+                    message += "Prior Authorization Number: " + claimResponse.preAuthRef;
+                    self.createSubmittedRequest(claimResponse);
+                } else {
+                    self.setState({ "claimMessage": "Prior Authorization Request Failed." })
+                    message = "Prior Authorization Request Failed."
                 }
-            } else {
-                this.setState({ "showError": true });
-                this.setState({ "errorType": "token" });
-                console.error(errorMsg);
-                return;
+                self.setState({ loading: false });
+                console.log(message);
+                console.log(this.responseText);
             }
-        };
+        }
     }
+    // submitPA(priorAuthBundle) {
+    //     /*creating token */
+    //     const tokenPost = new XMLHttpRequest();
+    //     var auth_response;
+    //     var self = this;
+    //     tokenPost.open("POST", tokenUri);
+    //     tokenPost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    //     var data = `client_id=app-login&grant_type=password&username=john&password=john123`
+    //     tokenPost.send(data);
+    //     tokenPost.onload = function () {
+    //         if (tokenPost.status === 200) {
+    //             try {
+    //                 auth_response = JSON.parse(tokenPost.responseText);
+    //                 console.log("auth res--1243-", auth_response);
+    //             } catch (e) {
+    //                 const errorMsg = "Failed to parse auth response";
+    //                 document.body.innerText = errorMsg;
+    //                 console.error(errorMsg);
+    //                 return;
+    //             }
+    //             /** creating cliam  */
+    //             const Http = new XMLHttpRequest();
+    //             // const priorAuthUrl = "https://davinci-prior-auth.logicahealth.org/fhir/Claim/$submit";
+    //             // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/Claim/$submit";
+    //             // const priorAuthUrl = "http://stdrfp.mettles.com:8080/drfp/fhir/Claim/$submit";
+    //             var priorAuthUrl = "https://sm.mettles.com/payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
+    //             if (self.props.hasOwnProperty("claimEndpoint") && self.props.claimEndpoint !== null) {
+    //                 priorAuthUrl = self.props.claimEndpoint;
+    //             }
+    //             console.log("claim final--", JSON.stringify(priorAuthBundle));
+    //             Http.open("POST", priorAuthUrl);
+    //             Http.setRequestHeader("Content-Type", "application/fhir+json");
+    //             // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
+    //             // Http.send(JSON.stringify(pBundle));
+    //             Http.send(JSON.stringify(priorAuthBundle));
+    //             Http.onreadystatechange = function () {
+    //                 if (this.readyState === XMLHttpRequest.DONE) {
+    //                     var message = "";
+    //                     self.setState({ displayQuestionnaire: false })
+    //                     if (this.status === 200) {
+    //                         var claimResponseBundle = JSON.parse(this.responseText);
+    //                         var claimResponse = self.state.claimResponse;
+    //                         if (claimResponseBundle.hasOwnProperty('entry')) {
+    //                             claimResponseBundle.entry.forEach((res) => {
+    //                                 if (res.resource.resourceType === "ClaimResponse") {
+    //                                     claimResponse = res.resource;
+    //                                 }
+    //                             })
+    //                         }
+    //                         self.setState({ claimResponseBundle })
+    //                         self.setState({ claimResponse })
+    //                         console.log(self.state.claimResponseBundle, self.state.claimResponse);
+    //                         self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
+    //                         message = "Prior Authorization " + claimResponse.disposition + "\n";
+    //                         message += "Prior Authorization Number: " + claimResponse.preAuthRef;
+    //                         self.createSubmittedRequest(claimResponse);
+    //                     } else {
+    //                         self.setState({ "claimMessage": "Prior Authorization Request Failed." })
+    //                         message = "Prior Authorization Request Failed."
+    //                     }
+    //                     self.setState({ loading: false });
+    //                     console.log(message);
+    //                     console.log(this.responseText);
+    //                 }
+    //             }
+    //         } else {
+    //             this.setState({ "showError": true });
+    //             this.setState({ "errorType": "token" });
+    //             console.error(errorMsg);
+    //             return;
+    //         }
+    //     };
+    // }
     getCodesString() {
         let codesString = ""
         console.log(this.props.serviceRequest);
@@ -1149,7 +1193,7 @@ export default class QuestionnaireForm extends Component {
                     loading: false
                 }, () => {
                     console.log(this.state.claimResponseBundle, this.state.claimResponse);
-                    this.setState({displayQuestionnaire: false});   
+                    this.setState({ displayQuestionnaire: false });
                 })
             } else {
                 this.setState({ loading: false, claimMessage: "Order Request Failed." });

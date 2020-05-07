@@ -92,7 +92,9 @@ class CernerDropdownServiceCode extends Component {
     }).then(response => {
       return response.json();
     }).then((response) => {
-      return response;
+      var arraySort = require('array-sort');
+      var sorted_codes = arraySort(response,"service_category")
+      return sorted_codes;
     }).catch(reason =>
       console.log("No response recieved from the server", reason)
     );

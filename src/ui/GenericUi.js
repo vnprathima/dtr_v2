@@ -382,7 +382,7 @@ export default class GenericUi {
                   }
                 })
               }
-
+              {inputThis.state.order_pa === 'Order' &&
               <div className="col-12">
                 <Radio
                   label='Just Order'
@@ -400,6 +400,7 @@ export default class GenericUi {
                   onChange={inputThis.handleChange}
                 />
               </div>
+              }
               {sessionStorage.getItem("order_pa") === "Order" &&
                 <div className="form-row">
                   <div className="form-group col-md-6">

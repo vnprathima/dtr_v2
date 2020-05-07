@@ -19,22 +19,34 @@ export default class DropdownEncounter extends Component {
   }
   async getEncounterDetails() {
     let encounters = this.props.encounters;
-    encounters.sort(function(a,b){
-      return new Date(b.resource.period.start) - new Date(a.resource.period.start) 
+    encounters.sort(function (a, b) {
+      if (b.resource.hasOwnProperty("period") && a.resource.hasOwnProperty("period")) {
+        return new Date(b.resource.period.start) - new Date(a.resource.period.start)
+      } else {
+        return a.resource.status > b.resource.status
+      }
     })
     for (var i = 0; i < encounters.length; i++) {
       // console.log(encounters[i].resource.id)
-      encounterOptions.push({
-        key: encounters[i].resource.id,
-        value: encounters[i].resource.id,
-        text: encounters[i].resource.type[0].text + " ("+dateFormat(encounters[i].resource.period.start,"mm/dd/yyyy hh:mm")+")",
-      })
+      if (encounters[i].resource.hasOwnProperty("period")) {
+        encounterOptions.push({
+          key: encounters[i].resource.id,
+          value: encounters[i].resource.id,
+          text: encounters[i].resource.type[0].text + " (" + dateFormat(encounters[i].resource.period.start, "mm/dd/yyyy hh:mm") + ")",
+        })
+      } else {
+        encounterOptions.push({
+          key: encounters[i].resource.id,
+          value: encounters[i].resource.id,
+          text: encounters[i].resource.type[0].text,
+        })
+      }
 
     }
     // console.log("enc1",encounterOptions)
-    if(encounterOptions.length > 0){
+    if (encounterOptions.length > 0) {
       // console.log("enc opts",encounterOptions)
-      this.props.updateCB(this.props.elementName,encounterOptions[0].value )
+      this.props.updateCB(this.props.elementName, encounterOptions[0].value)
       this.setState({ currentValue: encounterOptions[0].value })
     }
     // console.log("enc 2",encounterOptions)

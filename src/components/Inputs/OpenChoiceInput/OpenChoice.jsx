@@ -93,14 +93,15 @@ export default class OpenChoice extends Component {
                 this.setState({ "values": [{ display: values }] });
                 this.props.updateCallback(this.props.item.linkId, [{ code: values }], "values")
             } else if(Array.isArray(values) && values.length > 0 && values[0].hasOwnProperty("code")) {
-                this.setState({ display: values[0].code })
-                this.setState({ "values": [{ display: values[0].code }] });
+                this.setState({ display: values[0].display });
+                this.setState({ "values": values });
                 this.props.updateCallback(this.props.item.linkId, values, "values")
             }
         }
     }
 
     onInputChange(event) {
+        console.log("display--- ",event.target.value);
         this.setState({ display: event.target.value })
         if (!this.props.item.repeats) {
             this.setState({ "values": [{ display: event.target.value }] })

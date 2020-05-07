@@ -21,16 +21,28 @@ export default class CernerDropdownEncounter extends Component {
   }
   async getEncounterDetails() {
     let encounters = this.props.encounters;
-    let encounterOptions = [];
-    console.log(encounters)
+    encounters.sort(function (a, b) {
+      if (b.resource.hasOwnProperty("period") && a.resource.hasOwnProperty("period")) {
+        return new Date(b.resource.period.start) - new Date(a.resource.period.start)
+      } else {
+        return a.resource.status > b.resource.status
+      }
+    })
     for (var i = 0; i < encounters.length; i++) {
-      console.log("Encounter Res:", encounters[i].resource)
-      encounterOptions.push({
-        key: encounters[i].resource.id,
-        value: encounters[i].resource.id,
-        text: encounters[i].resource.type[0].text + " (" + dateFormat(encounters[i].resource.period.start, "mm/dd/yyyy hh:mm") + ")",
-      })
-
+      // console.log(encounters[i].resource.id)
+      if (encounters[i].resource.hasOwnProperty("period")) {
+        encounterOptions.push({
+          key: encounters[i].resource.id,
+          value: encounters[i].resource.id,
+          text: encounters[i].resource.type[0].text + " (" + dateFormat(encounters[i].resource.period.start, "mm/dd/yyyy hh:mm") + ")",
+        })
+      } else {
+        encounterOptions.push({
+          key: encounters[i].resource.id,
+          value: encounters[i].resource.id,
+          text: encounters[i].resource.type[0].text,
+        })
+      }
     }
     this.setState({ encounterOptions })
   }
