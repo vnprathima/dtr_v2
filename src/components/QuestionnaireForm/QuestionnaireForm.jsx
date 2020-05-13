@@ -972,6 +972,7 @@ export default class QuestionnaireForm extends Component {
                 console.log("In end point found--", endpoint);
                 priorAuthUrl = endpoint+"/Claim/$submit";
             } else {
+                endpoint = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir";
                 priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit"
             }
             this.setState({priorAuthUrl})
@@ -1002,7 +1003,7 @@ export default class QuestionnaireForm extends Component {
                         self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
                         message = "Prior Authorization " + claimResponse.disposition + "\n";
                         message += "Prior Authorization Number: " + claimResponse.preAuthRef;
-                        self.createSubmittedRequest(claimResponse);
+                        self.createSubmittedRequest(claimResponse,endpoint);
                     } else {
                         self.setState({ "claimMessage": "Prior Authorization Request Failed." })
                         message = "Prior Authorization Request Failed."
@@ -1122,18 +1123,19 @@ export default class QuestionnaireForm extends Component {
         return codesString
     }
 
-    async createSubmittedRequest(claimResponse) {
-        await this.deleteReqByAppContext()
+    async createSubmittedRequest(claimResponse,endpoint) {
+        await this.deleteReqByRequestId()
         let today = new Date();
         let appContextId = sessionStorage.getItem("appContextId")
         let appContext = sessionStorage.getItem(appContextId)
+        claimResponse.res_url = endpoint+"/ClaimResponse/"+claimResponse.id
         let body = {
             "type": "submitted",
             "date": today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate(),
             "patient_id": this.state.patientId,
             "app_context": appContext,
             "claim_response_id": claimResponse.id,
-            "claim_response": claimResponse,
+            "claim_response": JSON.stringify(claimResponse),
             "codes": this.getCodesString(),
             "prior_auth_ref": claimResponse.preAuthRef
         }
@@ -1173,16 +1175,18 @@ export default class QuestionnaireForm extends Component {
         return res;
     }
 
-    async deleteReqByAppContext() {
+    async deleteReqByRequestId() {
         console.log("Save questionnaire", sessionStorage.getItem("appContextId"));
         let appContextId = sessionStorage.getItem("appContextId")
+        let appContext = JSON.parse(sessionStorage.getItem(appContextId))
+
         let headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             "Access-Control-Allow-Origin": "*",
             'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
         }
-        let url = globalConfig.restURL + "/api/pa_info/" + this.state.patientId + "/" + appContextId;
+        let url = globalConfig.restURL + "/api/pa_info/" + this.state.patientId + "/" + appContext.request;
         try {
             let deleteReq = await fetch(url, {
                 method: "DELETE",
@@ -1190,7 +1194,7 @@ export default class QuestionnaireForm extends Component {
             }).then((response) => {
                 return response.json();
             }).then((response) => {
-                console.log("!!Questionnaire deleted", response);
+                console.log("!!Record deleted", response);
                 return response
             })
         }
@@ -1200,8 +1204,11 @@ export default class QuestionnaireForm extends Component {
     }
 
     async saveQuestionnaireData() {
-        await this.deleteReqByAppContext();
-        let appContext = sessionStorage.getItem("appContext")
+        await this.deleteReqByRequestId();
+        // let appContext = sessionStorage.getItem("appContext")
+        let appContextId = sessionStorage.getItem("appContextId")
+        let appContext = JSON.parse(sessionStorage.getItem(appContextId))
+
         try {
             let today = new Date();
             let body = {

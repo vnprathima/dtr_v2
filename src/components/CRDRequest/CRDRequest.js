@@ -91,17 +91,23 @@ class CRDRequest extends Component {
 
 
   async checkRequestStatus(rec) {
-    console.log("check stattt records", rec.index)
+    console.log("check stattt records", rec.index,rec);
     let prior_auth_records = this.state.prior_auth_records
     prior_auth_records[rec.index].checking = true
     this.setState({ prior_auth_records })
     if (rec.claim_response_id != undefined) {
-      const priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
+
+      let claim_response_url = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
+      if(rec.claim_response != "" && rec.claim_response != undefined && rec.claim_response != null){
+        let claim_response = (0, eval)('(' + rec.claim_response + ')');
+        claim_response_url = claim_response.res_url;
+        console.log("Claimm Resss URL",claim_response_url)
+      }
       let fhirHeaders = {
         'Content-Type': 'application/fhir+json',
         "Cache-Control": "no-cache,no-store"
       }
-      await fetch(priorAuthUrl, {
+      await fetch(claim_response_url, {
         method: "GET",
         headers: fhirHeaders
 
@@ -322,9 +328,16 @@ class CRDRequest extends Component {
   submitDraftPA(draftPA) {
     this.setState({ tokenExpired: hasTokenExpired() });
     if (!this.state.tokenExpired) {
-      sessionStorage.setItem("appContext", draftPA.app_context);
+      let appContextId = randomString();
+      let appContext = (0, eval)('(' + draftPA.app_context + ')');
+
+      console.log("Random - appcontextID",appContextId)
+      localStorage.setItem("crdRequest",JSON.stringify(appContext.crdRequest));
+      sessionStorage.setItem("appContextId", appContextId);
+      sessionStorage.setItem(appContextId, JSON.stringify(appContext));
+
       sessionStorage.setItem("showCDSHook", false);
-      window.location.href = "/index?appContextId=" + draftPA.app_context
+      window.location.href = "/index?appContextId=" + appContextId
     }
   }
 
@@ -359,7 +372,7 @@ class CRDRequest extends Component {
           if (smarAppLink) {
             try {
               appContext = smarAppLink.appContext;
-              appContext = escape(JSON.stringify({ "request": sessionStorage.getItem("requestId"), "template": "302804" }))
+              appContext = escape(JSON.stringify({ "request": sessionStorage.getItem("requestId"), "template": "302800" }))
               console.log("unescape appContext----", unescape(appContext));
               appContext = unescape(appContext);
               appContext = JSON.parse(appContext);
