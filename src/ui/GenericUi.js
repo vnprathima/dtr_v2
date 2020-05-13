@@ -331,10 +331,10 @@ export default class GenericUi {
     return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
   }
 
-  getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
+  getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle) {
     return (
       <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
-        serviceRequest, bundle, claimEndpoint)}
+        serviceRequest, bundle)}
         <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
           <div className="col-8 text-left">
             <span>
@@ -350,11 +350,10 @@ export default class GenericUi {
       </div>
     );
   }
-  getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
+  getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle) {
     return (<QuestionnaireForm smart={smart} qform={questionnaire}
       cqlPrepoulationResults={cqlPrepoulationResults}
-      serviceRequest={serviceRequest} bundle={bundle}
-      claimEndpoint={claimEndpoint} />);
+      serviceRequest={serviceRequest} bundle={bundle} />);
 
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {

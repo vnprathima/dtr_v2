@@ -19,8 +19,8 @@ function extractFhirResourcesThatNeedFetching(elm) {
         if ((elm[query].codeFilter || [])) {
           elm[query].codeFilter.map((filter) => {
             const key = filter.path;
-            if (filter.valueSetString !== "Patient.id") {
-              resource.query[key] = filter.valueSetString;
+            if (filter.searchParam !== "Patient.id") {
+              resource.query[key] = filter.searchParam;
             } else {
               resource.query[key] = sessionStorage["patientId"];
             }

@@ -13,7 +13,7 @@ function findValueByPrefix(object, prefix) {
 function getListOfChoices(props, setChoice) {
     // parse out the list of choices from 'option'
     let returnAnswer = null;
-    const answerOptionsReference = (props.item.options || {}).reference
+    const answerOptionsReference = (props.item.options || {})
     if (typeof answerOptionsReference === "string") {
         // answerValueSet
         if (answerOptionsReference.startsWith("#")) {
@@ -32,7 +32,7 @@ function getListOfChoices(props, setChoice) {
         }
 
     } else {
-        const answerOption = props.item.option // in r4 this is item.answerOption, but we support stu3 only
+        const answerOption = props.item.answerOption
         // list of answerOption options
         answerOption.forEach((concept) => {
             // TODO: The value could be a code/date/time/reference, need to account for that.
@@ -174,9 +174,9 @@ async function fetchFhirResource(url, resource_type, query, token = '') {
     });
     return resources;
 }
-function randomString() {
-    var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ-";
-    var string_length = 8;
+function randomString(length=10) {
+    var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ";
+    var string_length = length;
     var randomstring = '';
     for (var i = 0; i < string_length; i++) {
         var rnum = Math.floor(Math.random() * chars.length);

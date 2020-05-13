@@ -15,8 +15,7 @@ class App extends Component {
       cqlPrepoulationResults: null,
       serviceRequest: null,
       bundle: null,
-      logs: [],
-      claimEndpoint: null
+      logs: []
     }
     this.smart = props.smart;
     this.consoleLog = this.consoleLog.bind(this);
@@ -32,34 +31,17 @@ class App extends Component {
       .then(artifacts => {
         //window.alert("Got Requirements to load ");
         console.log("fetched needed artifacts:", artifacts)
-        this.setState({ "claimEndpoint": artifacts.claimEndpoint })
-        sessionStorage['claim_endpoint'] = artifacts.claimEndpoint;
-        this.setState({ questionnaire: artifacts.questionnaire })
-        this.setState({ serviceRequest: this.props.serviceRequest })
-        console.log("device request--", this.props.serviceRequest, artifacts.dataRequirement);
-        // if (this.props.serviceRequest) {
-        //   var filtered = artifacts.dataRequirement.filter(function (value, index, arr) {
-        //     return value.type !== "Procedure";
-        //   });
-        //   console.log("filtered requirements", filtered);
-        //   this.props.serviceRequest.category.forEach(code => {
-        //     console.log(code);
-        //     if (code.code.coding[0].code) {
-        //       let obj = {
-        //         type: "Procedure",
-        //         "codeFilter": [{ path: "code", valueSetString: code.code.coding[0].code }]
-        //       }
-        //       filtered.push(obj);
-        //     }
-        //   });
-        //   console.log("requirements---", filtered);
-        // }
+        this.setState({ questionnaire: artifacts.questionnaire });
+        var serviceRequest = JSON.parse(localStorage.getItem("crdRequest"));
+        this.setState({ serviceRequest })
+
+        console.log("device request--", serviceRequest, artifacts.dataRequirement);
         const executionInputs = {
           dataRequirement: artifacts.dataRequirement,
           elm: artifacts.mainLibraryElm,
           elmDependencies: artifacts.dependentElms,
           valueSetDB: {},
-          parameters: { device_request: this.props.serviceRequest }
+          parameters: { device_request: serviceRequest }
         }
         this.consoleLog("executing cql", "infoClass");
         return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
@@ -86,7 +68,7 @@ class App extends Component {
     // console.log("93 App.js",this.state.questionnaire, this.state.bundle , this.state.cqlPrepoulationResults,this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults)
     if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
       return (this.ui.getQuestionnaireFormApp(this.smart,this.state.questionnaire,this.state.cqlPrepoulationResults,
-                                                this.state.serviceRequest,this.state.bundle,this.state.claimEndpoint)
+                                                this.state.serviceRequest,this.state.bundle)
         );
     } else {
       return (this.ui.getError(this.state.logs));

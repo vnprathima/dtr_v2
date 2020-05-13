@@ -313,13 +313,13 @@ export default class CernerUi {
         return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
     }
 
-    getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
+    getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle) {
         return (
             <ThemeProvider isGlobalTheme theme={ThemeProvider.Opts.Themes.CONSUMER}>
                 <Base locale={locale}>
                     <ContentContainer style={{marginBottom:"100px"}}>
                         {this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
-                            serviceRequest, bundle, claimEndpoint)}
+                            serviceRequest, bundle)}
                         
                     </ContentContainer>
                 </Base>
@@ -520,11 +520,10 @@ export default class CernerUi {
             </Spacer>
         )
     }
-    getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle, claimEndpoint) {
+    getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle) {
         return (<QuestionnaireForm smart={smart} qform={questionnaire}
             cqlPrepoulationResults={cqlPrepoulationResults}
-            serviceRequest={serviceRequest} bundle={bundle}
-            claimEndpoint={claimEndpoint} />);
+            serviceRequest={serviceRequest} bundle={bundle} />);
     }
 
     getTextInput(linkId, item, updateValue, retrieveValue, inputType, display, valueType) {

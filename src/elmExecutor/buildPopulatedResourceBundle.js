@@ -34,6 +34,7 @@ function doSearch(smart, type, q, callback) {
       //nothing
     }
   }
+  
   if (type === "Encounter" || type === "SupplyRequest") {
     smart.api
       .search({ type: type, query: q })
@@ -174,6 +175,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
             })
           }
         }
+
         const readResources = (neededResources, callback) => {
           const rq = neededResources.pop();
           let r = "";
@@ -182,6 +184,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
             r = rq.type;
             q = rq.query;
           }
+          consoleLog("fetching " + r, "infoClass");
           if (r === "") {
             callback();
           } else if (r === "Patient") {
@@ -296,7 +299,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
             type: "collection",
             identifier:
             {
-              "system": "http://identifiers.mettles.com/prior_authorization",
+              "system": "http://identifiers.mettles.com ",
               "value": randomString()
             },
             entry: entryResources.map(r => ({ resource: r }))

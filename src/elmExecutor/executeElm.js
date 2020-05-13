@@ -20,7 +20,6 @@ function getSmartConnection() {
 }
 
 function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
-
   return new Promise(function (resolve, reject) {
     const patientSource = getPatientSource(fhirVersion)
     console.log("SssnStorage", sessionStorage)
@@ -34,54 +33,19 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
       .then(function (resourceBundle) {
         console.log("Fetched resources are in this bundle:", resourceBundle);
         console.log(JSON.stringify(resourceBundle));
-        if (sessionStorage.hasOwnProperty("communicationRequest")) {
-          let smart1 = getSmartConnection();
-          smart1.api.search({ type: "Communication", query: { "based-on": sessionStorage["communicationRequest"] } })
-            .then(response => {
-              console.log("response", response)
-              let communication = response.data;
-              if (communication.total > 0) {
-                buildResourceBundleFromCommunication(smart, communication.entry[0].resource)
-                  .then(function (otherResourceBundle) {
-                    // otherResourceBundle.forEach((resource) => {
-
-                    //   resourceBundle.entry.push(resource);
-                    // })
-                    console.log("final resource Bundle---", resourceBundle);
-                    // let finalBundle = resourceBundle.push(otherResourceBundle);
-                    patientSource.loadBundles([resourceBundle]);
-                    const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
-                    const results = {
-                      bundle: resourceBundle,
-                      elmResults: elmResults
-                    }
-                    resolve(results);
-                  })
-                  .catch(function (err) { reject(err) });
-              }
-            }, err => reject(err))
-        } else {
-          console.log("executionInputs.parameters.device_request", executionInputs.parameters.device_request);
-          let device_request = executionInputs.parameters.device_request;
-          if (device_request.hasOwnProperty('performer')) {
-            if (device_request.performer.hasOwnProperty('reference')) {
-              device_request.performer.reference = sessionStorage['generalPractitioner'];
-            }
-          }
-          resourceBundle.entry.push({ 'resource': executionInputs.parameters.device_request });
-          console.log("resource bundle...........", resourceBundle);
-          patientSource.loadBundles([resourceBundle]);
-          const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
-          console.log("elm results---", elmResults);
-          // elmResults.PractitionerNPI = "9585736541"
-          // elmResults.FacilityNPI = "2359347372"
-          const results = {
-            bundle: resourceBundle,
-            elmResults: elmResults
-          }
-          console.log("elm results---", results);
-          resolve(results);
+        resourceBundle.entry.push({ 'resource': executionInputs.parameters.device_request });
+        console.log("resource bundle...........", resourceBundle);
+        patientSource.loadBundles([resourceBundle]);
+        const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
+        console.log("elm results---", elmResults);
+        elmResults.PractitionerNPI = "9585736541"
+        elmResults.FacilityNPI = "2359347372"
+        const results = {
+          bundle: resourceBundle,
+          elmResults: elmResults
         }
+        console.log("elm results---", results);
+        resolve(results);
       })
       .catch(function (err) { reject(err) });
 

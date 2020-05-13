@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { findValueByPrefix, postResource, randomString, convertDate, getResourceFromBundle } from '../../util/util.js';
+import { findValueByPrefix, postResource, randomString, convertDate, getResourceFromBundle, fetchFhirResource } from '../../util/util.js';
 import UiFactory from "../../ui/UiFactory.js";
 import globalConfig from '../../globalConfiguration.json';
 
@@ -47,10 +47,11 @@ export default class QuestionnaireForm extends Component {
             errorType: '',
             referenceDocs: [],
             order_pa: (sessionStorage.getItem('order_pa') !== undefined && sessionStorage.getItem('order_pa') !== null) ? sessionStorage.getItem('order_pa') : 'PA',
-            orderTo: ''
+            orderTo: '',
+            careTeamRole: 'primary',
+            priorAuthUrl:''
         };
 
-        console.log("order_pa---",sessionStorage.getItem('order_pa'));
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
         this.updateNestedQuestionValue = this.updateNestedQuestionValue.bind(this);
         this.updateDocuments = this.updateDocuments.bind(this);
@@ -68,6 +69,10 @@ export default class QuestionnaireForm extends Component {
         this.saveQuestionnaireData = this.saveQuestionnaireData.bind(this);
         this.createSubmittedRequest = this.createSubmittedRequest.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.getCareTeamPractitioner = this.getCareTeamPractitioner.bind(this);
+        this.searchParticipantType = this.searchParticipantType.bind(this);
+        this.getCodesString = this.getCodesString.bind(this);
+        this.fetchClaimEndPoint = this.fetchClaimEndPoint.bind(this);
     }
 
     relaunch() {
@@ -127,7 +132,7 @@ export default class QuestionnaireForm extends Component {
         this.setState({ resloading: true });
         const Http = new XMLHttpRequest();
         // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/ClaimResponse/" + this.state.claimResponse.id;
-        const priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + this.state.claimResponse.id;
+        const priorAuthUrl = this.state.priorAuthUrl+"/ClaimResponse/" + this.state.claimResponse.id;
         Http.open("GET", priorAuthUrl);
         Http.setRequestHeader("Content-Type", "application/fhir+json");
         Http.send();
@@ -192,7 +197,7 @@ export default class QuestionnaireForm extends Component {
                 [elementName]: object
             }
         }))
-        console.log("elemne,value--",elementName,object, type);
+        // console.log("elemne,value--", elementName, object, type);
     }
 
     updateNestedQuestionValue(linkId, elementName, object) {
@@ -263,7 +268,7 @@ export default class QuestionnaireForm extends Component {
             const checkAny = enableCriteria.length > 1 ? item.enableBehavior === 'any' : false
             enableCriteria.forEach((rule) => {
                 const question = this.state.values[rule.question]
-                console.log("type of ques---", typeof question);
+                // console.log("type of ques---", typeof question);
                 const answer = findValueByPrefix(rule, "answer");
                 if (typeof question === 'object' && typeof answer === 'object') {
                     if (rule.answerQuantity) {
@@ -424,6 +429,60 @@ export default class QuestionnaireForm extends Component {
 
             }
         }
+    }
+
+    searchParticipantType(participants, type) {
+        participants.map((participant) => {
+            if (participant.hasOwnProperty("type") && participant.type.length > 0) {
+                if (participant.type[0].hasOwnProperty("coding") && participant.type[0].coding.length > 0) {
+                    participant.type[0].coding.map((participant_type) => {
+                        if (participant_type.system === "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            && participant_type.code === type) {
+                            return participant.individual
+                        }
+                    })
+                }
+            }
+        });
+        return false;
+    }
+    getCareTeamPractitioner(encounter) {
+        let encounter_participant = encounter.participant;
+        console.log("encounter--", encounter_participant);
+        if (encounter_participant.length > 0) {
+            encounter_participant.sort(function (a, b) {
+                if (b.hasOwnProperty("period") && a.hasOwnProperty("period")) {
+                    return new Date(b.period.start) - new Date(a.period.start)
+                }
+            })
+            let careTeamPractitioner = this.searchParticipantType(encounter_participant, "PPRF")
+            if (careTeamPractitioner) {
+                this.setState({ careTeamRole: "primary" });
+                return careTeamPractitioner
+            } else {
+                careTeamPractitioner = this.searchParticipantType(encounter_participant, "ATND")
+                if (careTeamPractitioner) {
+                    this.setState({ careTeamRole: "assist" });
+                    return careTeamPractitioner
+                } else {
+                    careTeamPractitioner = this.searchParticipantType(encounter_participant, "ADM")
+                    if (careTeamPractitioner) {
+                        this.setState({ careTeamRole: "assist" });
+                        return careTeamPractitioner
+                    } else {
+                        careTeamPractitioner = this.searchParticipantType(encounter_participant, "SPRF")
+                        if (careTeamPractitioner) {
+                            this.setState({ careTeamRole: "assist" });
+                            return careTeamPractitioner
+                        } else {
+                            this.setState({ careTeamRole: "other" });
+                            return encounter_participant[0].individual
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     generateBundle() {
@@ -606,6 +665,16 @@ export default class QuestionnaireForm extends Component {
             }
             priorAuthBundle.entry.unshift({ resource: locationResource })
 
+            let careTeamProvider = ''
+            try {
+                careTeamProvider = self.getCareTeamPractitioner(getResourceFromBundle(priorAuthBundle, "Encounter"))
+                if (!careTeamProvider) {
+                    careTeamProvider = self.makeReference(priorAuthBundle, "Practitioner");
+                }
+            } catch (error) {
+                console.log("Care Team Issue--", error);
+                careTeamProvider = self.makeReference(priorAuthBundle, "Practitioner");
+            }
             const priorAuthClaim = {
                 resourceType: "Claim",
                 status: "active",
@@ -658,13 +727,21 @@ export default class QuestionnaireForm extends Component {
                 careTeam: [
                     {
                         sequence: 1,
-                        provider: { reference: self.makeReference(priorAuthBundle, "Practitioner") },
+                        provider: careTeamProvider,
                         extension: [
                             {
                                 url: "http://terminology.hl7.org/ValueSet/v2-0912",
                                 valueCode: "OP"
                             }
-                        ]
+                        ],
+                        role: {
+                            coding: [
+                                {
+                                    system: "http://terminology.hl7.org/CodeSystem/claimcareteamrole",
+                                    code: self.state.careTeamRole
+                                }
+                            ]
+                        }
                     }
                 ],
                 diagnosis: [],
@@ -800,7 +877,7 @@ export default class QuestionnaireForm extends Component {
             self.state.items.map((section) => {
                 section.item.map((item) => {
                     if (item.hasOwnProperty('required') && item.required) {
-                        console.log("In required true--", item.linkId);
+                        // console.log("In required true--", item.linkId);
                         if (!self.state.values.hasOwnProperty(item.linkId) || self.state.values[item.linkId] === "") {
                             console.log("In false condition--", item.linkId);
                             resolve(false);
@@ -834,51 +911,108 @@ export default class QuestionnaireForm extends Component {
         });
     }
 
-    submitPA(priorAuthBundle) {
-        /** creating cliam  */
-        
-        const Http = new XMLHttpRequest();
-        var priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit";
-        if (this.props.hasOwnProperty("claimEndpoint") && this.props.claimEndpoint !== null) {
-            priorAuthUrl = this.props.claimEndpoint;
-        }
-        let self = this;
-        console.log("claim final--", JSON.stringify(priorAuthBundle));
-        Http.open("POST", priorAuthUrl);
-        Http.setRequestHeader("Content-Type", "application/fhir+json");
-        // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
-        // Http.send(JSON.stringify(pBundle));
-        Http.send(JSON.stringify(priorAuthBundle));
-        Http.onreadystatechange = function () {
-            if (this.readyState === XMLHttpRequest.DONE) {
-                var message = "";
-                self.setState({ displayQuestionnaire: false })
-                if (this.status === 200) {
-                    var claimResponseBundle = JSON.parse(this.responseText);
-                    var claimResponse = self.state.claimResponse;
-                    if (claimResponseBundle.hasOwnProperty('entry')) {
-                        claimResponseBundle.entry.forEach((res) => {
-                            if (res.resource.resourceType === "ClaimResponse") {
-                                claimResponse = res.resource;
-                            }
-                        })
-                    }
-                    self.setState({ claimResponseBundle })
-                    self.setState({ claimResponse })
-                    console.log(self.state.claimResponseBundle, self.state.claimResponse);
-                    self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
-                    message = "Prior Authorization " + claimResponse.disposition + "\n";
-                    message += "Prior Authorization Number: " + claimResponse.preAuthRef;
-                    self.createSubmittedRequest(claimResponse);
-                } else {
-                    self.setState({ "claimMessage": "Prior Authorization Request Failed." })
-                    message = "Prior Authorization Request Failed."
+    fetchClaimEndPoint(priorAuthBundle) {
+        if (sessionStorage.getItem("insurer") !== undefined) {
+            var org_id = sessionStorage.getItem("insurer").split("/")[1];
+            var payerOrganization = getResourceFromBundle(priorAuthBundle, "Organization", org_id);
+            let patient = getResourceFromBundle(priorAuthBundle, "Patient")
+            if (payerOrganization == null) {
+                payerOrganization = {}
+            }
+            let payer_identifier = "";
+            if (payerOrganization.hasOwnProperty("identifier")) {
+                payer_identifier = payerOrganization.identifier[0].value
+            }
+            if (payerOrganization.hasOwnProperty("name") && payerOrganization.hasOwnProperty("id")) {
+                let org_name = payerOrganization.name.toLowerCase();
+                let org_id = payerOrganization.id;
+                console.log("Payer identifier1 ", payerOrganization.id)
+                if (org_name.includes("medicare") || org_id.includes("medicare")) {
+                    payer_identifier = "c1a2e3bb-1fdd-3adf-3224-32ccc1a2e3bb"
+                } else if (org_name.includes("united") || org_id.includes("united")) {
+                    payer_identifier = "b1ddf812-1fdd-3adf-b1d5-32cc8bd07ebb"
+                } else if (org_name.includes("cigna") || org_id.includes("cigna")) {
+                    payer_identifier = "b123a232-3142-5412-32e4-42ec2d132c23"
                 }
-                self.setState({ loading: false });
-                console.log(message);
-                console.log(this.responseText);
+                if (patient != undefined) {
+                    if (patient.hasOwnProperty("name")) {
+                        if (patient.name[0].given[0] == "JOE") {
+                            payer_identifier = "b123a232-3142-5412-32e4-42ec2d132c23"
+
+                        }
+                        else if (patient.name[0].given[0] == "RISKLD") {
+                            payer_identifier = "b1ddf812-1fdd-3adf-b1d5-32cc8bd07ebb"
+                        }
+                    }
+                }
+            }
+            if (payer_identifier === "" || payer_identifier === undefined || payer_identifier === null || payer_identifier === "unknown") {
+                return false
+            } else {
+                // console.log("for search--",JSON.stringify({ "payer_identifier": payer_identifier }));
+                let endpoint = postResource("http://localhost:4200/searchPayer", "", { "payer_identifier": payer_identifier }).then((payers) => {
+                    if (payers) {
+                        return payers[0].payer_end_point;
+                    }
+                    return false
+                }).catch((err) => {
+                    return false;
+                })
+                return endpoint;
             }
         }
+        return false;
+    }
+    submitPA(priorAuthBundle) {
+        /** creating cliam  */
+        const Http = new XMLHttpRequest();
+        var priorAuthUrl = "";
+        this.fetchClaimEndPoint(priorAuthBundle).then((endpoint) => {
+            if (endpoint) {
+                console.log("In end point found--", endpoint);
+                priorAuthUrl = endpoint+"/Claim/$submit";
+            } else {
+                priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit"
+            }
+            this.setState({priorAuthUrl})
+            let self = this;
+            console.log("claim final--", JSON.stringify(priorAuthBundle));
+            Http.open("POST", priorAuthUrl);
+            Http.setRequestHeader("Content-Type", "application/fhir+json");
+            // Http.setRequestHeader("Authorization", "Bearer " + auth_response.access_token);
+            // Http.send(JSON.stringify(pBundle));
+            Http.send(JSON.stringify(priorAuthBundle));
+            Http.onreadystatechange = function () {
+                if (this.readyState === XMLHttpRequest.DONE) {
+                    var message = "";
+                    self.setState({ displayQuestionnaire: false })
+                    if (this.status === 200) {
+                        var claimResponseBundle = JSON.parse(this.responseText);
+                        var claimResponse = self.state.claimResponse;
+                        if (claimResponseBundle.hasOwnProperty('entry')) {
+                            claimResponseBundle.entry.forEach((res) => {
+                                if (res.resource.resourceType === "ClaimResponse") {
+                                    claimResponse = res.resource;
+                                }
+                            })
+                        }
+                        self.setState({ claimResponseBundle })
+                        self.setState({ claimResponse })
+                        console.log(self.state.claimResponseBundle, self.state.claimResponse);
+                        self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
+                        message = "Prior Authorization " + claimResponse.disposition + "\n";
+                        message += "Prior Authorization Number: " + claimResponse.preAuthRef;
+                        self.createSubmittedRequest(claimResponse);
+                    } else {
+                        self.setState({ "claimMessage": "Prior Authorization Request Failed." })
+                        message = "Prior Authorization Request Failed."
+                    }
+                    self.setState({ loading: false });
+                    console.log(message);
+                    console.log(this.responseText);
+                }
+            }
+        })
     }
     // submitPA(priorAuthBundle) {
     //     /*creating token */
@@ -969,11 +1103,10 @@ export default class QuestionnaireForm extends Component {
                     }
                 })
             }
-
         }
-        else if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
-            self.props.serviceRequest.resourceType === "DeviceRequest" &&
-            self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+        else if (this.props.serviceRequest.hasOwnProperty("resourceType") &&
+            this.props.serviceRequest.resourceType === "DeviceRequest" &&
+            this.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
             if (this.props.serviceRequest.codeCodeableConcept.hasOwnProperty("coding")) {
                 this.props.serviceRequest.codeCodeableConcept.coding.map((coding) => {
                     if (codesString == "") {
@@ -992,7 +1125,8 @@ export default class QuestionnaireForm extends Component {
     async createSubmittedRequest(claimResponse) {
         await this.deleteReqByAppContext()
         let today = new Date();
-        let appContext = sessionStorage.getItem("appContext")
+        let appContextId = sessionStorage.getItem("appContextId")
+        let appContext = sessionStorage.getItem(appContextId)
         let body = {
             "type": "submitted",
             "date": today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate(),
@@ -1040,15 +1174,15 @@ export default class QuestionnaireForm extends Component {
     }
 
     async deleteReqByAppContext() {
-        console.log("Save questionnaire", sessionStorage.getItem("appContext"));
-        let appContext = sessionStorage.getItem("appContext")
+        console.log("Save questionnaire", sessionStorage.getItem("appContextId"));
+        let appContextId = sessionStorage.getItem("appContextId")
         let headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             "Access-Control-Allow-Origin": "*",
             'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
         }
-        let url = globalConfig.restURL + "/api/pa_info/" + this.state.patientId + "/" + appContext;
+        let url = globalConfig.restURL + "/api/pa_info/" + this.state.patientId + "/" + appContextId;
         try {
             let deleteReq = await fetch(url, {
                 method: "DELETE",

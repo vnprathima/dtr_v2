@@ -96,12 +96,10 @@ class CRDRequest extends Component {
     prior_auth_records[rec.index].checking = true
     this.setState({ prior_auth_records })
     if (rec.claim_response_id != undefined) {
-
       const priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/ClaimResponse/" + rec.claim_response_id;
       let fhirHeaders = {
         'Content-Type': 'application/fhir+json',
         "Cache-Control": "no-cache,no-store"
-
       }
       await fetch(priorAuthUrl, {
         method: "GET",
@@ -279,10 +277,10 @@ class CRDRequest extends Component {
     let value = text;
     if (elementName === "selected_codes") {
       // if (text.hasOwnProperty("codes") && globalConfig.order_review_codes.indexOf(text.codes[0]) >= 0) {
-      //   this.setState({ hook: "order-review" });
+      //   this.setState({ hook: "order-sign" });
       // }
       // else {
-        this.setState({ hook: "order-select" });
+      this.setState({ hook: "order-select" });
       // }
       value = text.codeObjects;
     }
@@ -338,23 +336,40 @@ class CRDRequest extends Component {
   async submit_info() {
     let json_request = await this.getJson();
     let url = '';
-    if (this.state.hook === 'order-review') {
+    if (this.state.hook === 'order-sign') {
       url = globalConfig.order_review_url;
     }
     if (this.state.hook === 'order-select') {
       url = globalConfig.order_select_url;
     }
     let self = this;
+    localStorage.setItem("crdRequest", JSON.stringify(json_request.context.draftOrders.entry[0].resource));
     postResource(url, '', json_request).then((cardResponse) => {
       if (cardResponse) {
         console.log("CRD Response---", cardResponse);
         if (cardResponse.hasOwnProperty("cards") && cardResponse.cards !== null) {
-          let appContext = cardResponse['cards'][0].links[0].appContext;
-          sessionStorage.setItem("appContext", appContext);
-          sessionStorage.setItem("showCDSHook", false);
-          self.setState({ response: cardResponse });
+          let appContext = '';
+          let appContextId = randomString();
+          let smarAppLink = cardResponse['cards'][0].links.find(link => link.type === "smart")
+          if (smarAppLink) {
+            try {
+              appContext = smarAppLink.appContext;
+              appContext = escape(JSON.stringify({ "request": sessionStorage.getItem("requestId"), "template": "302804" }))
+              console.log("unescape appContext----", unescape(appContext));
+              appContext = unescape(appContext);
+              appContext["crdRequest"] = localStorage.getItem("crdRequest");
+              sessionStorage.setItem("appContextId", appContextId);
+              sessionStorage.setItem(appContextId, appContext);
+              sessionStorage.setItem("showCDSHook", false);
+              self.setState({ response: cardResponse });
+            } catch (err) {
+              self.setState({ loading: false, crd_error_msg: "Prior Authorization is not necessary !!" });
+            }
+          } else {
+            self.setState({ loading: false, crd_error_msg: "Prior Authorization is not necessary !!" });
+          }
           if (appContext !== null) {
-            window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContext}`;
+            window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContextId}`;
           } else {
             self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
           }
@@ -377,7 +392,7 @@ class CRDRequest extends Component {
       "type": "collection",
       "entry": []
     }
-    if (this.state.hook === "order-review") {
+    if (this.state.hook === "order-sign") {
       prefetch = {
         "deviceRequestBundle": prefetchObj
       }
@@ -422,7 +437,7 @@ class CRDRequest extends Component {
               } else {
                 prefetchObj.entry.push({ "resource": res });
                 performer.push({
-                  "reference": res.resourceType+"/"+res.id
+                  "reference": res.resourceType + "/" + res.id
                 })
                 console.log("performer---", performer);
               }
@@ -445,92 +460,74 @@ class CRDRequest extends Component {
       context: {
         patientId: patientId,
         encounterId: this.state.encounterId,
+        userId: performer[0].reference,
+        draftOrders: {
+          resourceType: "Bundle",
+          entry: []
+        }
       },
       "prefetch": prefetch
     };
     let selected_codes = this.state.selected_codes;
-    if (this.state.hook === "order-review") {
-      request.context["orders"] = {
-        resourceType: "Bundle",
-        entry: []
-      }
-      for (var i = 0; i < selected_codes.length; i++) {
-        let deviceRequest = {
-          "resourceType": "DeviceRequest",
-          "identifier": [
-            {
-              "value": randomString()
-            }
-          ],
-          "status": "draft",
-          "intent": "order",
-          "subject": {
-            "reference": "Patient/" + patientId
-          },
-          "authoredOn": convertDate(new Date(), "isoUtcDateTime"),
-          "insurance": [
-            {
-              "reference": "Coverage/" + this.state.coverageId
-            }
-          ],
-          "encounter": {
-            "reference": "Encounter/" + this.state.encounterId
-          },
-          "performer": performer,
-          "code": {
-            "coding": [
-              {
-                "system": "http://loinc.org",
-                "code": selected_codes[i].value,
-                "display": selected_codes[i].text
-              }
-            ],
-          }
-        }
-        request.context.orders.entry.push({ "resource": deviceRequest });
-      }
+    console.log("selected codes---",selected_codes);
+    let resourceType = "ServiceRequest"
+    if (this.state.hook === "order-sign") {
+      resourceType = "DeviceRequest"
     } else {
-      request.context["draftOrders"] = {
-        resourceType: "Bundle",
-        entry: []
-      }
-      for (var i = 0; i < selected_codes.length; i++) {
-        let serviceRequest = {
-          "resourceType": "ServiceRequest",
-          "identifier": [
-            {
-              "value": randomString()
-            }
-          ],
-          "status": "draft",
-          "intent": "order",
-          "subject": {
-            "reference": "Patient/" + patientId
-          },
-          "quantityQuantity": { "value": selected_codes[i].quantity },
-          "authoredOn": convertDate(new Date(), "isoUtcDateTime"),
-          "insurance": [
-            {
-              "reference": "Coverage/" + this.state.coverageId
-            }
-          ],
-          "encounter": {
-            "reference": "Encounter/" + this.state.encounterId
-          },
-          "performer": performer,
-          "code": {
-            "coding": [
-              {
-                "system": "http://loinc.org",
-                "code": selected_codes[i].value,
-                "display": selected_codes[i].text
-              }
-            ],
-          }
-        }
-        request.context.draftOrders.entry.push({ "resource": serviceRequest });
-      }
+      request.context["selections"] = []
     }
+    for (var i = 0; i < selected_codes.length; i++) {
+      let requestId = randomString();
+      sessionStorage.setItem("requestId", requestId);
+      let requestResource = {
+        "resourceType": resourceType,
+        "id": requestId,
+        "identifier": [
+          {
+            "system": "http://identifiers.mettles.com/prior_authorization",
+            "value": randomString()
+          }
+        ],
+        "status": "draft",
+        "intent": "order",
+        "subject": {
+          "reference": "Patient/" + patientId
+        },
+        "authoredOn": convertDate(new Date(), "isoUtcDateTime"),
+        "insurance": [
+          {
+            "reference": "Coverage/" + this.state.coverageId
+          }
+        ],
+        "encounter": {
+          "reference": "Encounter/" + this.state.encounterId
+        },
+        "performer": performer,
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": selected_codes[i].value,
+              "display": selected_codes[i].code_description
+            }
+          ],
+        }
+      }
+      if (resourceType === "ServiceRequest") {
+        request["quantityQuantity"] = { "value": selected_codes[i].quantity }
+        let requestReference = "ServiceRequest/" + requestId
+        request.context.selections.push(requestReference);
+        //Add request in prefetch
+        request.prefetch.serviceRequestBundle.entry.push({ "resource": requestResource });
+      } else {
+        //Add request in prefetch
+        request.prefetch.deviceRequestBundle.entry.push({ "resource": requestResource });
+      }
+      //Add request in context
+      request.context.draftOrders.entry.push({ "resource": requestResource });
+    }
+
+
     return request;
   }
   render() {
