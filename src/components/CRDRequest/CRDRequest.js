@@ -276,12 +276,12 @@ class CRDRequest extends Component {
   updateStateElement = (elementName, text) => {
     let value = text;
     if (elementName === "selected_codes") {
-      // if (text.hasOwnProperty("codes") && globalConfig.order_review_codes.indexOf(text.codes[0]) >= 0) {
-      //   this.setState({ hook: "order-sign" });
-      // }
-      // else {
-      this.setState({ hook: "order-select" });
-      // }
+      if (text.hasOwnProperty("codes") && globalConfig.order_review_codes.indexOf(text.codes[0]) >= 0) {
+        this.setState({ hook: "order-sign" });
+      }
+      else {
+        this.setState({ hook: "order-select" });
+      }
       value = text.codeObjects;
     }
     this.setState({ [elementName]: value });
@@ -299,6 +299,11 @@ class CRDRequest extends Component {
     if (this.state.encounterId === "") {
       formValidate = false;
       this.setState({ loading: false, crd_error_msg: "Unable to Submit Request. No Encounter Information Found !!" });
+    }
+    if (Array.isArray(this.state.selected_codes) && this.state.selected_codes.length === 0) {
+      formValidate = false;
+      this.setState({ "crd_error_msg": "Please select atleast one code !!" });
+      return formValidate;
     }
     return formValidate;
   }
@@ -357,21 +362,23 @@ class CRDRequest extends Component {
               appContext = escape(JSON.stringify({ "request": sessionStorage.getItem("requestId"), "template": "302804" }))
               console.log("unescape appContext----", unescape(appContext));
               appContext = unescape(appContext);
-              appContext["crdRequest"] = localStorage.getItem("crdRequest");
+              appContext = JSON.parse(appContext);
+              appContext["crdRequest"] = JSON.parse(localStorage.getItem("crdRequest"));
               sessionStorage.setItem("appContextId", appContextId);
-              sessionStorage.setItem(appContextId, appContext);
+              sessionStorage.setItem(appContextId, JSON.stringify(appContext));
               sessionStorage.setItem("showCDSHook", false);
               self.setState({ response: cardResponse });
+              if (appContext !== null && appContext !== '') {
+                window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContextId}`;
+              } else {
+                self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
+              }
             } catch (err) {
+              console.log("erreo---",err);
               self.setState({ loading: false, crd_error_msg: "Prior Authorization is not necessary !!" });
             }
           } else {
             self.setState({ loading: false, crd_error_msg: "Prior Authorization is not necessary !!" });
-          }
-          if (appContext !== null) {
-            window.location = `${window.location.protocol}//${window.location.host}${window.location.pathname}?appContextId=${appContextId}`;
-          } else {
-            self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
           }
         } else {
           self.setState({ loading: false, crd_error_msg: "Invalid CRD Response !!" });
@@ -469,7 +476,7 @@ class CRDRequest extends Component {
       "prefetch": prefetch
     };
     let selected_codes = this.state.selected_codes;
-    console.log("selected codes---",selected_codes);
+    console.log("selected codes---", selected_codes);
     let resourceType = "ServiceRequest"
     if (this.state.hook === "order-sign") {
       resourceType = "DeviceRequest"
@@ -514,7 +521,7 @@ class CRDRequest extends Component {
         }
       }
       if (resourceType === "ServiceRequest") {
-        request["quantityQuantity"] = { "value": selected_codes[i].quantity }
+        requestResource["quantityQuantity"] = { "value": selected_codes[i].quantity }
         let requestReference = "ServiceRequest/" + requestId
         request.context.selections.push(requestReference);
         //Add request in prefetch
