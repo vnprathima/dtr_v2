@@ -147,7 +147,7 @@ export default class QuestionnaireForm extends Component {
                     message = "Prior Authorization " + claimResponse.disposition + "\n";
                     message += "Prior Authorization Number: " + claimResponse.preAuthRef;
                 } else {
-                    this.setState({ "claimMessage": "Prior Authorization Request Failed." })
+                    self.setState({ "claimMessage": "Prior Authorization Request Failed." })
                     message = "Prior Authorization Request Failed."
                 }
                 self.setState({ resloading: false });
@@ -975,7 +975,7 @@ export default class QuestionnaireForm extends Component {
                 endpoint = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir";
                 priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit"
             }
-            this.setState({priorAuthUrl})
+            this.setState({priorAuthUrl: endpoint});
             let self = this;
             console.log("claim final--", JSON.stringify(priorAuthBundle));
             Http.open("POST", priorAuthUrl);

@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 import App from "./App.js";
 import UiFactory from "./ui/UiFactory.js";
 import ShowError from './components/ShowError';
+import { randomString } from "./util/util";
 //alert("Loaded imports");
 
 var serviceUri = urlUtils.getUrlParameter("iss");
@@ -57,6 +58,17 @@ if (serviceUri !== undefined) {
         // if(app_context === undefined){
         //   app_context = Math.round(Math.random() * 100000000).toString();
         // }
+    } else {
+        var patientId = urlUtils.getUrlParameter("patientId");
+        var request = urlUtils.getUrlParameter("request");
+        var template = urlUtils.getUrlParameter("template");
+        if (patientId !== undefined && request !== undefined && template !== undefined) {
+            let appContextId = randomString();
+            sessionStorage.setItem("appContextId", appContextId);
+            let context = {"patientId":patientId,"request":request,"template":template}
+            sessionStorage.setItem(appContextId, JSON.stringify(context));
+            app_context = Math.round(Math.random() * 100000000).toString();
+        }
     }
 
     var state = app_context;
@@ -242,14 +254,16 @@ if (serviceUri !== undefined) {
         } else if (auth_response.hasOwnProperty("cerner_appcontext")) {
             appContextId = auth_response.cerner_appcontext;
             // alert("cerner appcontext Got AppContext---" + appContextId);
+        } else if(sessionStorage.getItem("appContextId") !== undefined){
+            appContextId = sessionStorage.getItem("appContextId")
         }
 
         try {
-            console.log("appcontext ID--",JSON.parse(sessionStorage.getItem(appContextId)));
+            console.log("appcontext ID--", JSON.parse(sessionStorage.getItem(appContextId)));
             var launchContext = JSON.parse(sessionStorage.getItem(appContextId));
             if (!auth_response.hasOwnProperty("patient")) {
                 patient = launchContext.patientId;
-                alert("Got patient from launchContext: "+patient);
+                alert("Got patient from launchContext: " + patient);
             }
             console.log("launch context---", launchContext);
             if (patient == null) {
