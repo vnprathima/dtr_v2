@@ -17,9 +17,9 @@ if (serviceUri !== undefined) {
     } else if (serviceUri.indexOf("cerner") !== -1 && clientId === undefined) {
 
         // clientId = "f7883dd8-5c7e-44de-be4b-c93c683bb8c7"; //cerner
-        clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
+        // clientId = "1602539f-194e-4d22-b82f-a0835725f384";  //local
         // clientId = "6ef181e4-a7d8-4493-b94b-8b66d466900a"; // Prod
-        // clientId = "6bdae3cc-09a0-450b-83fe-f181918bcc54" //CF Prod
+        clientId = "6bdae3cc-09a0-450b-83fe-f181918bcc54" //CF Prod
     } else if (serviceUri.indexOf("mettles") !== -1 && clientId === undefined) {
         clientId = "app-login";
     }
@@ -30,7 +30,7 @@ if (serviceUri !== undefined) {
     if (serviceUri.indexOf("epic") !== -1 && launchContextId === undefined) {
         launchContextId = "" // epic
     } else if (serviceUri.indexOf("cerner") !== -1 && launchContextId === undefined) {
-        sessionStorage['UI_TYPE'] = "cerner_ui"
+        // sessionStorage['UI_TYPE'] = "cerner_ui"
         launchContextId = "cbaec2fb-6428-4182-a976-10cd3354af6c"; //cerner
         sessionStorage.setItem("currentEHR", "Cerner");
     }

@@ -366,16 +366,19 @@ class CRDRequest extends Component {
       if (cardResponse) {
         console.log("CRD Response---", cardResponse);
         if (cardResponse.hasOwnProperty("cards") && cardResponse.cards !== null) {
-          let appContext = '';
+          let appContext = {};
           let appContextId = randomString();
           let smarAppLink = cardResponse['cards'][0].links.find(link => link.type === "smart")
           if (smarAppLink) {
             try {
-              appContext = smarAppLink.appContext;
-              appContext = escape(JSON.stringify({ "request": sessionStorage.getItem("requestId"), "template": "302800" }))
-              console.log("unescape appContext----", unescape(appContext));
-              appContext = unescape(appContext);
-              appContext = JSON.parse(appContext);
+              let context = smarAppLink.appContext;
+              console.log("unescape appContext----", unescape(context));
+              context = unescape(context);
+              let contextArray = context.split("&")
+              contextArray.map((k)=>{
+                 let eachkey = k.split("=");
+                 appContext[eachkey[0]] = eachkey[1];
+              })
               appContext["crdRequest"] = JSON.parse(localStorage.getItem("crdRequest"));
               sessionStorage.setItem("appContextId", appContextId);
               sessionStorage.setItem(appContextId, JSON.stringify(appContext));
@@ -387,7 +390,7 @@ class CRDRequest extends Component {
                 self.setState({ loading: false, crd_error_msg: "Error while retrieving CRD Response, " + cardResponse['cards'][0].links[0].label });
               }
             } catch (err) {
-              console.log("erreo---",err);
+              console.log("error---",err);
               self.setState({ loading: false, crd_error_msg: "Prior Authorization is not necessary !!" });
             }
           } else {
@@ -477,6 +480,7 @@ class CRDRequest extends Component {
         "scope": "patient/Patient.read patient/Coverage.read patient/Encounter.read",
         "subject": "cds-service"
       },
+      user: performer[0].reference,
       context: {
         patientId: patientId,
         encounterId: this.state.encounterId,

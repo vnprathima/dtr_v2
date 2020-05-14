@@ -69,7 +69,6 @@ export default class QuantityInput extends Component {
         this.setState(prevState => ({
             [elementName]: obj
         }));
-
         this.props.updateCallback(this.props.item.linkId, elementName, obj, "values")
     }
 
@@ -77,16 +76,16 @@ export default class QuantityInput extends Component {
         return (
             <div ref={this.ref}>
                 <div className="text-input-label quantity">{this.props.inputTypeDisplay}</div>
-                <div class="input-group">
-                    <div class="input-group-prepend">
+                <div className="input-group">
+                    <div className="input-group-prepend">
                         <Dropdown style={{borderRadius: "0px",border: "1px solid #797979"}} fluid placeholder='comparator' search selection options={options} />
                     </div>
-                    <input type="text" class="form-control group-input-box" placeholder="value" value={this.state.value} onChange={(e) => { this.updateState("value", e) }}></input>
-                    <input type="text" class="form-control group-input-box" placeholder="unit" value={this.state.unit} onChange={(e) => { this.updateState("unit", e) }}></input>
+                    <input type="text" className="form-control group-input-box" placeholder="value" value={this.state.value} onChange={(e) => { this.updateState("value", e) }}></input>
+                    <input type="text" className="form-control group-input-box" placeholder="unit" value={this.state.unit} onChange={(e) => { this.updateState("unit", e) }}></input>
                 </div>
-                <div class="input-group">
-                    <input type="text" class="form-control group-input-box" placeholder="code" value={this.state.code} onChange={(e) => { this.updateState("code", e) }}></input>
-                    <input type="text" class="form-control group-input-box" placeholder="system" value={this.state.system} onChange={(e) => { this.updateState("system", e) }}></input>
+                <div className="input-group">
+                    <input type="text" className="form-control group-input-box" placeholder="code" value={this.state.code} onChange={(e) => { this.updateState("code", e) }}></input>
+                    <input type="text" className="form-control group-input-box" placeholder="system" value={this.state.system} onChange={(e) => { this.updateState("system", e) }}></input>
                 </div>
                 {/* <div className="quantity-border">
                     <DropdownInput name="comparator" options={options} callback={this.updateState}></DropdownInput>

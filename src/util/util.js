@@ -37,20 +37,28 @@ function getListOfChoices(props, setChoice) {
         answerOption.forEach((concept) => {
             // TODO: The value could be a code/date/time/reference, need to account for that.
             const value = findValueByPrefix(concept, "value");
+            console.log("value--", value);
             const pair = {
             };
             // "code": value.code,
             // "display": value.display,
             // "system": value.system,
             // "version": value.version,
-            Object.keys(value).forEach((e) => {
-                pair[e] = value[e]
-            });
+            if (typeof value === "string") {
+                pair['code'] = value
+                pair['display'] = value
+                setChoice(pair);
+            } else {
+                Object.keys(value).forEach((e) => {
+                    console.log("value keys---", e)
+                    pair[e] = value[e]
+                });
 
-            if (pair.display === undefined && pair.code) {
-                pair.display = pair.code;
+                if (pair.display === undefined && pair.code) {
+                    pair.display = pair.code;
+                }
+                setChoice(pair);
             }
-            setChoice(pair);
 
             returnAnswer = concept.initialSelected ? pair : returnAnswer;
         });
@@ -174,7 +182,7 @@ async function fetchFhirResource(url, resource_type, query, token = '') {
     });
     return resources;
 }
-function randomString(length=10) {
+function randomString(length = 10) {
     var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ";
     var string_length = length;
     var randomstring = '';
