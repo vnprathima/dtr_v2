@@ -491,7 +491,7 @@ export default class GenericUi {
             }
             {JSON.stringify(claimResponse).length > 0 &&
               <div style={{ paddingTop: "10px", paddingBottom: "10px" }}>
-                <button style={{ float: "right" }} type="button" onClick={inputThis.handleShowBundle}>Show Claim Response Bundle</button>
+                <button style={{ float: "right" }} type="button" onClick={inputThis.handleShowBundle}>Show Claim Response</button>
 
                 <button type="button" onClick={inputThis.reloadClaimResponse} >Reload Claim Response
                                 <div id="fse" className={"spinner " + (resloading ? "visible" : "invisible")}>
@@ -513,7 +513,7 @@ export default class GenericUi {
         }
         {showBundle &&
           <div style={{ paddingTop: "10px", paddingBottom: "10px", paddingRight: "0px" }} className="row col-12">
-            <pre style={{ background: "#dee2e6", margin: "0px" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
+            <pre style={{ background: "#dee2e6", margin: "0px",width: "inherit" }}> {JSON.stringify(claimResponseBundle, null, 2)}</pre>
           </div>
         }
       </div>

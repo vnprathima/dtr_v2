@@ -355,7 +355,7 @@ class CRDRequest extends Component {
     let json_request = await this.getJson();
     let url = '';
     if (this.state.hook === 'order-sign') {
-      url = globalConfig.order_review_url;
+      url = globalConfig.order_sign_url;
     }
     if (this.state.hook === 'order-select') {
       url = globalConfig.order_select_url;
@@ -526,24 +526,33 @@ class CRDRequest extends Component {
         "encounter": {
           "reference": "Encounter/" + this.state.encounterId
         },
-        "performer": performer,
-        "code": {
+        "performer": performer
+      }
+      if (resourceType === "ServiceRequest") {
+        requestResource["code"] = {
           "coding": [
             {
               "system": "http://loinc.org",
               "code": selected_codes[i].value,
               "display": selected_codes[i].code_description
             }
-          ],
+          ]
         }
-      }
-      if (resourceType === "ServiceRequest") {
         requestResource["quantityQuantity"] = { "value": selected_codes[i].quantity }
         let requestReference = "ServiceRequest/" + requestId
         request.context.selections.push(requestReference);
         //Add request in prefetch
         request.prefetch.serviceRequestBundle.entry.push({ "resource": requestResource });
       } else {
+        requestResource["codeCodeableConcept"] = {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": selected_codes[i].value,
+              "display": selected_codes[i].code_description
+            }
+          ]
+        }
         //Add request in prefetch
         request.prefetch.deviceRequestBundle.entry.push({ "resource": requestResource });
       }

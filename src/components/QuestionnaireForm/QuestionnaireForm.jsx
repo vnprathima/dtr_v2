@@ -142,7 +142,8 @@ export default class QuestionnaireForm extends Component {
                 self.setState({ displayQuestionnaire: false })
                 if (this.status === 200) {
                     var claimResponse = JSON.parse(this.responseText);
-                    self.setState({ claimResponse: claimResponse })
+                    self.setState({ claimResponse: claimResponse });
+                    self.setState({claimResponseBundle: claimResponse});
                     self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
                     message = "Prior Authorization " + claimResponse.disposition + "\n";
                     message += "Prior Authorization Number: " + claimResponse.preAuthRef;
