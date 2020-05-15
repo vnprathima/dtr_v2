@@ -75,6 +75,7 @@ function hasTokenExpired() {
     try {
         if (jwtDecode(token).exp < Date.now() / 1000) {
             sessionStorage.clear();
+            localStorage.clear();
             return true;
         }
         return false;

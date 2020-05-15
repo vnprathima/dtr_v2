@@ -332,7 +332,7 @@ class CRDRequest extends Component {
       let appContext = (0, eval)('(' + draftPA.app_context + ')');
 
       console.log("Random - appcontextID",appContextId)
-      localStorage.setItem("crdRequest",JSON.stringify(appContext.crdRequest));
+      sessionStorage.setItem("crdRequest",JSON.stringify(appContext.crdRequest));
       sessionStorage.setItem("appContextId", appContextId);
       sessionStorage.setItem(appContextId, JSON.stringify(appContext));
 
@@ -361,7 +361,7 @@ class CRDRequest extends Component {
       url = globalConfig.order_select_url;
     }
     let self = this;
-    localStorage.setItem("crdRequest", JSON.stringify(json_request.context.draftOrders.entry[0].resource));
+    sessionStorage.setItem("crdRequest", JSON.stringify(json_request.context.draftOrders.entry[0].resource));
     postResource(url, '', json_request).then((cardResponse) => {
       if (cardResponse) {
         console.log("CRD Response---", cardResponse);
@@ -379,7 +379,7 @@ class CRDRequest extends Component {
                  let eachkey = k.split("=");
                  appContext[eachkey[0]] = eachkey[1];
               })
-              appContext["crdRequest"] = JSON.parse(localStorage.getItem("crdRequest"));
+              appContext["crdRequest"] = JSON.parse(sessionStorage.getItem("crdRequest"));
               sessionStorage.setItem("appContextId", appContextId);
               sessionStorage.setItem(appContextId, JSON.stringify(appContext));
               sessionStorage.setItem("showCDSHook", false);

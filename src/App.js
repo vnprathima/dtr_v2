@@ -32,10 +32,10 @@ class App extends Component {
         //window.alert("Got Requirements to load ");
         console.log("fetched needed artifacts:", artifacts)
         this.setState({ questionnaire: artifacts.questionnaire });
-        console.log("crd--", localStorage.getItem("crdRequest"))
-        if (localStorage.getItem("crdRequest") !== undefined && localStorage.getItem("crdRequest") !== null) {
-          console.log("crd----if--", localStorage.getItem("crdRequest"))
-          var serviceRequest = JSON.parse(localStorage.getItem("crdRequest"));
+        console.log("crd--", sessionStorage.getItem("crdRequest"))
+        if (sessionStorage.getItem("crdRequest") !== undefined && sessionStorage.getItem("crdRequest") !== null) {
+          console.log("crd----if--", sessionStorage.getItem("crdRequest"))
+          var serviceRequest = JSON.parse(sessionStorage.getItem("crdRequest"));
           this.setState({ serviceRequest })
           console.log("device request--", serviceRequest, artifacts.dataRequirement);
           const executionInputs = {
@@ -131,6 +131,20 @@ class App extends Component {
         this.setState({ bundle: cqlResults.bundle })
         this.setState({ cqlPrepoulationResults: cqlResults.elmResults })
       });
+  }
+
+  executeCql() {
+    this.setState({ serviceRequest });
+    console.log("device request--", serviceRequest, artifacts.dataRequirement);
+    const executionInputs = {
+      dataRequirement: artifacts.dataRequirement,
+      elm: artifacts.mainLibraryElm,
+      elmDependencies: artifacts.dependentElms,
+      valueSetDB: {},
+      parameters: { device_request: serviceRequest }
+    }
+    this.consoleLog("executing cql", "infoClass");
+    return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
   }
 
   consoleLog(content, type) {
