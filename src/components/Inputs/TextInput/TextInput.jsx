@@ -83,7 +83,12 @@ export default class TextInput extends Component {
              this.props.updateCallback(this.props.item.linkId, datetime, "values")
              // update local state
              this.setState({ value: event.target.value })
-        }else {
+        }else if (this.props.valueType === "valueInteger") {
+            // update the parent state
+            this.props.updateCallback(this.props.item.linkId, parseInt(event.target.value), "values")
+            // update local state
+            this.setState({ value: parseInt(event.target.value) })
+        } else {
             // update the parent state
             this.props.updateCallback(this.props.item.linkId, event.target.value, "values")
             // update local state

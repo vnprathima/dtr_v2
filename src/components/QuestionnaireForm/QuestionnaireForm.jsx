@@ -409,7 +409,7 @@ export default class QuestionnaireForm extends Component {
 
                 case "integer":
                     return this.ui.getTextInput(item.linkId, item, this.updateQuestionValue,
-                        this.retrieveValue, "number", "valueInteger", "integer");
+                        this.retrieveValue, "number", "integer", "valueInteger");
 
                 case "quantity":
                     return this.ui.getQuantityInput(item.linkId, item, this.updateNestedQuestionValue,

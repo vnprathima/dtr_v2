@@ -379,6 +379,9 @@ class CRDRequest extends Component {
                  let eachkey = k.split("=");
                  appContext[eachkey[0]] = eachkey[1];
               })
+              if(this.state.patientId !== undefined || this.state.patientId !== ''){
+                appContext["patientId"] = this.state.patientId;
+              }
               appContext["crdRequest"] = JSON.parse(sessionStorage.getItem("crdRequest"));
               sessionStorage.setItem("appContextId", appContextId);
               sessionStorage.setItem(appContextId, JSON.stringify(appContext));
