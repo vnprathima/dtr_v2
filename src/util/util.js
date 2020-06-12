@@ -185,13 +185,22 @@ async function fetchFhirResource(url, resource_type, query, token = '') {
 }
 function randomString(length = 10) {
     var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ";
-    var string_length = length;
     var randomstring = '';
-    for (var i = 0; i < string_length; i++) {
+    for (var i = 0; i < length; i++) {
         var rnum = Math.floor(Math.random() * chars.length);
         randomstring += chars.substring(rnum, rnum + 1);
     }
     return randomstring
+}
+
+function randomNumber(length = 5) {
+    var chars = "0123456789";
+    var randomnumber = '';
+    for (var i = 0; i < length; i++) {
+        var rnum = Math.floor(Math.random() * chars.length);
+        randomnumber += chars.substring(rnum, rnum + 1);
+    }
+    return randomnumber
 }
 
 var dateFormat = require('dateformat');
@@ -212,5 +221,6 @@ export {
     fetchFhirResource,
     randomString,
     postResource,
-    convertDate
+    convertDate,
+    randomNumber
 }

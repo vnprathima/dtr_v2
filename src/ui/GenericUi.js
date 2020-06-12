@@ -331,10 +331,10 @@ export default class GenericUi {
     return ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()
   }
 
-  getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle) {
+  getQuestionnaireFormApp(smart, questionnaire, cqlPrepoulationResults, request, bundle) {
     return (
       <div>{this.getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults,
-        serviceRequest, bundle)}
+        request, bundle)}
         <nav className="navbar navbar-expand-sm  navbar-dark footer fixed-bottom row">
           <div className="col-8 text-left">
             <span>
@@ -350,10 +350,10 @@ export default class GenericUi {
       </div>
     );
   }
-  getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, serviceRequest, bundle) {
+  getQuestionnaireForm(smart, questionnaire, cqlPrepoulationResults, request, bundle) {
     return (<QuestionnaireForm smart={smart} qform={questionnaire}
       cqlPrepoulationResults={cqlPrepoulationResults}
-      serviceRequest={serviceRequest} bundle={bundle} />);
+      request={request} bundle={bundle} />);
 
   }
   getQuestionnaireTemplate(inputThis, title, items, updateDocuments, showPreview, priorAuthBundle, previewloading, loading) {
@@ -439,6 +439,9 @@ export default class GenericUi {
               {inputThis.state.saved && <div className="simple-success"><strong style={{ color: "green", marginLeft: "1%" }}>Saved Successfully!!</strong></div>}
               {inputThis.state.validated === false &&
                 <div className="error-msg">{inputThis.state.validationError}</div>
+              }
+              {inputThis.state.error === true &&
+                <div className="error-msg">{inputThis.state.otherError}</div>
               }
               {showPreview &&
                 <div><pre style={{ background: "#dee2e6", margin: "0px" }}> {JSON.stringify(priorAuthBundle, null, 2)}</pre></div>

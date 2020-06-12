@@ -235,7 +235,7 @@ function buildPopulatedResourceBundle(smart, neededResources, consoleLog, reques
             type: "collection",
             identifier:
             {
-              "system": "http://identifiers.mettles.com ",
+              "system": "http://identifiers.mettles.com",
               "value": randomString()
             },
             entry: entryResources.map(r => ({ resource: r }))

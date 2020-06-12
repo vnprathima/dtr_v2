@@ -5,6 +5,8 @@ import base64 from "base-64";
 import extractFhirResourcesThatNeedFetching from "./extractFhirResourcesThatNeedFetching";
 import buildPopulatedResourceBundle from "./buildPopulatedResourceBundle";
 import "fhirclient";
+import { getResourceFromBundle} from '../util/util.js';
+
 
 function getSmartConnection() {
 
@@ -34,12 +36,14 @@ function executeElm(smart, fhirVersion, executionInputs, consoleLog) {
         console.log("Fetched resources are in this bundle:", resourceBundle);
         console.log(JSON.stringify(resourceBundle));
         resourceBundle.entry.push({ 'resource': executionInputs.parameters.device_request });
-        console.log("resource bundle...........", resourceBundle);
+        // console.log("resource bundle...........", resourceBundle);
         patientSource.loadBundles([resourceBundle]);
+        let currentEncounter = getResourceFromBundle(resourceBundle,"Encounter");
+        executionInputs.parameters["current_encounter"] = currentEncounter;
         const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
         console.log("elm results---", elmResults);
-        elmResults.PractitionerNPI = "9585736541"
-        elmResults.FacilityNPI = "2359347372"
+        // elmResults.PractitionerNPI = "9585736541"
+        // elmResults.FacilityNPI = "2359347372"
         const results = {
           bundle: resourceBundle,
           elmResults: elmResults

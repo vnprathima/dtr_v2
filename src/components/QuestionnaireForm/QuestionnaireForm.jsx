@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { findValueByPrefix, postResource, randomString, convertDate, getResourceFromBundle, fetchFhirResource } from '../../util/util.js';
 import UiFactory from "../../ui/UiFactory.js";
 import globalConfig from '../../globalConfiguration.json';
-
+import prepareClaimBundle from './PrepareClaimBundle';
 
 const tokenUri = "https://auth.mettles.com/auth/realms/ProviderCredentials/protocol/openid-connect/token";
 export default class QuestionnaireForm extends Component {
@@ -43,13 +43,15 @@ export default class QuestionnaireForm extends Component {
             saved: false,
             validationError: "",
             validated: true,
+            error: false,
+            otherError: "",
             showError: false,
             errorType: '',
             referenceDocs: [],
             order_pa: (sessionStorage.getItem('order_pa') !== undefined && sessionStorage.getItem('order_pa') !== null) ? sessionStorage.getItem('order_pa') : 'PA',
             orderTo: '',
             careTeamRole: 'primary',
-            priorAuthUrl:''
+            priorAuthUrl: ''
         };
 
         this.updateQuestionValue = this.updateQuestionValue.bind(this);
@@ -69,8 +71,6 @@ export default class QuestionnaireForm extends Component {
         this.saveQuestionnaireData = this.saveQuestionnaireData.bind(this);
         this.createSubmittedRequest = this.createSubmittedRequest.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        this.getCareTeamPractitioner = this.getCareTeamPractitioner.bind(this);
-        this.searchParticipantType = this.searchParticipantType.bind(this);
         this.getCodesString = this.getCodesString.bind(this);
         this.fetchClaimEndPoint = this.fetchClaimEndPoint.bind(this);
     }
@@ -132,7 +132,7 @@ export default class QuestionnaireForm extends Component {
         this.setState({ resloading: true });
         const Http = new XMLHttpRequest();
         // const priorAuthUrl = "http://cmsfhir.mettles.com:8080/drfp/fhir/ClaimResponse/" + this.state.claimResponse.id;
-        const priorAuthUrl = this.state.priorAuthUrl+"/ClaimResponse/" + this.state.claimResponse.id;
+        const priorAuthUrl = this.state.priorAuthUrl + "/ClaimResponse/" + this.state.claimResponse.id;
         Http.open("GET", priorAuthUrl);
         Http.setRequestHeader("Content-Type", "application/fhir+json");
         Http.send();
@@ -143,7 +143,7 @@ export default class QuestionnaireForm extends Component {
                 if (this.status === 200) {
                     var claimResponse = JSON.parse(this.responseText);
                     self.setState({ claimResponse: claimResponse });
-                    self.setState({claimResponseBundle: claimResponse});
+                    self.setState({ claimResponseBundle: claimResponse });
                     self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
                     message = "Prior Authorization " + claimResponse.disposition + "\n";
                     message += "Prior Authorization Number: " + claimResponse.preAuthRef;
@@ -432,429 +432,400 @@ export default class QuestionnaireForm extends Component {
         }
     }
 
-    searchParticipantType(participants, type) {
-        participants.map((participant) => {
-            if (participant.hasOwnProperty("type") && participant.type.length > 0) {
-                if (participant.type[0].hasOwnProperty("coding") && participant.type[0].coding.length > 0) {
-                    participant.type[0].coding.map((participant_type) => {
-                        if (participant_type.system === "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
-                            && participant_type.code === type) {
-                            return participant.individual
+
+    buildQuestionnaireResponse(self) {
+        return new Promise(function (resolve, reject) {
+            try {
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                const yyyy = today.getFullYear();
+                const authored = `${yyyy}-${mm}-${dd}`
+                const questionnaireResponse = {
+                    resourceType: "QuestionnaireResponse",
+                    id: "response1",
+                    authored: authored,
+                    status: "completed", //TODO: Get status from somewhere
+                    item: []
+                }
+
+                let currentItem = questionnaireResponse.item;
+                let currentLevel = 0;
+                let currentValues = [];
+                const chain = { 0: { currentItem, currentValues } };
+                self.state.orderedLinks.map((item) => {
+                    const itemType = self.state.itemTypes[item];
+
+                    if (Object.keys(self.state.sectionLinks).indexOf(item) >= 0) {
+                        currentValues = currentValues.filter((e) => { return e !== item });
+                        if (chain[currentLevel + 1]) {
+                            chain[currentLevel + 1].currentValues = currentValues;
                         }
-                    })
-                }
-            }
-        });
-        return false;
-    }
-    getCareTeamPractitioner(encounter) {
-        let encounter_participant = encounter.participant;
-        console.log("encounter--", encounter_participant);
-        if (encounter_participant.length > 0) {
-            encounter_participant.sort(function (a, b) {
-                if (b.hasOwnProperty("period") && a.hasOwnProperty("period")) {
-                    return new Date(b.period.start) - new Date(a.period.start)
-                }
-            })
-            let careTeamPractitioner = this.searchParticipantType(encounter_participant, "PPRF")
-            if (careTeamPractitioner) {
-                this.setState({ careTeamRole: "primary" });
-                return careTeamPractitioner
-            } else {
-                careTeamPractitioner = this.searchParticipantType(encounter_participant, "ATND")
-                if (careTeamPractitioner) {
-                    this.setState({ careTeamRole: "assist" });
-                    return careTeamPractitioner
-                } else {
-                    careTeamPractitioner = this.searchParticipantType(encounter_participant, "ADM")
-                    if (careTeamPractitioner) {
-                        this.setState({ careTeamRole: "assist" });
-                        return careTeamPractitioner
+                        const section = self.state.sectionLinks[item];
+                        currentValues = section.values;
+                        // new section
+                        currentItem = chain[section.level].currentItem
+                        const newItem = {
+                            "linkId": item,
+                            "text": section.text,
+                            item: []
+                        };
+                        currentItem.push(newItem);
+                        currentItem = newItem.item;
+                        currentLevel = section.level;
+
+                        // filter out this section
+                        chain[section.level + 1] = { currentItem, currentValues };
                     } else {
-                        careTeamPractitioner = this.searchParticipantType(encounter_participant, "SPRF")
-                        if (careTeamPractitioner) {
-                            this.setState({ careTeamRole: "assist" });
-                            return careTeamPractitioner
+                        // not a new section, so it's an item
+                        if (currentValues.indexOf(item) < 0 && itemType && itemType.enabled) {
+                            // item not in this section, drop a level
+                            const tempLevel = currentLevel;
+
+                            while (chain[currentLevel].currentValues.length === 0 && currentLevel > 0) {
+                                // keep dropping levels until we find an unfinished section
+                                currentLevel--;
+                            }
+
+                            // check off current item
+                            chain[tempLevel].currentValues = currentValues.filter((e) => { return e !== item });
+
+                            currentValues = chain[currentLevel].currentValues;
+                            currentItem = chain[currentLevel].currentItem;
                         } else {
-                            this.setState({ careTeamRole: "other" });
-                            return encounter_participant[0].individual
+                            // item is in this section, check it off
+
+                            currentValues = currentValues.filter((e) => { return e !== item });
+                            chain[currentLevel + 1].currentValues = currentValues;
                         }
                     }
-                }
+                    if (itemType && (itemType.enabled || self.state.turnOffValues.indexOf(item) >= 0)) {
+                        const answerItem = {
+                            "linkId": item,
+                            "text": itemType.text,
+                            "answer": []
+                        }
+                        switch (itemType.valueType) {
+                            case "valueAttachment":
+                                console.log("In attachment", self.state.values[item])
+                                const attachment = self.state.values[item]
+                                answerItem.answer.push({ [itemType.valueType]: attachment })
+                                break;
+                            case "valueQuantity":
+                                const quantity = self.state.values[item];
+                                if (quantity && quantity.comparator === "=") {
+                                    delete quantity.comparator;
+                                }
+                                answerItem.answer.push({ [itemType.valueType]: quantity })
+                                break;
+                            case "valueDateTime":
+                            case "valueDate":
+                                const date = self.state.values[item];
+                                console.log("date---", date);
+                                if (date != undefined) {
+                                    answerItem.answer.push({ [itemType.valueType]: date.toString() });
+                                } else {
+                                    answerItem.answer.push({ [itemType.valueType]: "" });
+                                }
+                                break;
+                            case "valueReference":
+                                console.log("In reference", self.state.values[item])
+                                const attac = self.state.values[item]
+                                // This is a temporary fix as cerner is not allowing to read Document reference
+                                let id = randomString();
+                                let docRef = {
+                                    "resourceType": "DocumentReference",
+                                    "id": id,
+                                    "status": "current",
+                                    "content": [{ "attachment": attac }]
+                                }
+                                self.setState({ referenceDocs: [docRef] })
+                                answerItem.answer.push({
+                                    [itemType.valueType]: {
+                                        "reference": "DocumentReference/" + id
+                                    }
+                                })
+                                break;
+                            default:
+                                const answer = self.state.values[item];
+                                if (Array.isArray(answer)) {
+                                    answer.forEach((e) => {
+                                        // possible for an array to contain multiple types
+                                        let finalType;
+                                        if (e.valueTypeFinal) {
+                                            finalType = e.valueTypeFinal;
+                                            delete e.valueTypeFinal;
+                                        } else {
+                                            finalType = itemType.valueType;
+                                        }
+                                        answerItem.answer.push({ [finalType]: e });
+                                    })
+                                } else {
+                                    answerItem.answer.push({ [itemType.valueType]: answer });
+                                }
+                        }
+                        // FHIR fields are not allowed to be empty or null, so we must prune
+                        if (self.isEmptyAnswer(answerItem.answer)) {
+                            // console.log("Removing empty answer: ", answerItem);
+                            delete answerItem.answer;
+                        }
+                        currentItem.push(answerItem);
+                    }
+                });
+                console.log(questionnaireResponse);
+                resolve(questionnaireResponse)
+            } catch (error) {
+                reject(error);
             }
-        }
-        return false;
+        })
     }
-
     generateBundle() {
         var self = this;
         return new Promise(function (resolve, reject) {
-            const today = new Date();
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-            const yyyy = today.getFullYear();
-            const authored = `${yyyy}-${mm}-${dd}`
-            const response = {
-                resourceType: "QuestionnaireResponse",
-                id: "response1",
-                authored: authored,
-                status: "completed", //TODO: Get status from somewhere
-                item: []
-            }
-
-            let currentItem = response.item;
-            let currentLevel = 0;
-            let currentValues = [];
-            const chain = { 0: { currentItem, currentValues } };
-            self.state.orderedLinks.map((item) => {
-                const itemType = self.state.itemTypes[item];
-
-                if (Object.keys(self.state.sectionLinks).indexOf(item) >= 0) {
-                    currentValues = currentValues.filter((e) => { return e !== item });
-                    if (chain[currentLevel + 1]) {
-                        chain[currentLevel + 1].currentValues = currentValues;
-                    }
-                    const section = self.state.sectionLinks[item];
-                    currentValues = section.values;
-                    // new section
-                    currentItem = chain[section.level].currentItem
-                    const newItem = {
-                        "linkId": item,
-                        "text": section.text,
-                        item: []
-                    };
-                    currentItem.push(newItem);
-                    currentItem = newItem.item;
-                    currentLevel = section.level;
-
-                    // filter out this section
-                    chain[section.level + 1] = { currentItem, currentValues };
-                } else {
-                    // not a new section, so it's an item
-                    if (currentValues.indexOf(item) < 0 && itemType && itemType.enabled) {
-                        // item not in this section, drop a level
-                        const tempLevel = currentLevel;
-
-                        while (chain[currentLevel].currentValues.length === 0 && currentLevel > 0) {
-                            // keep dropping levels until we find an unfinished section
-                            currentLevel--;
-                        }
-
-                        // check off current item
-                        chain[tempLevel].currentValues = currentValues.filter((e) => { return e !== item });
-
-                        currentValues = chain[currentLevel].currentValues;
-                        currentItem = chain[currentLevel].currentItem;
-                    } else {
-                        // item is in this section, check it off
-
-                        currentValues = currentValues.filter((e) => { return e !== item });
-                        chain[currentLevel + 1].currentValues = currentValues;
-                    }
-                }
-                if (itemType && (itemType.enabled || self.state.turnOffValues.indexOf(item) >= 0)) {
-                    const answerItem = {
-                        "linkId": item,
-                        "text": itemType.text,
-                        "answer": []
-                    }
-                    switch (itemType.valueType) {
-                        case "valueAttachment":
-                            console.log("In attachment", self.state.values[item])
-                            const attachment = self.state.values[item]
-                            answerItem.answer.push({ [itemType.valueType]: attachment })
-                            break;
-                        case "valueQuantity":
-                            const quantity = self.state.values[item];
-                            if (quantity && quantity.comparator === "=") {
-                                delete quantity.comparator;
-                            }
-                            answerItem.answer.push({ [itemType.valueType]: quantity })
-                            break;
-                        case "valueDateTime":
-                        case "valueDate":
-                            const date = self.state.values[item];
-                            console.log("date---", date);
-                            if (date != undefined) {
-                                answerItem.answer.push({ [itemType.valueType]: date.toString() });
-                            } else {
-                                answerItem.answer.push({ [itemType.valueType]: "" });
-                            }
-                            break;
-                        case "valueReference":
-                            console.log("In reference", self.state.values[item])
-                            const attac = self.state.values[item]
-                            // This is a temporary fix as cerner is not allowing to read Document reference
-                            let id = randomString();
-                            let docRef = {
-                                "resourceType": "DocumentReference",
-                                "id": id,
-                                "status": "current",
-                                "content": [{ "attachment": attac }]
-                            }
-                            self.setState({ referenceDocs: [docRef] })
-                            answerItem.answer.push({
-                                [itemType.valueType]: {
-                                    "reference": "DocumentReference/" + id
-                                }
-                            })
-                            break;
-                        default:
-                            const answer = self.state.values[item];
-                            if (Array.isArray(answer)) {
-                                answer.forEach((e) => {
-                                    // possible for an array to contain multiple types
-                                    let finalType;
-                                    if (e.valueTypeFinal) {
-                                        finalType = e.valueTypeFinal;
-                                        delete e.valueTypeFinal;
-                                    } else {
-                                        finalType = itemType.valueType;
-                                    }
-                                    answerItem.answer.push({ [finalType]: e });
-                                })
-                            } else {
-                                answerItem.answer.push({ [itemType.valueType]: answer });
-                            }
-                    }
-                    // FHIR fields are not allowed to be empty or null, so we must prune
-                    if (self.isEmptyAnswer(answerItem.answer)) {
-                        // console.log("Removing empty answer: ", answerItem);
-                        delete answerItem.answer;
-                    }
-                    currentItem.push(answerItem);
-                }
-            });
-            console.log(response);
-            const priorAuthBundle = JSON.parse(JSON.stringify(self.props.bundle));
-            priorAuthBundle.entry.unshift({ resource: response })
-
-            const locationResource = {
-                "resourceType": "Location",
-                "id": "29955",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2019-07-11T06:20:39.485+00:00",
-                    "profile": [
-                        "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-location"
-                    ]
-                },
-                "type": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-                                "code": "PTRES",
-                                "display": "Patient's Residence"
-                            }
-                        ]
-                    }
-                ],
-                "managingOrganization": {
-                    "reference": sessionStorage.getItem("provider")
-                },
-                "name": "South Wing, second floor",
-                "address": {
-                    "line": [
-                        "102 Heritage Dr."
-                    ],
-                    "city": "Somerset",
-                    "state": "NJ",
-                    "postalCode": "08873",
-                    "country": "USA"
-                }
-            }
-            priorAuthBundle.entry.unshift({ resource: locationResource })
-
-            let careTeamProvider = ''
             try {
-                careTeamProvider = self.getCareTeamPractitioner(getResourceFromBundle(priorAuthBundle, "Encounter"))
-                if (!careTeamProvider) {
-                    careTeamProvider = self.makeReference(priorAuthBundle, "Practitioner");
-                }
-            } catch (error) {
-                console.log("Care Team Issue--", error);
-                careTeamProvider = self.makeReference(priorAuthBundle, "Practitioner");
-            }
-            const priorAuthClaim = {
-                resourceType: "Claim",
-                status: "active",
-                type: {
-                    coding: [{
-                        system: "http://terminology.hl7.org/CodeSystem/claim-type",
-                        code: "professional",
-                        display: "Professional"
-                    }]
-                },
-                use: "preauthorization",
-                patient: { reference: self.makeReference(priorAuthBundle, "Patient") },
-                created: authored,
-                provider: { reference: sessionStorage.getItem("provider") },
-                enterer: { reference: self.makeReference(priorAuthBundle, "Practitioner") },
-                insurer: { reference: sessionStorage.getItem("insurer") },
-                facility: { reference: self.makeReference(priorAuthBundle, "Location") },
-                priority: { coding: [{ "code": "normal" }] },
-                supportingInfo: [{
-                    sequence: 1,
-                    category: {
-                        coding: [
-                            {
-                                "system": "http://hl7.org/us/davinci-pas/CodeSystem/PASSupportingInfoType",
-                                "code": "patientEvent"
-                            }
-                        ]
-                    },
-                    timingPeriod: {
-                        start: "2019-01-05T00:00:00-07:00",
-                        end: "2019-03-05T00:00:00-07:00"
-                    }
-                },
-                {
-                    sequence: 2,
-                    category: {
-                        coding: [{
-                            system: "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
-                            code: "info",
-                            display: "Information"
-                        }]
-                    },
-                    valueReference: {
-                        reference: self.makeReference(priorAuthBundle, "QuestionnaireResponse")
-                    }
-                }],
-                item: [
-
-                ],
-                careTeam: [
-                    {
-                        sequence: 1,
-                        provider: careTeamProvider,
-                        extension: [
-                            {
-                                url: "http://terminology.hl7.org/ValueSet/v2-0912",
-                                valueCode: "OP"
-                            }
-                        ],
-                        role: {
-                            coding: [
-                                {
-                                    system: "http://terminology.hl7.org/CodeSystem/claimcareteamrole",
-                                    code: self.state.careTeamRole
-                                }
-                            ]
-                        }
-                    }
-                ],
-                diagnosis: [],
-                procedure: [],
-                insurance: [{
-                    sequence: 1,
-                    focal: true,
-                    coverage: { reference: self.makeReference(priorAuthBundle, "Coverage") }
-                }]
-            }
-            let service = {
-                sequence: 1,
-                procedureSequence: [],
-                diagnosisSequence: [],
-                careTeamSequence: [1],
-                locationCodeableConcept: {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-                            "code": "PTRES",
-                            "display": "Patient's Residence"
-                        }
-                    ]
-                }
-            };
-            console.log("servicerequest-----------", self.props.serviceRequest);
-            if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
-                self.props.serviceRequest.resourceType === "ServiceRequest" &&
-                self.props.serviceRequest.hasOwnProperty("code")) {
-                service["productOrService"] = self.props.serviceRequest.code;
-                if (self.props.serviceRequest.hasOwnProperty("quantityQuantity")) {
-                    service["quantity"] = {
-                        "value": self.props.serviceRequest.quantityQuantity.value
-                    };
-                }
-                if (self.props.serviceRequest.hasOwnProperty("category")) {
-                    service["category"] = self.props.serviceRequest.category[0];
-                }
-                priorAuthClaim["referral"] = { reference: self.makeReference(priorAuthBundle, "ServiceRequest") }
-            }
-            if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
-                self.props.serviceRequest.resourceType === "DeviceRequest" &&
-                self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
-                service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
-                if (self.props.serviceRequest.hasOwnProperty("parameter") &&
-                    self.props.serviceRequest.parameter.length > 0) {
-                    service["quantity"] = {
-                        "value": self.props.serviceRequest.parameter[0].valueQuantity.value
-                    };
-                    service["category"] = self.props.serviceRequest.parameter[0].code;
-                }
-                priorAuthClaim["presciption"] = { reference: self.makeReference(priorAuthBundle, "DeviceRequest") }
-            }
-            console.log("service----------", service);
-            priorAuthClaim.item.push(service);
-
-            var sequence = 1;
-            priorAuthBundle.entry.forEach(function (entry, index) {
-                if (entry.resource !== undefined) {
-                    if (entry.resource.resourceType == "Condition") {
-                        priorAuthClaim.diagnosis.push({
-                            sequence: sequence,
-                            diagnosisReference: { reference: "Condition/" + entry.resource.id }
-                        });
-                        priorAuthClaim.item[0].diagnosisSequence.push(sequence);
-                        sequence++;
-                    }
-
-                }
-            })
-
-            var psequence = 1;
-            priorAuthBundle.entry.forEach(function (entry, index) {
-                if (entry.resource !== undefined) {
-                    if (entry.resource.resourceType == "Procedure") {
-                        priorAuthClaim.procedure.push({
-                            sequence: psequence,
-                            procedureReference: { reference: "Procedure/" + entry.resource.id }
-                        });
-                        priorAuthClaim.item[0].procedureSequence.push(psequence);
-                        psequence++;
-                    }
-
-                }
-            })
-            // console.log(priorAuthClaim, 'HEREEE', tokenUri);
-            console.log(JSON.stringify(priorAuthClaim));
-            if (sessionStorage.hasOwnProperty("docResources")) {
-                if (sessionStorage["docResources"]) {
-                    JSON.parse(sessionStorage["docResources"]).forEach((doc) => {
-                        priorAuthBundle.entry.push({ "resource": doc })
+                self.buildQuestionnaireResponse(self).then((questionnaireResponse) => {
+                    const resourceBundle = JSON.parse(JSON.stringify(self.props.bundle));
+                    prepareClaimBundle(sessionStorage.getItem("serviceUri"),questionnaireResponse, resourceBundle, self.props.request, self.state.documentReference, self.state.referenceDocs).then((priorAuthBundle) => {
+                        resolve(priorAuthBundle);
+                    }).catch((error) => {
+                        reject(error);
                     })
-                }
-            }
-            priorAuthBundle.entry.unshift({ resource: priorAuthClaim })
-
-            // Add documents in claim
-            if (Object.keys(self.state.documentReference).length > 0) {
-                if (self.state.documentReference.hasOwnProperty("content") && self.state.documentReference.content.length > 0) {
-                    priorAuthBundle.entry.push({ resource: self.state.documentReference })
-                }
-            }
-            console.log("reference  docs---", self.state.referenceDocs);
-            // Add referenced Docs in claim
-            if (self.state.referenceDocs.length > 0) {
-                self.state.referenceDocs.map((doc) => {
-                    if (doc.hasOwnProperty("content") && doc.content.length > 0) {
-                        priorAuthBundle.entry.push({ resource: doc })
-                    }
                 })
+            } catch (error) {
+                reject(error);
             }
-            resolve(priorAuthBundle);
+
+
+
+            // const priorAuthBundle = JSON.parse(JSON.stringify(self.props.bundle));
+            // priorAuthBundle.entry.unshift({ resource: response })
+
+            // const locationResource = {
+            //     "resourceType": "Location",
+            //     "id": "29955",
+            //     "meta": {
+            //         "versionId": "1",
+            //         "lastUpdated": "2019-07-11T06:20:39.485+00:00",
+            //         "profile": [
+            //             "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-location"
+            //         ]
+            //     },
+            //     "type": [
+            //         {
+            //             "coding": [
+            //                 {
+            //                     "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+            //                     "code": "PTRES",
+            //                     "display": "Patient's Residence"
+            //                 }
+            //             ]
+            //         }
+            //     ],
+            //     "managingOrganization": {
+            //         "reference": sessionStorage.getItem("provider")
+            //     },
+            //     "name": "South Wing, second floor",
+            //     "address": {
+            //         "line": [
+            //             "102 Heritage Dr."
+            //         ],
+            //         "city": "Somerset",
+            //         "state": "NJ",
+            //         "postalCode": "08873",
+            //         "country": "USA"
+            //     }
+            // }
+            // priorAuthBundle.entry.unshift({ resource: locationResource })
+
+            // let careTeamProvider = ''
+            // try {
+            //     careTeamProvider = self.getCareTeamPractitioner(getResourceFromBundle(priorAuthBundle, "Encounter"))
+            //     if (!careTeamProvider) {
+            //         careTeamProvider = self.makeReference(priorAuthBundle, "Practitioner");
+            //     }
+            // } catch (error) {
+            //     console.log("Care Team Issue--", error);
+            //     careTeamProvider = self.makeReference(priorAuthBundle, "Practitioner");
+            // }
+            // const priorAuthClaim = {
+            //     resourceType: "Claim",
+            //     status: "active",
+            //     type: {
+            //         coding: [{
+            //             system: "http://terminology.hl7.org/CodeSystem/claim-type",
+            //             code: "professional",
+            //             display: "Professional"
+            //         }]
+            //     },
+            //     use: "preauthorization",
+            //     patient: { reference: self.makeReference(priorAuthBundle, "Patient") },
+            //     created: authored,
+            //     provider: { reference: sessionStorage.getItem("provider") },
+            //     enterer: { reference: self.makeReference(priorAuthBundle, "Practitioner") },
+            //     insurer: { reference: sessionStorage.getItem("insurer") },
+            //     facility: { reference: self.makeReference(priorAuthBundle, "Location") },
+            //     priority: { coding: [{ "code": "normal" }] },
+            //     supportingInfo: [{
+            //         sequence: 1,
+            //         category: {
+            //             coding: [
+            //                 {
+            //                     "system": "http://hl7.org/us/davinci-pas/CodeSystem/PASSupportingInfoType",
+            //                     "code": "patientEvent"
+            //                 }
+            //             ]
+            //         },
+            //         timingPeriod: {
+            //             start: "2019-01-05T00:00:00-07:00",
+            //             end: "2019-03-05T00:00:00-07:00"
+            //         }
+            //     },
+            //     {
+            //         sequence: 2,
+            //         category: {
+            //             coding: [{
+            //                 system: "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+            //                 code: "info",
+            //                 display: "Information"
+            //             }]
+            //         },
+            //         valueReference: {
+            //             reference: self.makeReference(priorAuthBundle, "QuestionnaireResponse")
+            //         }
+            //     }],
+            //     item: [
+
+            //     ],
+            //     careTeam: [
+            //         {
+            //             sequence: 1,
+            //             provider: careTeamProvider,
+            //             extension: [
+            //                 {
+            //                     url: "http://terminology.hl7.org/ValueSet/v2-0912",
+            //                     valueCode: "OP"
+            //                 }
+            //             ],
+            //             role: {
+            //                 coding: [
+            //                     {
+            //                         system: "http://terminology.hl7.org/CodeSystem/claimcareteamrole",
+            //                         code: self.state.careTeamRole
+            //                     }
+            //                 ]
+            //             }
+            //         }
+            //     ],
+            //     diagnosis: [],
+            //     procedure: [],
+            //     insurance: [{
+            //         sequence: 1,
+            //         focal: true,
+            //         coverage: { reference: self.makeReference(priorAuthBundle, "Coverage") }
+            //     }]
+            // }
+            // let service = {
+            //     sequence: 1,
+            //     procedureSequence: [],
+            //     diagnosisSequence: [],
+            //     careTeamSequence: [1],
+            //     locationCodeableConcept: {
+            //         "coding": [
+            //             {
+            //                 "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+            //                 "code": "PTRES",
+            //                 "display": "Patient's Residence"
+            //             }
+            //         ]
+            //     }
+            // };
+            // console.log("servicerequest-----------", self.props.serviceRequest);
+            // if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+            //     self.props.serviceRequest.resourceType === "ServiceRequest" &&
+            //     self.props.serviceRequest.hasOwnProperty("code")) {
+            //     service["productOrService"] = self.props.serviceRequest.code;
+            //     if (self.props.serviceRequest.hasOwnProperty("quantityQuantity")) {
+            //         service["quantity"] = {
+            //             "value": self.props.serviceRequest.quantityQuantity.value
+            //         };
+            //     }
+            //     if (self.props.serviceRequest.hasOwnProperty("category")) {
+            //         service["category"] = self.props.serviceRequest.category[0];
+            //     }
+            //     priorAuthClaim["referral"] = { reference: self.makeReference(priorAuthBundle, "ServiceRequest") }
+            // }
+            // if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
+            //     self.props.serviceRequest.resourceType === "DeviceRequest" &&
+            //     self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
+            //     service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
+            //     if (self.props.serviceRequest.hasOwnProperty("parameter") &&
+            //         self.props.serviceRequest.parameter.length > 0) {
+            //         service["quantity"] = {
+            //             "value": self.props.serviceRequest.parameter[0].valueQuantity.value
+            //         };
+            //         service["category"] = self.props.serviceRequest.parameter[0].code;
+            //     }
+            //     priorAuthClaim["prescription"] = { reference: self.makeReference(priorAuthBundle, "DeviceRequest") }
+            // }
+            // console.log("service----------", service);
+            // priorAuthClaim.item.push(service);
+
+            // var sequence = 1;
+            // priorAuthBundle.entry.forEach(function (entry, index) {
+            //     if (entry.resource !== undefined) {
+            //         if (entry.resource.resourceType == "Condition") {
+            //             priorAuthClaim.diagnosis.push({
+            //                 sequence: sequence,
+            //                 diagnosisReference: { reference: "Condition/" + entry.resource.id }
+            //             });
+            //             priorAuthClaim.item[0].diagnosisSequence.push(sequence);
+            //             sequence++;
+            //         }
+
+            //     }
+            // })
+
+            // var psequence = 1;
+            // priorAuthBundle.entry.forEach(function (entry, index) {
+            //     if (entry.resource !== undefined) {
+            //         if (entry.resource.resourceType == "Procedure") {
+            //             priorAuthClaim.procedure.push({
+            //                 sequence: psequence,
+            //                 procedureReference: { reference: "Procedure/" + entry.resource.id }
+            //             });
+            //             priorAuthClaim.item[0].procedureSequence.push(psequence);
+            //             psequence++;
+            //         }
+
+            //     }
+            // })
+            // // console.log(priorAuthClaim, 'HEREEE', tokenUri);
+            // console.log(JSON.stringify(priorAuthClaim));
+            // if (sessionStorage.hasOwnProperty("docResources")) {
+            //     if (sessionStorage["docResources"]) {
+            //         JSON.parse(sessionStorage["docResources"]).forEach((doc) => {
+            //             priorAuthBundle.entry.push({ "resource": doc })
+            //         })
+            //     }
+            // }
+            // priorAuthBundle.entry.unshift({ resource: priorAuthClaim })
+
+            // // Add documents in claim
+            // if (Object.keys(self.state.documentReference).length > 0) {
+            //     if (self.state.documentReference.hasOwnProperty("content") && self.state.documentReference.content.length > 0) {
+            //         priorAuthBundle.entry.push({ resource: self.state.documentReference })
+            //     }
+            // }
+            // console.log("reference  docs---", self.state.referenceDocs);
+            // // Add referenced Docs in claim
+            // if (self.state.referenceDocs.length > 0) {
+            //     self.state.referenceDocs.map((doc) => {
+            //         if (doc.hasOwnProperty("content") && doc.content.length > 0) {
+            //             priorAuthBundle.entry.push({ resource: doc })
+            //         }
+            //     })
+            // }
+            // resolve(priorAuthBundle);
         });
 
     }
@@ -866,7 +837,15 @@ export default class QuestionnaireForm extends Component {
             let showPreview = this.state.showPreview;
             this.setState({ showPreview: !showPreview });
             this.setState({ previewloading: false });
-        });
+        }).catch((error) => {
+            console.log("Preview Error : ", error);
+            this.setState({
+                previewloading: false,
+                error: true,
+                otherError: "Unable to preview Bundle !!"
+            });
+
+        })
     }
     validateQuestitionnarie() {
         var self = this;
@@ -971,12 +950,12 @@ export default class QuestionnaireForm extends Component {
         this.fetchClaimEndPoint(priorAuthBundle).then((endpoint) => {
             if (endpoint) {
                 console.log("In end point found--", endpoint);
-                priorAuthUrl = endpoint+"/Claim/$submit";
+                priorAuthUrl = endpoint + "/Claim/$submit";
             } else {
                 endpoint = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir";
                 priorAuthUrl = "https://sm.mettles.com/other_payerfhir/hapi-fhir-jpaserver/fhir/Claim/$submit"
             }
-            this.setState({priorAuthUrl: endpoint});
+            this.setState({ priorAuthUrl: endpoint });
             let self = this;
             console.log("claim final--", JSON.stringify(priorAuthBundle));
             Http.open("POST", priorAuthUrl);
@@ -1004,7 +983,7 @@ export default class QuestionnaireForm extends Component {
                         self.setState({ claimMessage: "Prior Authorization has been submitted successfully" })
                         message = "Prior Authorization " + claimResponse.disposition + "\n";
                         message += "Prior Authorization Number: " + claimResponse.preAuthRef;
-                        self.createSubmittedRequest(claimResponse,endpoint);
+                        self.createSubmittedRequest(claimResponse, endpoint);
                     } else {
                         self.setState({ "claimMessage": "Prior Authorization Request Failed." })
                         message = "Prior Authorization Request Failed."
@@ -1091,12 +1070,12 @@ export default class QuestionnaireForm extends Component {
     // }
     getCodesString() {
         let codesString = ""
-        console.log(this.props.serviceRequest);
-        if (this.props.serviceRequest.hasOwnProperty("resourceType") &&
-            this.props.serviceRequest.resourceType === "ServiceRequest" &&
-            this.props.serviceRequest.hasOwnProperty("code")) {
-            if (this.props.serviceRequest.code.hasOwnProperty("coding")) {
-                this.props.serviceRequest.code.coding.map((coding) => {
+        console.log(this.props.request);
+        if (this.props.request.hasOwnProperty("resourceType") &&
+            this.props.request.resourceType === "ServiceRequest" &&
+            this.props.request.hasOwnProperty("code")) {
+            if (this.props.request.code.hasOwnProperty("coding")) {
+                this.props.request.code.coding.map((coding) => {
                     if (codesString == "") {
                         codesString = coding.code
                     }
@@ -1106,11 +1085,11 @@ export default class QuestionnaireForm extends Component {
                 })
             }
         }
-        else if (this.props.serviceRequest.hasOwnProperty("resourceType") &&
-            this.props.serviceRequest.resourceType === "DeviceRequest" &&
-            this.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
-            if (this.props.serviceRequest.codeCodeableConcept.hasOwnProperty("coding")) {
-                this.props.serviceRequest.codeCodeableConcept.coding.map((coding) => {
+        else if (this.props.request.hasOwnProperty("resourceType") &&
+            this.props.request.resourceType === "DeviceRequest" &&
+            this.props.request.hasOwnProperty("codeCodeableConcept")) {
+            if (this.props.request.codeCodeableConcept.hasOwnProperty("coding")) {
+                this.props.request.codeCodeableConcept.coding.map((coding) => {
                     if (codesString == "") {
                         codesString = coding.code
                     }
@@ -1124,12 +1103,12 @@ export default class QuestionnaireForm extends Component {
         return codesString
     }
 
-    async createSubmittedRequest(claimResponse,endpoint) {
+    async createSubmittedRequest(claimResponse, endpoint) {
         await this.deleteReqByRequestId()
         let today = new Date();
         let appContextId = sessionStorage.getItem("appContextId")
         let appContext = sessionStorage.getItem(appContextId)
-        claimResponse.res_url = endpoint+"/ClaimResponse/"+claimResponse.id
+        claimResponse.res_url = endpoint + "/ClaimResponse/" + claimResponse.id
         let body = {
             "type": "submitted",
             "date": today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate(),
@@ -1152,16 +1131,6 @@ export default class QuestionnaireForm extends Component {
             'Authorization': "Basic " + btoa(globalConfig.odoo_username + ":" + globalConfig.odoo_password)
         }
         let url = globalConfig.restURL + "/api/pa_info"
-        let today = new Date();
-        //        if (self.props.serviceRequest.hasOwnProperty("resourceType") &&
-        //                self.props.serviceRequest.resourceType === "ServiceRequest" &&
-        //                self.props.serviceRequest.hasOwnProperty("code")) {
-        //                service["productOrService"] = self.props.serviceRequest.code;
-        // if (self.props.serviceRequest.hasOwnProperty("resourceType") && 
-        //                self.props.serviceRequest.resourceType === "DeviceRequest" &&
-        //                self.props.serviceRequest.hasOwnProperty("codeCodeableConcept")) {
-        //                service["productOrService"] = self.props.serviceRequest.codeCodeableConcept;
-
         let res = await fetch(url, {
             method: "POST",
             headers: headers,

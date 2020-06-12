@@ -294,7 +294,7 @@ if (serviceUri !== undefined) {
                 ReactDOM.render(<App FHIR_URI_PREFIX={FHIR_URI_PREFIX}
                     questionnaireUri={appContext.template}
                     smart={smart}
-                    serviceRequest={appContext.request}
+                    requestId={appContext.request}
                     filepath={appContext.filepath}
                 />,
                     document.getElementById("root")

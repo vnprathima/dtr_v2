@@ -13,7 +13,8 @@ class App extends Component {
     this.state = {
       questionnaire: null,
       cqlPrepoulationResults: null,
-      serviceRequest: null,
+      request: null,
+      requestType: null,
       bundle: null,
       logs: []
     }
@@ -35,21 +36,11 @@ class App extends Component {
         console.log("crd--", sessionStorage.getItem("crdRequest"))
         if (sessionStorage.getItem("crdRequest") !== undefined && sessionStorage.getItem("crdRequest") !== null) {
           console.log("crd----if--", sessionStorage.getItem("crdRequest"))
-          var serviceRequest = JSON.parse(sessionStorage.getItem("crdRequest"));
-          this.setState({ serviceRequest })
-          console.log("device request--", serviceRequest, artifacts.dataRequirement);
-          const executionInputs = {
-            dataRequirement: artifacts.dataRequirement,
-            elm: artifacts.mainLibraryElm,
-            elmDependencies: artifacts.dependentElms,
-            valueSetDB: {},
-            parameters: { device_request: serviceRequest }
-          }
-          this.consoleLog("executing cql", "infoClass");
-          return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
+          var request = JSON.parse(sessionStorage.getItem("crdRequest"));
+          return this.executeCql(request, artifacts)
         } else {
-          console.log("else--", this.props.serviceRequest);
-          var reqId = this.props.serviceRequest;
+          console.log("else--", this.props.requestId);
+          var reqId = this.props.requestId;
           console.log("Req Id---", reqId);
           return this.smart.patient.api
             .search({ type: "DeviceRequest", query: { "_id": reqId } })
@@ -57,41 +48,18 @@ class App extends Component {
               console.log("Device Request-res--", response);
               if (response.data && response.data.resourceType === "Bundle") {
                 if (response.data.entry) {
-                  serviceRequest = response.data.entry[0].resource;
-                  this.setState({ serviceRequest })
-                  console.log("Final--", serviceRequest, artifacts.dataRequirement);
-                  const executionInputs = {
-                    dataRequirement: artifacts.dataRequirement,
-                    elm: artifacts.mainLibraryElm,
-                    elmDependencies: artifacts.dependentElms,
-                    valueSetDB: {},
-                    parameters: { device_request: serviceRequest }
-                  }
-                  this.consoleLog("executing cql", "infoClass");
-                  return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
+                  request = response.data.entry[0].resource;
+                  return this.executeCql(request, artifacts);
                 } else {
                   this.smart.patient.api
                     .search({ type: "ServiceRequest", query: { "_id": reqId } })
                     .then((response) => {
                       if (response.data && response.data.resourceType === "Bundle") {
                         if (response.data.entry) {
-                          serviceRequest = response.data.entry[0].resource;
-                          this.setState({ serviceRequest })
-                          console.log("device request--", serviceRequest, artifacts.dataRequirement);
-                          const executionInputs = {
-                            dataRequirement: artifacts.dataRequirement,
-                            elm: artifacts.mainLibraryElm,
-                            elmDependencies: artifacts.dependentElms,
-                            valueSetDB: {},
-                            parameters: { device_request: serviceRequest }
-                          }
-                          this.consoleLog("executing cql", "infoClass");
-                          return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
+                          request = response.data.entry[0].resource;
+                          return this.executeCql(request, artifacts);
                         }
                       }
-                    }, (err) => {
-                      console.log("devicereq error---", err);
-                      this.consoleLog("ServiceRequest/DeviceRequest not found !!", "errorClass");
                     });
                 }
               }
@@ -102,29 +70,17 @@ class App extends Component {
                 .then((response) => {
                   if (response.data && response.data.resourceType === "Bundle") {
                     if (response.data.entry) {
-                      serviceRequest = response.data.entry[0].resource;
-                      this.setState({ serviceRequest })
-                      console.log("device request--", serviceRequest, artifacts.dataRequirement);
-                      const executionInputs = {
-                        dataRequirement: artifacts.dataRequirement,
-                        elm: artifacts.mainLibraryElm,
-                        elmDependencies: artifacts.dependentElms,
-                        valueSetDB: {},
-                        parameters: { device_request: serviceRequest }
-                      }
-                      this.consoleLog("executing cql", "infoClass");
-                      return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
+                      request = response.data.entry[0].resource;
+                      return this.executeCql(request, artifacts);
                     }
                   } else {
                     this.consoleLog("ServiceRequest/DeviceRequest not found !!", "errorClass");
                   }
                 }, (err) => {
-                  console.log("devicereq error---", err);
                   this.consoleLog("ServiceRequest/DeviceRequest not found !!", "errorClass");
                 });
             });
         }
-
       })
       .then(cqlResults => {
         this.consoleLog("executed cql, result:" + JSON.stringify(cqlResults), "infoClass");
@@ -133,15 +89,25 @@ class App extends Component {
       });
   }
 
-  executeCql() {
-    this.setState({ serviceRequest });
-    console.log("device request--", serviceRequest, artifacts.dataRequirement);
+  executeCql(request, artifacts) {
+    let parameters = {}
+    var requestType = request.resourceType
+    this.setState({requestType});
+    this.setState({ request });
+    if (requestType === "ServiceRequest") {
+      parameters["service_request"] = request
+    }
+    else if (requestType === "DeviceRequest") {
+      parameters["device_request"] = request
+    }
+
+    console.log("request Type--", request, requestType, artifacts.dataRequirement);
     const executionInputs = {
       dataRequirement: artifacts.dataRequirement,
       elm: artifacts.mainLibraryElm,
       elmDependencies: artifacts.dependentElms,
       valueSetDB: {},
-      parameters: { device_request: serviceRequest }
+      parameters: parameters
     }
     this.consoleLog("executing cql", "infoClass");
     return executeElm(this.smart, "r4", executionInputs, this.consoleLog);
@@ -162,7 +128,7 @@ class App extends Component {
     // console.log("93 App.js",this.state.questionnaire, this.state.bundle , this.state.cqlPrepoulationResults,this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults)
     if (this.state.questionnaire && this.state.bundle && this.state.cqlPrepoulationResults) {
       return (this.ui.getQuestionnaireFormApp(this.smart, this.state.questionnaire, this.state.cqlPrepoulationResults,
-        this.state.serviceRequest, this.state.bundle)
+        this.state.request, this.state.bundle)
       );
     } else {
       return (this.ui.getError(this.state.logs));
